@@ -1,4 +1,4 @@
-package edu.ohiou.mfgresearch.reader.part;
+package edu.ohiou.mfgresearch.reader;
 
 import java.io.FileInputStream;
 import java.util.List;

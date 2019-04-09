@@ -38,7 +38,7 @@
 					<skipTests>true</skipTests>
 				</configuration>
 			</plugin>
-<!-- 			<plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.2.1</version>
@@ -50,9 +50,9 @@
 					</execution>
 				</executions>
 				<configuration>
-					<mainClass>edu.ohiou.mfgresearch.io.FunQL</mainClass>
+					<mainClass>edu.ohiou.mfgresearch.simplanner.PartSpecificationGraph</mainClass>
 				</configuration>
-			</plugin> -->
+			</plugin>
 		</plugins>
 	</build>
 

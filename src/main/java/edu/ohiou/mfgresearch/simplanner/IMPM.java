@@ -26,9 +26,7 @@ public final class IMPM {
 	public final static String bslash = "\\";
 	
 	private final static Function<String, String> makeDefaultIRI = name-> default_ns + fslash + name;
-
-	private final static Function<String, String> makeABoxIRI = name-> abox_ns + fslash + name;
-	
+	private final static Function<String, String> makeABoxIRI = name-> abox_ns + fslash + name;	
 	
 	//Internationalized Resource Identifiers (IRIs) [RFC3987]
 	public static final String rdf = w3_ns+"/1999/02/22-rdf-syntax-ns#";

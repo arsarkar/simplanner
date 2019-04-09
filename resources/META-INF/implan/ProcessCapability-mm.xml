@@ -103,7 +103,7 @@
 		<Parameter straightness="((0.00762 * (pow (?arg1 / ?arg2), 3)) + 0.0254)" type="MinRuleCapability" arg1="Depth" arg2="Diameter"/>
 		<Parameter roundness="0.0508" type="MinCapability"/>
 		<Parameter parallelism="((0.0254 * (pow (?arg1 / ?arg2), 3)) + 0.0762)" type="MinRuleCapability" arg1="Depth" arg2="Diameter"/>
-		<Parameter depthLimit="(40 * ?arg1)" type="MaxRuleCapability" arg1=Diameter/>
+		<Parameter depthLimit="(40 * ?arg1)" type="MaxRuleCapability" arg1="Diameter"/>
 		<Parameter truePosition="0.0508" type="MinCapability"/>
 		<Parameter surfaceFinish="0.75" type="MinCapability"/>
 	</edu.ohiou.mfgresearch.implanner.processes.GunDrilling>	
