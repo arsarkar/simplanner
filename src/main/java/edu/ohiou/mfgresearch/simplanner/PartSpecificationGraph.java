@@ -14,7 +14,6 @@ import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.junit.rules.RunRules;
 
 import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.lambda.Omni;
