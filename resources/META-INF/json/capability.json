@@ -1,0 +1,29 @@
+{
+ "capability":{
+    "type":"http://www.ohio.edu/ontologies/capability-implanner#trueposition9774",
+    "function":"http://www.ohio.edu/ontologies/capability-implanner#holespecification8023",
+    "limits":[
+      {
+        "isMaximum":true,
+        "bound":{
+          "type":"crisp",
+          "value":0.7
+        }
+      },
+      {
+        "isMinimum":false,
+        "bound":{
+          "type":"equation",
+          "equation":{
+            "type":"JESS",
+            "formula":"(((pow (?arg1 / ?arg2), 3) * 0.0254) + 0.0762)",
+            "arguments":[
+              "arg1=http://www.ohio.edu/ontologies/design#DepthSpecification",
+              "arg2=http://www.ohio.edu/ontologies/design#DiameterSpecification"
+            ]
+          }
+        }
+      }
+      ]
+ }
+}

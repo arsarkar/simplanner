@@ -7,19 +7,19 @@ import org.junit.Test;
 
 import edu.ohiou.mfgresearch.reader.ProcessCapabilityLoader;
 
-public class ProcessCapabilityLoad {
+public class ProcessCapabilityLoaderTest {
 
 	@Before
 	public void setUp() throws Exception {
+		
 	}
 
 	@Test
-	public void test() {
+	public void test1() {
 		ProcessCapabilityLoader loader = new ProcessCapabilityLoader("C:/Users/sarkara1/git/simplanner/resources/META-INF/implan/ProcessCapability-mm.xml");
 		System.out.println("Processes -->");
 		loader.readProcesses()
 			  .forEach(p->p.set(System.out::println));
 		
 	}
-
 }
