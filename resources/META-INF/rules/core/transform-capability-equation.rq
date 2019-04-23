@@ -1,0 +1,26 @@
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+
+CONSTRUCT{
+?ibe	cco:is_tokenized_by	?args.
+}
+WHERE{
+	SELECT ?ice ?ibe ?eq
+	(group_concat(?token) as ?args)
+	WHERE{
+	?ice		cco:inheres_in			?ibe;
+				rdf:type	cco:Equation;
+				cco:expects	?arg.
+	?ibe		cco:has_string_value ?eq.
+	?arg		rdf:type	?argType;
+				cco:is_tokenized_by	?token.
+				
+ 			
+	}
+	GROUP BY ?ice ?ibe ?eq
+	ORDER BY ?eq ASC(?token)
+}
+

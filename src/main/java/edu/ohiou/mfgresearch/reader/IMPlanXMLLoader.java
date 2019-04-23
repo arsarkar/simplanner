@@ -136,10 +136,10 @@ public class IMPlanXMLLoader implements PartFeatureLoader {
 							 		  		 .forEach(i->dimensions.put(v.item(i).getNodeName(), v.item(i).getNodeValue()));
 		}));
 		//change any value or key for repairing the mapping
-		if (dimensions.containsKey("radius")){
-			dimensions.put("diameter", String.valueOf(Double.parseDouble(dimensions.get("radius"))*2));
-			dimensions.remove("radius");
-		}
+//		if (dimensions.containsKey("radius")){
+//			dimensions.put("diameter", String.valueOf(Double.parseDouble(dimensions.get("radius"))*2));
+//			dimensions.remove("radius");
+//		}
 		if (dimensions.containsKey("bottomDist")){
 			dimensions.put("bottomDistance", dimensions.get("bottomDist"));
 			dimensions.remove("bottomDist");

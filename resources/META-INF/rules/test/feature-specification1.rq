@@ -1,0 +1,22 @@
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+
+SELECT
+?f ?ft ?fq ?dimType ?dim
+WHERE{
+ ?f   rdf:type              design:HoleSpecification;
+      cco:inheres_in        ?i1.
+ ?i1  rdf:type              design:LabelBearingEntity;
+      cco:has_text_value    "SIMPLE HOLE(4)".
+ ?fq  rdf:type              design:FeatureQualityMap;
+      design:describes_map_with ?f;
+	  design:describes_map_with ?d.
+ ?d	  rdf:type 			?dimType;	
+ 	  cco:inheres_in		?dm.
+ ?dm  rdf:type				design:MeasurementBearingEntity;
+ 	  cco:has_decimal_value 	?dim.	 	  
+}	
+
+

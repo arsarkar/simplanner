@@ -1,0 +1,29 @@
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
+
+SELECT
+?p ?func ?capaType ?refType ?max ?min
+WHERE{
+?p	rdf:type	?pType.
+?p cco:realizes ?func.
+?capa	rdf:type ?capaType;
+			cap:demarcates	?func;
+			cco:references	?ref.
+?ref		rdf:type	?refType.			
+?capa	cco:is_measured_by	?maxICE.
+?maxICE	cco:inheres_in			?maxIBE;
+			cco:is_measured_by	?maxOrd;
+			rdf:type	cco:MeasurementInformationContentEntity.
+?maxOrd	rdf:type	cco:MaximumOrdinalMeasurementInformation.
+?maxIBE	cco:has_decimal_value	?max.	
+?capa	cco:is_measured_by	?minICE.
+?minICE	cco:inheres_in			?minIBE;
+			cco:is_measured_by	?minOrd;
+			rdf:type	cco:MeasurementInformationContentEntity.
+?minOrd	rdf:type	cco:MinimumOrdinalMeasurementInformation.
+?minIBE	cco:has_decimal_value	?min.	
+}	
+
+

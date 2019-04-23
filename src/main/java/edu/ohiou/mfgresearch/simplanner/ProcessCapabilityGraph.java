@@ -111,11 +111,13 @@ public class ProcessCapabilityGraph {
 			   .set(b->b.addConstruct("?ie1", "cco:has_string_value", "?eq"))
 			   .set(b->b.addConstruct("cco:uses_equation_type", "rdf:type", "owl:ObjectProperty"))
 			   .set(b->b.addConstruct("?ie1", "cco:uses_equation_type", "cco:JessEquation"))
+			   .set(b->b.addConstruct("cco:expects", "rdf:type", "owl:ObjectProperty"))
+			   .set(b->b.addConstruct("cco:is_tokenized_by", "rdf:type", "owl:DatatypeProperty"))
 			   .set(b->IntStream.range(0, argCount)
 					   	   		.forEach(i->{
 					   	   			b.addConstruct("?a"+i, "rdf:type", "?at"+i);
 					   	   			b.addConstruct("?a"+i, "cco:is_tokenized_by", "?ag"+i);
-					   	   			b.addConstruct("?a"+i, "cco:is_expected_by", "?cmax");
+					   	   			b.addConstruct("?cmax", "cco:expects", "?a"+i);
 					   	   		}))
 			   .map(b->b.build())
 			   .map(PlanUtil::getConstructBasicPattern)
@@ -134,8 +136,6 @@ public class ProcessCapabilityGraph {
 				   .set(b->b.addConstruct("?c", "capa:demarcates", "?f"))
 				   .set(b->b.addConstruct("cco:is_measured_by", "rdf:type", "owl:ObjectProperty"))
 				   .set(b->b.addConstruct("?c", "cco:is_measured_by", "?cmax"))
-				   
-				   .set(b->b.addConstruct("?cmin", "rdf:type", "cco:MeasurementInformationContentEntity"))
 				   .set(b->b.addConstruct("?c", "cco:is_measured_by", "?cmin"))
 				   
 				   .set(b->b.addConstruct("cco:references", "rdf:type", "owl:ObjectProperty"))

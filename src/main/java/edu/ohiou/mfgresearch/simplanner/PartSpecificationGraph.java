@@ -37,40 +37,13 @@ public class PartSpecificationGraph {
 	}
 	
 	//file path
-	static String designXMLPath = "C:/Users/sarkara1/git/simplanner/resources/META-INF/implan/slider_with_slabs.xml";
-	static String designKBPath = "C:/Users/sarkara1/git/SIMPOM/product-model/aboxes/Slider.rdf";
+	static String designXMLPath = "C:/Users/sarkara1/git/simplanner/resources/META-INF/implan/SimplePart-v2-from-prt-with-tol.xml";
+	static String designKBPath = "C:/Users/sarkara1/git/SIMPOM/product-model/aboxes/simple1.rdf";
 	static String designTBoxPath = "C:/Users/sarkara1/git/SIMPOM/product-model/design_bfo.owl";
 	
 	PartFeatureLoader loader;	
 	Func<String, String> newIndiForType =c->IMPM.design_ins+c.toLowerCase()+IMPM.newHash(4);	
 	public OntModel m;
-	
-	/**
-	 * Assert all feature specifications for the part
-	 */
-	Suppl<Query> ruleFeature1 = ()->{
-		return
-		Uni.of(ConstructBuilder::new)
-		   .set(b->b.addPrefix("rdf", IMPM.rdf))
-		   .set(b->b.addPrefix("owl", IMPM.owl))
-		   .set(b->b.addPrefix("cco", IMPM.cco))
-		   .set(b->b.addPrefix("design", IMPM.design))
-		   .set(b->b.addPrefix("this", "edu.ohiou.mfgresearch.simplanner.PartSpecificationGraph"))
-		   .set(b->b.addWhere("?p", "rdf:type", "design:PartSpecification"))	
-		   .set(b->b.addWhere("?i1", "rdf:type", "design:LabelBearingEntity"))	
-		   .set(b->b.addWhere("?p", "cco:inheres_in", "?i1"))
-		   .set(b->b.addWhere("?i1", "cco:has_text_value", "?pn"))
-		   .set(b->b.addConstruct("?f", "rdf:type", "design:FeatureSpecification"))
-		   .set(b->b.addConstruct("?pf", "rdf:type", "design:PartFeatureMap"))
-		   .set(b->b.addConstruct("?i2", "rdf:type", "design:LabelBearingEntity"))
-		   .set(b->b.addConstruct("design:describes_map_with", "rdf:type", "owl:ObjectProperty"))
-		   .set(b->b.addConstruct("?i2", "cco:has_text_value", "?fn"))
-		   .set(b->b.addConstruct("?f", "cco:inheres_in", "?i2"))
-		   .set(b->b.addConstruct("?pf", "design:describes_map_with", "?f"))
-		   .set(b->b.addConstruct("?pf", "design:describes_map_with", "?p"))
-		   .map(b->b.build())
-		   .get();
-	};
 	
 	/**
 	 * service for ruleFeature1
@@ -81,63 +54,12 @@ public class PartSpecificationGraph {
 	}	
 	
 	/**
-	 * Assert all feature type
-	 */
-	Suppl<Query> ruleFeature2 = ()->{
-		return
-		Uni.of(ConstructBuilder::new)
-		   .set(b->b.addPrefix("rdf", IMPM.rdf))
-		   .set(b->b.addPrefix("owl", IMPM.owl))
-		   .set(b->b.addPrefix("cco", IMPM.cco))
-		   .set(b->b.addPrefix("design", IMPM.design))
-		   .set(b->b.addPrefix("this", "edu.ohiou.mfgresearch.simplanner.PartSpecificationGraph"))
-		   .set(b->b.addWhere("?f", "rdf:type", "design:FeatureSpecification"))	
-		   .set(b->b.addWhere("?i1", "rdf:type", "design:LabelBearingEntity"))
-		   .set(b->b.addWhere("?f", "cco:inheres_in", "?i1"))
-		   .set(b->b.addWhere("?i1", "cco:has_text_value", "?fn"))
-		   .set(b->b.addConstruct("?i2", "rdf:type", "design:TypeBearingEntity"))
-		   .set(b->b.addConstruct("cco:has_URI_value", "rdf:type", "owl:DatatypeProperty"))
-		   .set(b->b.addConstruct("?f", "cco:inheres_in", "?i2"))
-		   .set(b->b.addConstruct("?i2", "cco:has_URI_value", "?ft"))
-		   .map(b->b.build())
-		   .get();
-	};
-	
-	/**
 	 * service for ruleFeature2
 	 * @return
 	 */
 	public String getFeatureType(String featureName){
 		return loader.readFeatureType(featureName);		
 	}
-	
-	/**
-	 * Assert all feature dimensions
-	 */
-	Suppl<Query> ruleFeatureDimension1 = ()->{
-		return
-		Uni.of(ConstructBuilder::new)
-		   .set(b->b.addPrefix("rdf", IMPM.rdf))
-		   .set(b->b.addPrefix("owl", IMPM.owl))
-		   .set(b->b.addPrefix("cco", IMPM.cco))
-		   .set(b->b.addPrefix("design", IMPM.design))
-		   .set(b->b.addPrefix("this", "edu.ohiou.mfgresearch.simplanner.PartSpecificationGraph"))
-		   .set(b->b.addWhere("?f", "rdf:type", "design:FeatureSpecification"))	
-		   .set(b->b.addWhere("?i2", "rdf:type", "design:LabelBearingEntity"))
-		   .set(b->b.addWhere("?f", "cco:inheres_in", "?i2"))
-		   .set(b->b.addWhere("?i2", "cco:has_text_value", "?fn"))
-		   .set(b->b.addConstruct("?d", "rdf:type", "design:QualitySpecification"))
-		   .set(b->b.addConstruct("?fd", "rdf:type", "design:FeatureQualityMap"))
-		   .set(b->b.addConstruct("?i3", "rdf:type", "design:TypeBearingEntity"))
-		   .set(b->b.addConstruct("design:describes_map_with", "rdf:type", "owl:ObjectProperty"))
-		   .set(b->b.addConstruct("cco:has_URI_value", "rdf:type", "owl:DatatypeProperty"))
-		   .set(b->b.addConstruct("?i3", "cco:has_URI_value", "?dt"))
-		   .set(b->b.addConstruct("?d", "cco:inheres_in", "?i3"))
-		   .set(b->b.addConstruct("?fd", "design:describes_map_with", "?f"))
-		   .set(b->b.addConstruct("?fd", "design:describes_map_with", "?d"))
-		   .map(b->b.build())
-		   .get();
-	};
 	
 	/**
 	 * service for ruleFeatureDimension1
@@ -165,35 +87,6 @@ public class PartSpecificationGraph {
 			.toList()
 			.toArray(new String[0]);	
 	}
-	
-	/**
-	 * Assert dimension measures
-	 */
-	Suppl<Query> ruleFeatureDimension2 = ()->{
-		return
-		Uni.of(ConstructBuilder::new)
-		   .set(b->b.addPrefix("rdf", IMPM.rdf))
-		   .set(b->b.addPrefix("owl", IMPM.owl))
-		   .set(b->b.addPrefix("cco", IMPM.cco))
-		   .set(b->b.addPrefix("design", IMPM.design))
-		   .set(b->b.addPrefix("this", "edu.ohiou.mfgresearch.simplanner.PartSpecificationGraph"))
-		   .set(b->b.addWhere("?f", "rdf:type", "design:FeatureSpecification"))	
-		   .set(b->b.addWhere("?i1", "rdf:type", "design:LabelBearingEntity"))
-		   .set(b->b.addWhere("?d", "rdf:type", "design:QualitySpecification"))
-		   .set(b->b.addWhere("?fd", "rdf:type", "design:FeatureQualityMap"))
-		   .set(b->b.addWhere("?i2", "rdf:type", "design:TypeBearingEntity"))
-		   .set(b->b.addWhere("?f", "cco:inheres_in", "?i1"))
-		   .set(b->b.addWhere("?i1", "cco:has_text_value", "?fn"))
-		   .set(b->b.addWhere("?i2", "cco:has_URI_value", "?dt"))
-		   .set(b->b.addWhere("?d", "cco:inheres_in", "?i2"))
-		   .set(b->b.addWhere("?fd", "design:describes_map_with", "?f"))
-		   .set(b->b.addWhere("?fd", "design:describes_map_with", "?d"))		   
-		   .set(b->b.addConstruct("?i3", "rdf:type", "design:MeasurementBearingEntity"))
-		   .set(b->b.addConstruct("?i3", "cco:has_text_value", "?dm"))
-		   .set(b->b.addConstruct("?d", "cco:inheres_in", "?i3"))
-		   .map(b->b.build())
-		   .get();
-	};
 	
 	/**
 	 * service for ruleFeatureDimension2
@@ -224,34 +117,6 @@ public class PartSpecificationGraph {
 	}
 	
 	/**
-	 * Assert all feature tolerances
-	 */
-	Suppl<Query> ruleFeatureTolerance1 = ()->{
-		return
-		Uni.of(ConstructBuilder::new)
-		   .set(b->b.addPrefix("rdf", IMPM.rdf))
-		   .set(b->b.addPrefix("owl", IMPM.owl))
-		   .set(b->b.addPrefix("cco", IMPM.cco))
-		   .set(b->b.addPrefix("design", IMPM.design))
-		   .set(b->b.addPrefix("this", "edu.ohiou.mfgresearch.simplanner.PartSpecificationGraph"))
-		   .set(b->b.addWhere("?f", "rdf:type", "design:FeatureSpecification"))	
-		   .set(b->b.addWhere("?i2", "rdf:type", "design:LabelBearingEntity"))
-		   .set(b->b.addWhere("?f", "cco:inheres_in", "?i2"))
-		   .set(b->b.addWhere("?i2", "cco:has_text_value", "?fn"))
-		   .set(b->b.addConstruct("?t", "rdf:type", "design:ToleranceSpecification"))
-		   .set(b->b.addConstruct("?ft", "rdf:type", "design:FeatureQualityMap"))
-		   .set(b->b.addConstruct("?i3", "rdf:type", "design:TypeBearingEntity"))
-		   .set(b->b.addConstruct("design:describes_map_with", "rdf:type", "owl:ObjectProperty"))
-		   .set(b->b.addConstruct("cco:has_URI_value", "rdf:type", "owl:DatatypeProperty"))
-		   .set(b->b.addConstruct("?i3", "cco:has_URI_value", "?tt"))
-		   .set(b->b.addConstruct("?t", "cco:inheres_in", "?i3"))
-		   .set(b->b.addConstruct("?ft", "design:describes_map_with", "?f"))
-		   .set(b->b.addConstruct("?ft", "design:describes_map_with", "?t"))
-		   .map(b->b.build())
-		   .get();
-	};
-	
-	/**
 	 * service for ruleFeatureDimension1
 	 * dimensions are mapped to proper type
 	 * @return
@@ -262,36 +127,6 @@ public class PartSpecificationGraph {
 			.toList()
 			.toArray(new String[0]);	
 	}
-	
-	/**
-	 * Assert tolerance measures
-	 */
-	Suppl<Query> ruleFeatureTolerance2 = ()->{
-		return
-		Uni.of(ConstructBuilder::new)
-		   .set(b->b.addPrefix("rdf", IMPM.rdf))
-		   .set(b->b.addPrefix("owl", IMPM.owl))
-		   .set(b->b.addPrefix("cco", IMPM.cco))
-		   .set(b->b.addPrefix("design", IMPM.design))
-		   .set(b->b.addPrefix("this", "edu.ohiou.mfgresearch.simplanner.PartSpecificationGraph"))
-		   .set(b->b.addWhere("?f", "rdf:type", "design:FeatureSpecification"))	
-		   .set(b->b.addWhere("?i1", "rdf:type", "design:LabelBearingEntity"))
-		   .set(b->b.addWhere("?t", "rdf:type", "design:ToleranceSpecification"))
-		   .set(b->b.addWhere("?ft", "rdf:type", "design:FeatureQualityMap"))
-		   .set(b->b.addWhere("?i2", "rdf:type", "design:TypeBearingEntity"))
-		   .set(b->b.addWhere("?f", "cco:inheres_in", "?i1"))
-		   .set(b->b.addWhere("?i1", "cco:has_text_value", "?fn"))
-		   .set(b->b.addWhere("?i2", "cco:has_URI_value", "?tt"))
-		   .set(b->b.addWhere("?t", "cco:inheres_in", "?i2"))
-		   .set(b->b.addWhere("?ft", "design:describes_map_with", "?f"))
-		   .set(b->b.addWhere("?ft", "design:describes_map_with", "?t"))		   
-		   .set(b->b.addConstruct("?i3", "rdf:type", "design:MeasurementBearingEntity"))
-		   .set(b->b.addConstruct("cco:has_decimal_value", "rdf:type", "owl:DatatypeProperty"))
-		   .set(b->b.addConstruct("?i3", "cco:has_decimal_value", "?tm"))
-		   .set(b->b.addConstruct("?t", "cco:inheres_in", "?i3"))
-		   .map(b->b.build())
-		   .get();
-	};
 	
 	/**
 	 * service for ruleFeatureTolerance2
@@ -306,6 +141,28 @@ public class PartSpecificationGraph {
 			.map(t->Double.parseDouble(t))
 			.get();
 	}
+	
+	/**
+	 * service for calcuating diameter from radius
+	 * @param featureName
+	 * @param dimensionType
+	 * @return
+	 */
+	public Double calculateDiameter(String radius){
+		return Double.parseDouble(radius)*2.0;
+	}
+	
+	/**
+	 * service for calcuating depth of the hole feature
+	 * need stock measurement here
+	 * @param featureName
+	 * @param dimensionType
+	 * @return
+	 */
+	public Double calculateDepth(String dep){
+		return Double.parseDouble(dep);
+	}
+	
 	
 	private String partName = "";
 	
@@ -336,7 +193,7 @@ public class PartSpecificationGraph {
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(designTBoxPath))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan(ruleFeature1.get().serialize(), "?fn", "this:getFeatures()", this))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/read-feature-for-part.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -349,7 +206,7 @@ public class PartSpecificationGraph {
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(designTBoxPath))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan(ruleFeature2.get().serialize(), "?ft", "this:getFeatureType(?fn)", this))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/read-type-for-feature.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -362,7 +219,7 @@ public class PartSpecificationGraph {
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(designTBoxPath))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan(ruleFeatureDimension1.get().serialize(), "?dt", "this:getDimensions(?fn)", this))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/read-dimension-for-feature.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -375,7 +232,7 @@ public class PartSpecificationGraph {
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(designTBoxPath))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan(ruleFeatureDimension2.get().serialize(), "?dm", "this:getDimensionMeasure(?fn,?dt)", this))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/read-dimension-measures-for-feature.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -388,7 +245,7 @@ public class PartSpecificationGraph {
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(designTBoxPath))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan(ruleFeatureTolerance1.get().serialize(), "?tt", "this:getTolerance(?fn)", this))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/read-tolerance-for-feature.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -401,7 +258,64 @@ public class PartSpecificationGraph {
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(designTBoxPath))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan(ruleFeatureTolerance2.get().serialize(), "?tm", "this:getToleranceMeasure(?fn,?tt)", this))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/read-tolerance-measurement-for-feature.q", this))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getaBox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .get();
+	}
+	
+	public Model runRule_inferFeatureType(Model kb){
+		return
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addABox(kb))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-feature-type-hole.q", this))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-feature-type-slot.q", this))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-feature-type-pocket.q", this))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-feature-type-slab.q", this))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getaBox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .get();
+	}
+	
+	public Model runRule_inferMeasurementTypeDiameter(Model kb){
+		return
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addABox(kb))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-quality-type-diameter.q", this))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getaBox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .get();
+	}
+	
+	public Model runRule_inferMeasurementTypeDepth(Model kb){
+		return
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addABox(kb))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-quality-type-depth.q", this))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getaBox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .get();
+	}
+	
+	public Model runRule_inferToleranceType(Model kb){
+		return
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addABox(kb))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-tolerance-type-roundness.q", this))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-tolerance-type-surfacefinish.q", this))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-tolerance-type-dimension-tolerance.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -424,7 +338,7 @@ public class PartSpecificationGraph {
 		   .map(FileOutputStream::new)
 		   .set(s->kb.write(s, "RDF/XML"))
 		   .onFailure(e->e.printStackTrace(System.out))
-//		   .onSuccess(s->kb.write(System.out, lang))
+		   .onSuccess(s->kb.write(System.out, lang))
 		   ;		
 	}
 
@@ -463,7 +377,15 @@ public class PartSpecificationGraph {
 		System.out.println("================================================================================================================");
 		//load all dimensions of the features
 		Model m6 = partGraph.runRule_FeatureToleranceMeasure(m5);
+		System.out.println("================================================================================================================");
 		writePartGraph(m6, designKBPath, "NTRIPLE");
+		//infer type
+		Model m7 = ModelFactory.createDefaultModel().read(designKBPath);
+		Model m8 = partGraph.runRule_inferFeatureType(m7);
+		Model m9 = partGraph.runRule_inferMeasurementTypeDiameter(m8);
+		Model m10 = partGraph.runRule_inferMeasurementTypeDepth(m9);
+		Model m11 = partGraph.runRule_inferToleranceType(m10);
+		writePartGraph(m10, designKBPath, "NTRIPLE");
 	}	
 }
 

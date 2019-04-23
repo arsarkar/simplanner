@@ -1,0 +1,21 @@
+	PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+	
+	
+	SELECT ?ice ?ibe ?eq
+	WHERE{
+	?ice		cco:inheres_in			?ibe;
+				rdf:type	cco:Equation;
+				cco:expects	?arg.
+	?ibe		cco:has_string_value ?eq.
+	?arg		rdf:type	?argType;
+				cco:is_tokenized_by	?token.
+				
+	 ?d	rdf:type 			?argType;	
+			cco:inheres_in		?dm.		
+	 ?dm  rdf:type				design:MeasurementBearingEntity;
+			cco:has_decimal_value	?dim.	 			
+	}

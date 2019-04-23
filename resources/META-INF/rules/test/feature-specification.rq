@@ -1,0 +1,21 @@
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+
+SELECT
+?f ?ft ?r ?fq ?dimType ?rd ?dim
+WHERE{
+ ?f   rdf:type              design:FeatureSpecification;
+	   cco:represents		?r.
+ ?fq  rdf:type              design:FeatureQualityMap;
+      design:describes_map_with ?f;
+	  design:describes_map_with ?d.
+ ?d	rdf:type 			?dimType;	
+		cco:inheres_in		?dm;
+		cco:represents	?rd.
+ ?dm  rdf:type				design:MeasurementBearingEntity;
+ 	  cco:has_decimal_value 	?dim.	 	  
+}	
+
+
