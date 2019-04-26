@@ -19,39 +19,14 @@ import edu.ohiou.mfgresearch.lambda.Uni;
 
 public class IMPlanXMLLoader implements PartFeatureLoader {
 	
-	String propertyPath = "resources/META-INF/simpm.properties";
-	public Properties property;
 	final Logger logger;
-
-	{
-		  
+	{		  
 		//JAVA8 improved logging is followed from https://garygregory.wordpress.com/2015/09/16/a-gentle-introduction-to-the-log4j-api-and-lambda-basics/
 		logger = LoggerFactory.getLogger(this.getClass().getSimpleName());
-		
-		//create a new Properties
-		Uni.of(Properties::new)
-		  //load the property file
-		  .set(p->p.load(new FileInputStream(propertyPath)))
-		  .onFailure(e->e.printStackTrace())
-		  //on successful load store it in property variable
-		  .onSuccess(p->{
-			  property = p;
-		  });
 		
 	}
 	
 	private Match m;
-
-	/**
-	 * Default constructor reads part XML 
-	 * for key IMPLAN_XML from the property file at 
-	 * resources/META-INF/simpm.properties 
-	 */
-	public IMPlanXMLLoader() {
-		load(Uni.of(()->new FileInputStream(property.get("IMPLAN_XML").toString()))
-				.onFailure(e->e.printStackTrace())
-				.get());
-	}
 	
 	/**
 	 * Load the part XML from the given path

@@ -44,7 +44,7 @@ public class ProcessSelection {
 				Uni.of(FunQL::new)
 				   .set(q->q.addTBox("C:/Users/sarkara1/git/SIMPOM/product-model/design_bfo.owl"))
 				   .set(q->q.addABox("C:/Users/sarkara1/git/SIMPOM/product-model/aboxes/simple1.rdf"))
-				   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/feature-specification.rq"))
+				   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/feature-specification1.rq"))
 				   .map(q->q.execute())
 				   .map(q->q.getBelief())
 				   .map(b->b.getaBox())
@@ -192,16 +192,16 @@ public class ProcessSelection {
 	public void specificationCapabilitySelection() {		
 		
 		//get the feature specification which are not matched till now
-				Uni.of(FunQL::new)
-				   .set(q->q.addTBox("C:/Users/sarkara1/git/SIMPOM/resource/mfg-resource.owl"))
-				   .set(q->q.addABox("C:/Users/sarkara1/git/SIMPOM/product-model/aboxes/simple1.rdf"))
-				   .set(q->q.addABox("C:/Users/sarkara1/git/SIMPOM/resource/aboxes/process-capability-inch1.owl"))
-				   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/specification-capability-selection1.rq"))
-				   .map(q->q.execute())
-				   .map(q->q.getBelief())
-				   .map(b->b.getaBox())
-				   .onFailure(e->e.printStackTrace(System.out))
-				   ;		
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox("C:/Users/sarkara1/git/SIMPOM/resource/mfg-resource.owl"))
+		   .set(q->q.addABox("C:/Users/sarkara1/git/SIMPOM/product-model/aboxes/simple1.rdf"))
+		   .set(q->q.addABox("C:/Users/sarkara1/git/SIMPOM/resource/aboxes/process-capability-inch1.owl"))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/specification-capability-selection1.rq"))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getaBox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   ;		
 	}
 	
 	@Test
@@ -217,16 +217,20 @@ public class ProcessSelection {
 		System.out.println("---------------------------------------------------------------------------------------------------------------------");
 		System.out.println("---------------------------------------------------------------------------------------------------------------------");
 		
-//		hs.execute("SIMPLE HOLE(4)", "http://www.ohio.edu/ontologies/manufacturing-capability#TwistDrilling");
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox("C:/Users/sarkara1/git/SIMPOM/resource/mfg-resource.owl"))
-		   .set(q->q.addABox(hs.getLocalKB()))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/transform-capability-selection1.rq"))
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getaBox())
-		   .onFailure(e->e.printStackTrace(System.out))
-		   ;
+		hs.execute("SIMPLE HOLE(4)", "http://www.ohio.edu/ontologies/manufacturing-capability#TwistDrilling");
+		
+		
+		
+//		Uni.of(FunQL::new)
+//		   .set(q->q.addTBox("C:/Users/sarkara1/git/SIMPOM/resource/mfg-resource.owl"))
+//		   .set(q->q.addABox(hs.getLocalKB()))
+//		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/feature-specification.rq"))
+//		   .map(q->q.execute())
+//		   .map(q->q.getBelief())
+//		   .map(b->b.getaBox())
+//		   .onFailure(e->e.printStackTrace(System.out));
+		
+		
 		
 	}
 	

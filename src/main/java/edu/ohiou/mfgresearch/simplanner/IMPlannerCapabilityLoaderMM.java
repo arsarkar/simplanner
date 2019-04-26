@@ -1,5 +1,7 @@
 package edu.ohiou.mfgresearch.simplanner;
 
+import edu.ohiou.mfgresearch.reader.PropertyReader;
+
 public class IMPlannerCapabilityLoaderMM {
 	
 	static ProcessCapabilityGraph graph;
@@ -10,7 +12,8 @@ public class IMPlannerCapabilityLoaderMM {
 	}
 
 	public static void main(String[] args) {
-		graph = new ProcessCapabilityGraph("C:/Users/sarkara1/git/SIMPOM/resource/aboxes/process-capability-mm.owl");
+		PropertyReader prop = new PropertyReader();
+		graph = new ProcessCapabilityGraph(prop.getProperty("CAPABILITY_ABOX"));
 //		newKBPath = args[0];
 		//create hole starting function and capability
 		
@@ -131,6 +134,7 @@ public class IMPlannerCapabilityLoaderMM {
 			graph.postCapability("function="+holeFinishing2, "capability=SurfaceFinish", "min=0.1", "max=Infinity", "reference=http://www.ohio.edu/ontologies/design#SurfaceFinishSpecification");
 			
 			graph.writePartGraph("C:/Users/sarkara1/git/SIMPOM/resource/aboxes/process-capability-mm1.owl", "RDF/XML");
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

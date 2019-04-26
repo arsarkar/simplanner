@@ -16,14 +16,16 @@ CONSTRUCT{
 			cco:is_measured_by	?maxOrd;
 			rdf:type	cco:MeasurementInformationContentEntity.
 ?maxOrd	rdf:type	cco:MaximumOrdinalMeasurementInformation.
-?maxIBE	cco:has_decimal_value	?max.	
+?maxIBE	rdf:type	cco:InformationBearingEntity;
+			cco:has_decimal_value	?max.	
 
 ?minICE	cco:inheres_in			?minIBE;
 			cco:is_measured_by	?minOrd;
 			rdf:type	cco:Equation;
 			cco:expects	?arg.
 ?minOrd	rdf:type	cco:MinimumOrdinalMeasurementInformation.
-?minIBE	cco:has_string_value ?eq;
+?minIBE	rdf:type	cco:InformationBearingEntity;
+			cco:has_string_value ?eq;
 			cco:uses_equation_type	?eqType.
 ?arg		rdf:type	?argType;
 			cco:is_tokenized_by	?token.
@@ -42,14 +44,16 @@ WHERE{
 			cco:is_measured_by	?maxOrd;
 			rdf:type	cco:MeasurementInformationContentEntity.
 ?maxOrd	rdf:type	cco:MaximumOrdinalMeasurementInformation.
-?maxIBE	cco:has_decimal_value	?max.	
+?maxIBE	rdf:type	cco:InformationBearingEntity;
+			cco:has_decimal_value	?max.	
 
 ?minICE	cco:inheres_in			?minIBE;
 			cco:is_measured_by	?minOrd;
 			rdf:type	cco:Equation;
 			cco:expects	?arg.
 ?minOrd	rdf:type	cco:MinimumOrdinalMeasurementInformation.
-?minIBE	cco:has_string_value ?eq;
+?minIBE	rdf:type	cco:InformationBearingEntity;
+			cco:has_string_value ?eq;
 			cco:uses_equation_type	?eqType.
 ?arg		rdf:type	?argType;
 			cco:is_tokenized_by	?token.

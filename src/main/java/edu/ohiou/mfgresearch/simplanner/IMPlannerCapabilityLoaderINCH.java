@@ -1,5 +1,7 @@
 package edu.ohiou.mfgresearch.simplanner;
 
+import edu.ohiou.mfgresearch.reader.PropertyReader;
+
 public class IMPlannerCapabilityLoaderINCH {
 	
 	static ProcessCapabilityGraph graph;
@@ -10,7 +12,8 @@ public class IMPlannerCapabilityLoaderINCH {
 	}
 
 	public static void main(String[] args) {
-		graph = new ProcessCapabilityGraph("C:/Users/sarkara1/git/SIMPOM/resource/aboxes/process-capability.owl");
+		PropertyReader prop = new PropertyReader();		
+		graph = new ProcessCapabilityGraph(prop.getProperty("CAPABILITY_ABOX"));
 //		newKBPath = args[0];
 		//create hole starting function and capability
 		
@@ -137,8 +140,7 @@ public class IMPlannerCapabilityLoaderINCH {
 			//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 			//Milling
 			//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-			
-			
+					
 			
 			graph.writePartGraph("C:/Users/sarkara1/git/SIMPOM/resource/aboxes/process-capability-inch1.owl", "RDF/XML");
 		} catch (Exception e) {

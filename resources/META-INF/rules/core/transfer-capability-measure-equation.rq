@@ -17,7 +17,8 @@ CONSTRUCT{
 			rdf:type	cco:Equation;
 			cco:expects	?arg.
 ?maxOrd	rdf:type	cco:MaximumOrdinalMeasurementInformation.
-?maxIBE	cco:has_string_value ?eq;
+?maxIBE	rdf:type	cco:InformationBearingEntity;
+			cco:has_string_value ?eq;
 			cco:uses_equation_type	?eqType.
 ?arg		rdf:type	?argType;
 			cco:is_tokenized_by	?token.
@@ -26,7 +27,8 @@ CONSTRUCT{
 			cco:is_measured_by	?minOrd;
 			rdf:type	cco:MeasurementInformationContentEntity.
 ?minOrd	rdf:type	cco:MinimumOrdinalMeasurementInformation.
-?minIBE	cco:has_decimal_value	?min.	
+?minIBE	rdf:type	cco:InformationBearingEntity;
+			cco:has_decimal_value	?min.	
 }
 WHERE{
 ?p	rdf:type	?pType.
@@ -43,7 +45,8 @@ WHERE{
 			rdf:type	cco:Equation;
 			cco:expects	?arg.
 ?maxOrd	rdf:type	cco:MaximumOrdinalMeasurementInformation.
-?maxIBE	cco:has_string_value ?eq;
+?maxIBE	rdf:type	cco:InformationBearingEntity;
+			cco:has_string_value ?eq;
 			cco:uses_equation_type	?eqType.
 ?arg		rdf:type	?argType;
 			cco:is_tokenized_by	?token.
@@ -52,7 +55,8 @@ WHERE{
 			cco:is_measured_by	?minOrd;
 			rdf:type	cco:MeasurementInformationContentEntity.
 ?minOrd	rdf:type	cco:MinimumOrdinalMeasurementInformation.
-?minIBE	cco:has_decimal_value	?min.	
+?minIBE	rdf:type	cco:InformationBearingEntity;
+			cco:has_decimal_value	?min.	
 }	
 
 

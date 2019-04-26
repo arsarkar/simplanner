@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.ohiou.mfgresearch.reader.ProcessCapabilityLoader;
+import edu.ohiou.mfgresearch.reader.PropertyReader;
 
 public class ProcessCapabilityLoaderTest {
 
@@ -21,5 +22,20 @@ public class ProcessCapabilityLoaderTest {
 		loader.readProcesses()
 			  .forEach(p->p.set(System.out::println));
 		
+	}
+	
+	@Test
+	public void testProperty(){
+		PropertyReader prop = new PropertyReader();
+		System.out.println(prop.getIRIPath("http://www.ohio.edu/ontologies/capability-implanner#"));
+		System.out.println(prop.getProperty("DESIGN_XML"));
+	}
+	
+	@Test
+	public void testStringMatch(){
+		String s = "http://www.ohio.edu/ontologies/capability-implanner#";
+		String s1 = "http://www.ohio.edu/ontologies/";
+		boolean flag = s.contains(s1);
+		System.out.println(flag);
 	}
 }

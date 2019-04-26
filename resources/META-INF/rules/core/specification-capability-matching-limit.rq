@@ -1,3 +1,4 @@
+PREFIX  this: <edu.ohiou.mfgresearch.services.HoleProcessSelection>
 PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
 PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
@@ -5,37 +6,45 @@ PREFIX  design: <http://www.ohio.edu/ontologies/design#>
 PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
 
 CONSTRUCT{
-?q	rdf:type	cco:Quality.
-?q cco:concretizes	?d.
+ ?d1	  rdf:type 				cco:InformationQualityEntity;	
+		  cco:inheres_in		?dm1;
+		  cco:concretizes		?d.	
+ ?dm1  rdf:type				design:MeasurementBearingEntity;
+		  cco:has_decimal_value 	?dimRes.
 } 
 WHERE{
-
- ?f   rdf:type              design:FeatureSpecification.
+ ?f   rdf:type              design:FeatureSpecification;
+	  cco:represents		?r.
  ?fq  rdf:type              design:FeatureQualityMap;
       design:describes_map_with ?f;
 	  design:describes_map_with ?d.
  ?d	  rdf:type 			?dimType;	
- 	  cco:inheres_in		?dm.
+ 	  cco:inheres_in		?dm;
+	  cco:represents		?rd.	
  ?dm  rdf:type				design:MeasurementBearingEntity;
- 	  cco:has_decimal_value 	?dim.	 
-	  
-?p	rdf:type	cap:EndDrilling.
-?p cco:realizes ?func.
+ 	  cco:has_decimal_value 	?dim.
+
 ?capa	rdf:type ?capaType;
-			cap:demarcates	?func;
 			cco:references	?ref.
-?ref		rdf:type	?dimType.			
+?ref		rdf:type	?dimType.		
+	
 ?capa	cco:is_measured_by	?maxICE.
 ?maxICE	cco:inheres_in			?maxIBE;
 			cco:is_measured_by	?maxOrd;
 			rdf:type	cco:MeasurementInformationContentEntity.
 ?maxOrd	rdf:type	cco:MaximumOrdinalMeasurementInformation.
-?maxIBE	cco:has_decimal_value	?max.	
+?maxIBE	rdf:type				cco:InformationBearingEntity;
+			cco:has_decimal_value	?max.
+	
 ?capa	cco:is_measured_by	?minICE.
 ?minICE	cco:inheres_in			?minIBE;
 			cco:is_measured_by	?minOrd;
 			rdf:type	cco:MeasurementInformationContentEntity.
 ?minOrd	rdf:type	cco:MinimumOrdinalMeasurementInformation.
-?minIBE	cco:has_decimal_value	?min.		  
+?minIBE	rdf:type				cco:InformationBearingEntity;
+			cco:has_decimal_value	?min.	 	  
+}
+FUNCTION{
+	?dimRes <- this:matchSpecCapMeasure(?dim,?max,?min)
 }
 

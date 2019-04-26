@@ -11,7 +11,8 @@ CONSTRUCT
     ?fd design:describes_map_with ?f;
     	design:describes_map_with ?d1.
     ?i1 rdf:type design:MeasurementBearingEntity .	
-    ?d1 cco:inheres_in ?i1 .
+    ?d1 cco:inheres_in ?i1;
+	 	cco:represents ?r.
     ?i1 cco:has_decimal_value ?depth.
     cco:uses_measurement_unit rdf:type owl:ObjectProperty .
     cco:InchMeasurementUnit rdf:type cco:MeasurementUnitOfLength.
@@ -25,7 +26,8 @@ WHERE
 		  design:describes_map_with ?d.
 	 ?d	  rdf:type 				design:QualitySpecification;		  
 	 	  cco:inheres_in		?dt;
-	 	  cco:inheres_in		?dm.
+	 	  cco:inheres_in		?dm;
+	 	  cco:represents 		?r.
 	 ?dt  rdf:type				design:TypeBearingEntity;
 	 	  cco:has_URI_value 	"depth".	   	
 	 ?dm  rdf:type				design:MeasurementBearingEntity;

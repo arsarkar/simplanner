@@ -16,12 +16,14 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
 import edu.ohiou.mfgresearch.io.FunQL;
+import edu.ohiou.mfgresearch.labimp.basis.ViewObject;
 import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.lambda.functions.Func;
 import edu.ohiou.mfgresearch.lambda.functions.Suppl;
 import edu.ohiou.mfgresearch.reader.IMPlanXMLLoader;
 import edu.ohiou.mfgresearch.reader.PartFeatureLoader;
+import edu.ohiou.mfgresearch.reader.PropertyReader;
 
 /**
  * Execute part specification loading rules
@@ -31,15 +33,12 @@ import edu.ohiou.mfgresearch.reader.PartFeatureLoader;
  */
 public class PartSpecificationGraph {
 
-	static Logger log;
+	Logger log;
+	PropertyReader prop;
 	{
-		log = LogManager.getLogManager().getLogger(PartSpecificationGraph.class.getSimpleName());
+		log = LogManager.getLogManager().getLogger(PartSpecificationGraph.class.getSimpleName());		
+		prop = new PropertyReader();
 	}
-	
-	//file path
-	static String designXMLPath = "C:/Users/sarkara1/git/simplanner/resources/META-INF/implan/SimplePart-v2-from-prt-with-tol.xml";
-	static String designKBPath = "C:/Users/sarkara1/git/SIMPOM/product-model/aboxes/simple1.rdf";
-	static String designTBoxPath = "C:/Users/sarkara1/git/SIMPOM/product-model/design_bfo.owl";
 	
 	PartFeatureLoader loader;	
 	Func<String, String> newIndiForType =c->IMPM.design_ins+c.toLowerCase()+IMPM.newHash(4);	
@@ -164,14 +163,14 @@ public class PartSpecificationGraph {
 	}
 	
 	
-	private String partName = "";
+	private String partLabel = "";
 	
 	public PartSpecificationGraph(String partName, String path) {
 
 //		log.info("Starting program for building design specification KB...");
 		//create the IMPlanloader
 		loader = new IMPlanXMLLoader(path);
-		
+		this.partLabel = partName.length()>0?partName:loader.readPartName();
 		//create specification A-Box 
 		m = Uni.of(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM))
 			   .set(o->o.setNsPrefix("", IMPM.design_ins)) //default namespace
@@ -184,16 +183,15 @@ public class PartSpecificationGraph {
 							 .map(newIndiForType)
 							 .get();
 		Individual partIndi = m.createIndividual(partNameURI, m.createClass(IMPM.design+"PartSpecification"));
-		partIndi.addProperty(m.createObjectProperty(IMPM.cco+"inheres_in"), createIBE(partName));		
-		this.partName = partName;
+		partIndi.addProperty(m.createObjectProperty(IMPM.cco+"inheres_in"), createIBE(partLabel));
 	}
 	
 	public Model runRule_FeatureSpecification(Model kb){
 		return
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/read-feature-for-part.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/read-feature-for-part.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -204,9 +202,9 @@ public class PartSpecificationGraph {
 	public Model runRule_FeatureType(Model kb){
 		return
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/read-type-for-feature.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/read-type-for-feature.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -217,9 +215,9 @@ public class PartSpecificationGraph {
 	public Model runRule_FeatureDimension(Model kb){
 		return
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/read-dimension-for-feature.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/read-dimension-for-feature.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -230,9 +228,9 @@ public class PartSpecificationGraph {
 	public Model runRule_FeatureDimensionMeasurement(Model kb){
 		return
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/read-dimension-measures-for-feature.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/read-dimension-measures-for-feature.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -243,9 +241,9 @@ public class PartSpecificationGraph {
 	public Model runRule_FeatureTolerance(Model kb){
 		return
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/read-tolerance-for-feature.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/read-tolerance-for-feature.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -256,9 +254,9 @@ public class PartSpecificationGraph {
 	public Model runRule_FeatureToleranceMeasure(Model kb){
 		return
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/read-tolerance-measurement-for-feature.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/read-tolerance-measurement-for-feature.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -269,12 +267,12 @@ public class PartSpecificationGraph {
 	public Model runRule_inferFeatureType(Model kb){
 		return
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-feature-type-hole.q", this))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-feature-type-slot.q", this))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-feature-type-pocket.q", this))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-feature-type-slab.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-feature-type-hole.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-feature-type-slot.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-feature-type-pocket.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-feature-type-slab.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -285,9 +283,9 @@ public class PartSpecificationGraph {
 	public Model runRule_inferMeasurementTypeDiameter(Model kb){
 		return
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-quality-type-diameter.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-quality-type-diameter.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -298,9 +296,9 @@ public class PartSpecificationGraph {
 	public Model runRule_inferMeasurementTypeDepth(Model kb){
 		return
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-quality-type-depth.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-quality-type-depth.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -311,11 +309,11 @@ public class PartSpecificationGraph {
 	public Model runRule_inferToleranceType(Model kb){
 		return
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(designTBoxPath))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-tolerance-type-roundness.q", this))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-tolerance-type-surfacefinish.q", this))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-tolerance-type-dimension-tolerance.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-tolerance-type-roundness.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-tolerance-type-surfacefinish.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-tolerance-type-dimension-tolerance.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -344,15 +342,12 @@ public class PartSpecificationGraph {
 
 	public static void main(String[] args) {
 		
-		if(args.length>0){
-			designXMLPath = args[0];
-			if(args.length>1){
-				designKBPath = args[1];
-			}
-		}
+		PropertyReader prop = new PropertyReader();
 		
 		//create default knowledge with the part name
-		PartSpecificationGraph partGraph = new PartSpecificationGraph("SimplePart", designXMLPath);
+		PartSpecificationGraph partGraph = new PartSpecificationGraph("", prop.getProperty("DESIGN_XML"));
+		String designKBPath = prop.getProperty("DESIGN_PART_XML");
+		
 //		writePartGraph(partGraph.m, designKBPath, "NTRIPLE");
 		System.out.println("================================================================================================================");
 		//load all features for the part
@@ -360,7 +355,7 @@ public class PartSpecificationGraph {
 //		writePartGraph(m1, designKBPath, "NTRIPLE");
 		System.out.println("================================================================================================================");
 		//load all features for the part
-		Model m2 = partGraph.runRule_FeatureType(partGraph.m);
+		Model m2 = partGraph.runRule_FeatureType(m1);
 //		writePartGraph(m2, designKBPath, "NTRIPLE");
 		System.out.println("================================================================================================================");
 		//load all dimensions of the features
@@ -385,7 +380,7 @@ public class PartSpecificationGraph {
 		Model m9 = partGraph.runRule_inferMeasurementTypeDiameter(m8);
 		Model m10 = partGraph.runRule_inferMeasurementTypeDepth(m9);
 		Model m11 = partGraph.runRule_inferToleranceType(m10);
-		writePartGraph(m10, designKBPath, "NTRIPLE");
+		writePartGraph(m11, designKBPath, "NTRIPLE");
 	}	
 }
 

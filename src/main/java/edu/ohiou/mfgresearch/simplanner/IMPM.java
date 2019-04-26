@@ -39,6 +39,7 @@ public final class IMPM {
 	public static final String impml = makeDefaultIRI.apply("IMPML#");
 	public static final String design = makeDefaultIRI.apply("design#");
 	public static final String capability = makeDefaultIRI.apply("manufacturing-capability#");
+	public static final String capability_IMPM = makeDefaultIRI.apply("capability-implanner#");
 	public static String design_ins = makeABoxIRI.apply("design"+createSessionPath()+fslash+createSessionHash()+"#");
 	public static String process_ins = makeABoxIRI.apply("process"+createSessionPath()+fslash+createSessionHash()+"#");
 	

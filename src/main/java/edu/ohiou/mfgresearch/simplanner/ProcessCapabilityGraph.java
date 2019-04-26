@@ -38,19 +38,21 @@ import edu.ohiou.mfgresearch.lambda.functions.Func;
 import edu.ohiou.mfgresearch.plan.IPlanner;
 import edu.ohiou.mfgresearch.plan.PlanUtil;
 import edu.ohiou.mfgresearch.reader.ProcessCapabilityLoader;
+import edu.ohiou.mfgresearch.reader.PropertyReader;
 
 public class ProcessCapabilityGraph {
 
-	static Logger log;
+	Logger log;
+	PropertyReader prop;
 	{
-		log = LogManager.getLogManager().getLogger(PartSpecificationGraph.class.getSimpleName());
+		log = LogManager.getLogManager().getLogger(PartSpecificationGraph.class.getSimpleName());		
+		prop = new PropertyReader();
 	}
 	
 	//file path
-	static String capabilityOnto = "http://www.ohio.edu/ontologies/manufacturing-capability";
-	static String capabilityOntoPath = "C:/Users/sarkara1/git/SIMPOM/resource/mfg-resource.owl";
-	static String capabilityKBURI = "http://www.ohio.edu/ontologies/capability-implanner";
-	static String capabilityKBPath = "C:/Users/sarkara1/git/SIMPOM/resource/aboxes/process-capability-mm.owl";
+	String capabilityOntoPath = prop.getIRIPath(IMPM.capability);	
+	String capabilityKBURI = "http://www.ohio.edu/ontologies/capability-implanner";
+	String capabilityKBPath = prop.getProperty("CAPABILITY_ABOX");
 	Model capabilityKB;
 	
 	ProcessCapabilityLoader loader;
@@ -178,7 +180,7 @@ public class ProcessCapabilityGraph {
 			.selectMap(s->s.equalsIgnoreCase("DeepSlotting"), s->"capa:DeepSlotting")
 			.selectMap(s->s.equalsIgnoreCase("OpenSlotting"), s->"capa:OpenSlotting")
 			.selectMap(s->s.equalsIgnoreCase("ShallowSlotting"), s->"capa:ShallowSlotting")
-			.selectMap(s->s.contains("capa:"), s->s.replace("capa:", capabilityOnto+"#"))
+			.selectMap(s->s.contains("capa:"), s->s.replace("capa:", IMPM.capability))
 			.selectMap(s->!s.contains("http"), s->IMPM.capability+s)
 			.get()
 			;
@@ -195,7 +197,7 @@ public class ProcessCapabilityGraph {
 			.selectMap(s->s.equalsIgnoreCase("DepthLimit"), s->"capa:DepthLimitCapability")
 			.selectMap(s->s.equalsIgnoreCase("TruePosition"), s->"capa:TruePositionCapability")
 			.selectMap(s->s.equalsIgnoreCase("SurfaceFinish"), s->"capa:SurfaceFinishCapability")
-			.selectMap(s->s.contains("capa:"), s->s.replace("capa:", capabilityOnto+"#"))
+			.selectMap(s->s.contains("capa:"), s->s.replace("capa:", IMPM.capability))
 			.selectMap(s->!s.contains("http"), s->IMPM.capability+s)
 			.get()
 			;
@@ -203,12 +205,8 @@ public class ProcessCapabilityGraph {
 	
 	public ProcessCapabilityGraph(String uri) {
 		//load the capability KB
-		Uni.of(uri)
-		   .map(u->ModelFactory.createDefaultModel())
-		   .map(m->m.read(uri, "RDF/XML"))
-		   .set(m->capabilityKB=m)
-		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->System.out.println("Capability KB loaded..."));		
+		capabilityKB = ModelFactory.createDefaultModel();
+		if(uri.length()>0) capabilityKB.read(uri);
 	}
 
 	public Query getConstructQuery(String capability){
@@ -300,7 +298,7 @@ public class ProcessCapabilityGraph {
 		}else{
 			capabilityNode = NodeFactory.createURI(newIndiForType.apply(capability.substring(capability.lastIndexOf("/"), capability.length()-1)));
 		}		
-		if(!isValidCapability(capability)) throw new Exception("Capability " + capability + " is not present in " + capabilityOnto);
+		if(!isValidCapability(capability)) throw new Exception("Capability " + capability + " is not present in " + IMPM.capability);
 		else {
 			BasicPattern pat = createNonSelfRefRangeCapability();
 			Function<Table, BasicPattern> expander = IPlanner.createPatternExpander(pat);
@@ -339,7 +337,7 @@ public class ProcessCapabilityGraph {
 		//check function
 		String funcURI = "";
 		if(!function.contains("http")) funcURI = Uni.of(function).map(mapFunctionType).get();
-		if(!isValidFunction(funcURI)) throw new Exception("Function " + funcURI + " is not present in " + capabilityOnto); 
+		if(!isValidFunction(funcURI)) throw new Exception("Function " + funcURI + " is not present in " + IMPM.capability); 
 		
 		Node fNode = NodeFactory.createURI(newIndiForType.apply(function));
 		Resource processNode = capabilityKB.getResource(processURI);
@@ -460,7 +458,7 @@ public class ProcessCapabilityGraph {
 		
 		Map<String, String> params = new HashMap<String, String>();
 		Node maxICE = null, minICE = null;		
-		ProcessCapabilityGraph capabilityGraph = new ProcessCapabilityGraph(capabilityKBPath);
+		ProcessCapabilityGraph capabilityGraph = new ProcessCapabilityGraph("");
 		try {
 			Map<String, String> argTypes = new HashMap<String, String>();
 			argTypes.put("?arg1", "http://www.ohio.edu/ontologies/design#DepthSpecification");

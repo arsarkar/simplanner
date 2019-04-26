@@ -5,15 +5,17 @@ PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
 PREFIX  design: <http://www.ohio.edu/ontologies/design#>
 	
 	
-SELECT ?ice ?ibe ?eq ?token ?d ?dm
-WHERE{
+	SELECT ?ice ?ibe ?eq
+	(group_concat(?dim) as ?args)
+	WHERE{
 	?ice		cco:inheres_in			?ibe;
 				rdf:type	cco:Equation;
 				cco:expects	?arg.
 	?ibe		cco:has_string_value ?eq.
 	?arg		rdf:type	?argType;
+				cco:inheres_in	?dm;
 				cco:is_tokenized_by	?token.
-				
- 	?d	rdf:type 			?argType;	
-		cco:inheres_in		?dm.		
-}
+	?dm		cco:has_decimal_value	?dim.
+	}
+	GROUP BY ?ice ?ibe ?eq
+	ORDER BY ?eq ASC(?token)

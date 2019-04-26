@@ -113,5 +113,10 @@
 			<artifactId>funql</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>edu.ohiou.mfgresearch</groupId>
+			<artifactId>labimp.basis</artifactId>
+			<version>1.0</version>
+		</dependency>
   </dependencies>
 </project>
