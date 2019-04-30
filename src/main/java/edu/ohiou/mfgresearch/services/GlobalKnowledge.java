@@ -22,6 +22,10 @@ public class GlobalKnowledge {
 		return KB.specification;
 	}
 
+	public static void addModel(Model m){
+		KB.specification.add(m);
+	}
+	
 	public static void loadSpecification(String url){
 		load();
 		KB.specification = ModelFactory.createDefaultModel().read(url);
@@ -32,4 +36,6 @@ public class GlobalKnowledge {
 			KB = new GlobalKnowledge();
 		}
 	}
+	
+	
 }

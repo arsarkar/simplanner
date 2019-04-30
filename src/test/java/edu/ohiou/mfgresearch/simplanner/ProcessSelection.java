@@ -17,7 +17,7 @@ import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.plan.IPlanner;
 import edu.ohiou.mfgresearch.services.GlobalKnowledge;
-import edu.ohiou.mfgresearch.services.HoleProcessSelection;
+import edu.ohiou.mfgresearch.services.FeatureProcessMatching;
 
 public class ProcessSelection {
 	
@@ -92,7 +92,7 @@ public class ProcessSelection {
 		//get the feature specification which are not matched till now
 				Uni.of(FunQL::new)
 				   .set(q->q.addTBox("C:/Users/sarkara1/git/SIMPOM/resource/mfg-resource.owl"))
-				   .set(q->q.addABox("C:/Users/sarkara1/git/SIMPOM/resource/aboxes/process-capability-inch1.owl"))
+				   .set(q->q.addABox("C:/Users/sarkara1/git/SIMPOM/resource/aboxes/process-capability-mm1.owl"))
 				   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/capability-measure-selection1.rq"))
 				   .map(q->q.execute())
 				   .map(q->q.getBelief())
@@ -209,7 +209,7 @@ public class ProcessSelection {
 		
 		GlobalKnowledge.loadSpecification("C:/Users/sarkara1/git/SIMPOM/product-model/aboxes/simple1.rdf");
 		
-		HoleProcessSelection hs = new HoleProcessSelection(new String[]{});
+		FeatureProcessMatching hs = new FeatureProcessMatching(new String[]{});
 		
 		hs.loadSpecifications("SIMPLE HOLE(4)");
 		hs.loadCapability("http://www.ohio.edu/ontologies/manufacturing-capability#TwistDrilling");
@@ -217,20 +217,26 @@ public class ProcessSelection {
 		System.out.println("---------------------------------------------------------------------------------------------------------------------");
 		System.out.println("---------------------------------------------------------------------------------------------------------------------");
 		
-		hs.execute("SIMPLE HOLE(4)", "http://www.ohio.edu/ontologies/manufacturing-capability#TwistDrilling");
+		hs.execute("SIMPLE HOLE(4)", "http://www.ohio.edu/ontologies/manufacturing-capability#TwistDrilling");				
+		
+//		try {
+//			hs.getLocalKB().write(new FileOutputStream(new File("C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/plan1.rdf")), "RDF/XML");
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 		
 		
 //		Uni.of(FunQL::new)
 //		   .set(q->q.addTBox("C:/Users/sarkara1/git/SIMPOM/resource/mfg-resource.owl"))
+////		   .set(q->q.addABox(ModelFactory.createDefaultModel().read("C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/plan1.rdf")))
 //		   .set(q->q.addABox(hs.getLocalKB()))
 //		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/feature-specification.rq"))
 //		   .map(q->q.execute())
 //		   .map(q->q.getBelief())
 //		   .map(b->b.getaBox())
-//		   .onFailure(e->e.printStackTrace(System.out));
-		
-		
+//		   .onFailure(e->e.printStackTrace(System.out));		
 		
 	}
 	

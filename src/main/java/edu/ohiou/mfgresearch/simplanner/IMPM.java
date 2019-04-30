@@ -18,7 +18,7 @@ public final class IMPM {
 	public static final String common_core = "http://www.ontologyrepository.com";
 	
 	//utilities
-	public static String data = "/resource/data/";
+	public static String data = "resources/META-INF/data/";
 	private static String _sessionPath="";
 	private static String _sessionHash = "";
 	public final static String hash = "#";
@@ -42,6 +42,7 @@ public final class IMPM {
 	public static final String capability_IMPM = makeDefaultIRI.apply("capability-implanner#");
 	public static String design_ins = makeABoxIRI.apply("design"+createSessionPath()+fslash+createSessionHash()+"#");
 	public static String process_ins = makeABoxIRI.apply("process"+createSessionPath()+fslash+createSessionHash()+"#");
+	public static String plan_ins = makeABoxIRI.apply("plan"+createSessionPath()+fslash+createSessionHash()+"#");
 	
 	
 	//OWL classes
@@ -104,13 +105,12 @@ public final class IMPM {
 	public static String createSessionPath(){
 		if(!_sessionPath.isEmpty()) return _sessionPath;
 		LocalDateTime dt = LocalDateTime.now();
-		_sessionPath = 			fslash 
-								+ dt.getYear()
+		_sessionPath = 			dt.getYear()
 								+fslash
 								+dt.getMonthValue()
 								+fslash
 								+dt.getDayOfMonth()
-								;
+								+fslash;
 		return _sessionPath;
 	}
 	
@@ -118,9 +118,14 @@ public final class IMPM {
 	 * Generate a session folder under data folder
 	 * in path data/<year>/<month>/<day>
 	 */
-	public static void createSessionFolder(){
-//		createSessionPath();
-		createFolder(data+_sessionPath);
+	public static String createSessionFolder(){
+		String path = data+createSessionPath();
+		createFolder(path);
+		return path;
+	}
+	
+	public static void clearSessionPath(){
+		if(!_sessionPath.isEmpty()) _sessionPath="";
 	}
 	
 	/**

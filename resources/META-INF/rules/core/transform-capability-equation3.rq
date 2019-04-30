@@ -1,0 +1,23 @@
+PREFIX  this: <edu.ohiou.mfgresearch.services.FeatureProcessMatching>
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+
+CONSTRUCT{
+	?ice	rdf:type	cco:MeasurementInformationContentEntity.
+	?ice	cco:inheres_in	?ibe1.
+	?ibe1	rdf:type	cco:InformationBearingEntity;
+			cco:has_decimal_value ?res.
+}
+WHERE{
+	?ice		cco:inheres_in			?ibe;
+				rdf:type	cco:Equation;
+				cco:is_tokenized_by	?args.
+	?ibe		rdf:type	cco:InformationBearingEntity;
+				cco:has_string_value ?eq.
+}
+FUNCTION{
+	?res <- this:calculateEquationCapability(?eq,?args)
+}

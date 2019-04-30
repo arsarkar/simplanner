@@ -1,4 +1,3 @@
-PREFIX  this: <edu.ohiou.mfgresearch.services.HoleProcessSelection>
 PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
 PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
@@ -6,11 +5,8 @@ PREFIX  design: <http://www.ohio.edu/ontologies/design#>
 PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
 
 CONSTRUCT{
- ?d1	  rdf:type 				cco:InformationQualityEntity;	
-		  cco:inheres_in		?dm1;
+ ?d1	  rdf:type 				cco:InformationQualityEntity;
 		  cco:concretizes		?d.	
- ?dm1  rdf:type				design:MeasurementBearingEntity;
-		  cco:has_decimal_value 	?dimRes.
 } 
 WHERE{
  ?f   rdf:type              design:FeatureSpecification;
@@ -42,9 +38,7 @@ WHERE{
 			rdf:type	cco:MeasurementInformationContentEntity.
 ?minOrd	rdf:type	cco:MinimumOrdinalMeasurementInformation.
 ?minIBE	rdf:type				cco:InformationBearingEntity;
-			cco:has_decimal_value	?min.	 	  
-}
-FUNCTION{
-	?dimRes <- this:matchSpecCapMeasure(?dim,?max,?min)
+			cco:has_decimal_value	?min.	 
+FILTER (?dim >= ?min && ?dim <= ?max) 
 }
 

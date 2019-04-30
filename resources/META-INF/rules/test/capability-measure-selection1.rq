@@ -4,9 +4,9 @@ PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
 PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
 
 SELECT
-?p ?func ?capaType ?refType ?max ?min
+?p ?func ?capa ?capaType ?ref ?refType ?maxICE ?maxOrd ?maxIBE  ?max ?minICE ?minOrd ?minIBE ?min
 WHERE{
-?p	rdf:type	?pType.
+?p	rdf:type	cap:TwistDrilling.
 ?p cco:realizes ?func.
 ?capa	rdf:type ?capaType;
 			cap:demarcates	?func;

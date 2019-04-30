@@ -3,7 +3,13 @@ package edu.ohiou.mfgresearch.services;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.SimpleBindings;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -15,20 +21,39 @@ import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
 import edu.ohiou.mfgresearch.simplanner.IMPM;
 import edu.ohiou.mfgresearch.simplanner.ProcessPlanningKnowledge;
+import jess.Rete;
+import jess.Value;
 
-public class HoleProcessSelection {
+public class FeatureProcessMatching {
 	
 	Model localKB;
+	String localPath;
 	PropertyReader prop = new PropertyReader();
 	
 	public Model getLocalKB() {
 		return localKB;
 	}
 
-	public HoleProcessSelection(String[] localIRI) {
-		if(localKB == null) localKB = ModelFactory.createDefaultModel();
+	public void reloadKB(String fileName){
+		Uni.of(localPath+fileName)
+		   .map(File::new)
+		   .map(FileOutputStream::new)
+		   .set(s->localKB.write(s, "RDF/XML"))
+		   .set(s->s.flush())
+		   .set(s->s.close());
+		localKB = ModelFactory.createDefaultModel().read(localPath+fileName);	
+	}
+	
+	public FeatureProcessMatching(String[] localIRI) {
+		if(localKB == null) {
+			localKB = ModelFactory.createDefaultModel();
+			localKB.setNsPrefix("", IMPM.plan_ins);
+		}
+		if(localIRI.length>0) localIRI = new String[]{localPath};
 		Omni.of(localIRI)
 			.map(path->localKB.add(ModelFactory.createDefaultModel().read(path)));
+		IMPM.clearSessionPath();
+		localPath = IMPM.createSessionFolder();
 	}
 	
 	/**
@@ -99,7 +124,9 @@ public class HoleProcessSelection {
 	 * @param featureIRI
 	 */
 	public void ask_to_match(String featureName, String processType){
-				
+		
+		
+		
 	} 
 	
 	
@@ -132,24 +159,47 @@ public class HoleProcessSelection {
 		   .onFailure(e->e.printStackTrace(System.out))
 		   .onSuccess(m->localKB.add(m));
 		
-		//third rule: specification-capability matching for max and min both measurement type
+		//second rule: assign concatenated argument sepcifications to equations ICE with is_tokenized_by
+		//localKB.write(System.out, "NTRIPLE");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
-		   .set(q->q.addPlan("resources/META-INF/rules/core/specification-capability-matching-limit.rq", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/transform-capability-equation3.rq", this))
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->localKB.add(m));		
+		   .onSuccess(m->localKB.add(m));
 		
-		//fourth rule: specification-capability matching for max equation and min measurement type
+		reloadKB("before-match1.rdf");
 		
+		//third rule: specification-capability matching for max and min both measurement type
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addABox(localKB)) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/specification-capability-matching-limit.rq"))
+		   .set(q->q.setLocal=true)
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .set(m->localKB.add(m))
+		   .set(m->GlobalKnowledge.addModel(m));
 		
-		//fifth rule:  specification-capability matching for max measurement and min equation type
-		
-		
+		//create an intermediate feature 
+		//third rule: specification-capability matching for max and min both measurement type
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addABox(localKB)) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/create-output-feature.rq"))
+		   .set(q->q.setLocal=true)
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .set(m->localKB.add(m))
+		   .set(m->GlobalKnowledge.addModel(m));
 	}
 	
 	public Double matchSpecCapMeasure(Double dim, Double max, Double min) throws Exception{
@@ -157,6 +207,27 @@ public class HoleProcessSelection {
 			return dim;
 		}
 		throw new Exception("Not matched");
+	}
+	
+	public Double calculateEquationCapability(String eq, String args) throws Exception{		
+		try {
+			List<Double> arguments =
+			Omni.of(args.split(" "))
+				.map(a->Double.parseDouble(a))
+				.toList();
+			
+			for(int i=0; i<arguments.size(); i++){
+				int j = i + 1;
+				if(eq.contains("?arg"+j)){
+					eq = eq.replace("?arg"+j, String.valueOf(arguments.get(i)));
+				}
+			}
+			Rete r = new Rete();
+			Value v = r.eval(eq);
+			return v.floatValue(r.getGlobalContext());
+		} catch (Exception e) {
+			throw e;
+		}
 	}
 
 	public static void main(String[] args) {
@@ -166,7 +237,6 @@ public class HoleProcessSelection {
 			pp.write(new FileOutputStream(new File("C:/Users/sarkara1/git/simplanner/resources/META-INF/kb/pp1.owl")), "RDF/XML");
 			pp.write(System.out, "NTRIPLE");
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

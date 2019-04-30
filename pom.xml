@@ -14,6 +14,16 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   
+  
+  	<repositories>
+		<repository>
+			<id>MavenRepoTest</id>
+			<name>MavenRepoTest</name>
+			<url>file://C:\Users\sarkara1\git\MavenRepoTest\</url>
+<!-- 			<url>file://C:\Users\rg492318\Documents\GitHub\MavenRepoTest\</url> -->
+		</repository>
+	</repositories>
+	
   <build>
 		<resources>
 			<resource>
@@ -117,6 +127,11 @@
 			<groupId>edu.ohiou.mfgresearch</groupId>
 			<artifactId>labimp.basis</artifactId>
 			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>gov.sandia</groupId>
+			<artifactId>jess</artifactId>
+			<version>1.4.0</version>
 		</dependency>
   </dependencies>
 </project>

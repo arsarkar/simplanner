@@ -1,0 +1,20 @@
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+PREFIX  plan: <http://www.ohio.edu/ontologies/plan#>
+
+SELECT ?dim ?max ?min
+WHERE{
+ ?dm  rdf:type				design:MeasurementBearingEntity;
+ 	  cco:has_decimal_value 	?dim;
+    	plan:hasMax		?maxIBE;
+		plan:hasMin		?minIBE.
+ ?maxIBE	rdf:type				plan:MaxMeasurement;
+			cco:has_decimal_value	?max.
+ ?minIBE		rdf:type				plan:MinMeasurement;
+			cco:has_decimal_value	?min.	 
+			
+}	
+
+

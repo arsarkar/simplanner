@@ -1,0 +1,17 @@
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
+
+CONSTRUCT{
+ ?f1	  rdf:type 			design:Hole.
+ ?d1	  cco:inheres_in	?f1.
+} 
+WHERE{
+ ?f		rdf:type	design:FeatureSpecification.
+ ?fq  	rdf:type	design:FeatureQualityMap;
+      design:describes_map_with ?f;
+	  design:describes_map_with ?d.
+ ?d1	cco:concretizes		?d.	
+}
