@@ -133,7 +133,7 @@ public class IMPlannerCapabilityLoaderMM {
 			graph.postCapability("function="+holeFinishing2, "capability=NegativeTolerance", "min=0.00254", "max=99999999999.99", "reference=http://www.ohio.edu/ontologies/design#NegativeToleranceSpecification");
 			graph.postCapability("function="+holeFinishing2, "capability=SurfaceFinish", "min=0.1", "max=99999999999.99", "reference=http://www.ohio.edu/ontologies/design#SurfaceFinishSpecification");
 			
-			graph.writePartGraph("C:/Users/sarkara1/git/SIMPOM/resource/aboxes/process-capability-mm1.owl", "RDF/XML");
+			graph.writePartGraph(prop.getProperty("CAPABILITY_ABOX_MM"), "RDF/XML");
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
