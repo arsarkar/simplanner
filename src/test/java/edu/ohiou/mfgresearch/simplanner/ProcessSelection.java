@@ -215,7 +215,7 @@ public class ProcessSelection {
 	@Test
 	public void holedrillselection1(){
 		
-		GlobalKnowledge.loadSpecification("C:/Users/sarkara1/git/SIMPOM/product-model/aboxes/simple1.rdf");
+		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_XML"));
 		
 		FeatureProcessMatching hs = new FeatureProcessMatching(new String[]{});
 		

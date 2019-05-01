@@ -380,7 +380,7 @@ public class PartSpecificationGraph {
 		Model m9 = partGraph.runRule_inferMeasurementTypeDiameter(m8);
 		Model m10 = partGraph.runRule_inferMeasurementTypeDepth(m9);
 		Model m11 = partGraph.runRule_inferToleranceType(m10);
-		writePartGraph(m11, designKBPath, "NTRIPLE");
+		writePartGraph(m11, designKBPath, "TURTLE");
 	}	
 }
 
