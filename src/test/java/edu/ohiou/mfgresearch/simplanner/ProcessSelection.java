@@ -11,29 +11,38 @@ import org.apache.jena.query.QuerySolutionMap;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.algebra.Table;
+import org.junit.Before;
 import org.junit.Test;
 
 import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.plan.IPlanner;
+import edu.ohiou.mfgresearch.reader.PropertyReader;
 import edu.ohiou.mfgresearch.services.GlobalKnowledge;
 import edu.ohiou.mfgresearch.services.FeatureProcessMatching;
 
 public class ProcessSelection {
 	
+	PropertyReader prop;
+	
+	@Before
+    public void beforeEachTestMethod() {
+        prop = new PropertyReader();
+    }
+	
 	@Test
 	public void holeTypeFeatureSelection() {
 		
 		//get the feature specification which are not matched till now
-				Uni.of(FunQL::new)
-				   .set(q->q.addTBox("C:/Users/sarkara1/git/SIMPOM/product-model/design_bfo.owl"))
-				   .set(q->q.addABox("C:/Users/sarkara1/git/SIMPOM/product-model/aboxes/simple1.rdf"))
-				   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/specification/infer-feature-type-hole.q"))
-				   .map(q->q.execute())
-				   .map(q->q.getBelief())
-				   .map(b->b.getaBox())
-				   .onFailure(e->e.printStackTrace(System.out))
-				   ;
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addABox(prop.getProperty("DESIGN_PART_XML")))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-feature-type-hole.q"))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getaBox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   ;
 		
 	}
 
@@ -41,29 +50,28 @@ public class ProcessSelection {
 	public void FeatureSelection1() { 
 		
 		//get the feature specification which are not matched till now
-				Uni.of(FunQL::new)
-				   .set(q->q.addTBox("C:/Users/sarkara1/git/SIMPOM/product-model/design_bfo.owl"))
-				   .set(q->q.addABox("C:/Users/sarkara1/git/SIMPOM/product-model/aboxes/simple1.rdf"))
-				   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/feature-specification1.rq"))
-				   .map(q->q.execute())
-				   .map(q->q.getBelief())
-				   .map(b->b.getaBox())
-				   .onFailure(e->e.printStackTrace(System.out))
-				   ;
-		
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addABox(prop.getProperty("DESIGN_PART_XML")))
+		   .set(q->q.addPlan("resources/META-INF/rules/test/feature-specification1.rq"))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getaBox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   ;		
 	}
 	
 	@Test
 	public void FeatureSelection2() { 
 		
-		GlobalKnowledge.loadSpecification("C:/Users/sarkara1/git/SIMPOM/product-model/aboxes/simple1.rdf");
+		GlobalKnowledge.loadSpecification(prop.getProperty("DESIGN_PART_XML"));
 		
 		//get the feature specification which are not matched till now
 		Model m =
 				Uni.of(FunQL::new)
-				   .set(q->q.addTBox("C:/Users/sarkara1/git/SIMPOM/product-model/design_bfo.owl"))
+				   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 				   .set(q->q.addABox(GlobalKnowledge.getSpecification()))
-				   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/core/transfer-feature-specifications.rq"))
+				   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-feature-specifications.rq"))
 				   .set(q->q.getPlan(0).addVarBinding("fName", ResourceFactory.createStringLiteral("SIMPLE HOLE(4)")))
 				   .set(q->q.setLocal=true)
 				   .map(q->q.execute())
@@ -74,9 +82,9 @@ public class ProcessSelection {
 				   ;
 		
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox("C:/Users/sarkara1/git/SIMPOM/product-model/design_bfo.owl"))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(m))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/feature-specification.rq"))
+		   .set(q->q.addPlan("resources/META-INF/rules/test/feature-specification.rq"))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -91,9 +99,9 @@ public class ProcessSelection {
 		
 		//get the feature specification which are not matched till now
 				Uni.of(FunQL::new)
-				   .set(q->q.addTBox("C:/Users/sarkara1/git/SIMPOM/resource/mfg-resource.owl"))
-				   .set(q->q.addABox("C:/Users/sarkara1/git/SIMPOM/resource/aboxes/process-capability-mm1.owl"))
-				   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/capability-measure-selection1.rq"))
+				   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+				   .set(q->q.addABox(prop.getProperty("PROCESS_XML")))
+				   .set(q->q.addPlan("resources/META-INF/rules/test/capability-measure-selection1.rq"))
 				   .map(q->q.execute())
 				   .map(q->q.getBelief())
 				   .map(b->b.getaBox())
