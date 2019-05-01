@@ -16,6 +16,7 @@ import org.junit.Test;
 import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.plan.IPlanner;
+import edu.ohiou.mfgresearch.reader.PropertyReader;
 import edu.ohiou.mfgresearch.services.GlobalKnowledge;
 import edu.ohiou.mfgresearch.services.FeatureProcessMatching;
 
@@ -207,7 +208,7 @@ public class ProcessSelection {
 	@Test
 	public void holedrillselection1(){
 		
-		GlobalKnowledge.loadSpecification("C:/Users/sarkara1/git/SIMPOM/product-model/aboxes/simple1.rdf");
+		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_XML"));
 		
 		FeatureProcessMatching hs = new FeatureProcessMatching(new String[]{});
 		
