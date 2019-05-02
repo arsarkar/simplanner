@@ -8,6 +8,7 @@ CONSTRUCT
   { 
     ?i3 rdf:type design:MeasurementBearingEntity .
     ?i3 cco:has_text_value ?dm .
+    ?i3 cco:uses_measurement_unit cco:MillimeterMeasurementUnit.
     ?d cco:inheres_in ?i3 .
   }
 WHERE

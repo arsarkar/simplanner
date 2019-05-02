@@ -36,7 +36,7 @@ public class ProcessSelection {
 		//get the feature specification which are not matched till now
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
-		   .set(q->q.addABox(prop.getProperty("DESIGN_PART_XML")))
+		   .set(q->q.addABox(prop.getProperty("DESIGN_PART_ABOX")))
 		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-feature-type-hole.q"))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
@@ -52,7 +52,7 @@ public class ProcessSelection {
 		//get the feature specification which are not matched till now
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
-		   .set(q->q.addABox(prop.getProperty("DESIGN_PART_XML")))
+		   .set(q->q.addABox(prop.getProperty("DESIGN_PART_ABOX")))
 		   .set(q->q.addPlan("resources/META-INF/rules/test/feature-specification1.rq"))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
@@ -64,7 +64,7 @@ public class ProcessSelection {
 	@Test
 	public void FeatureSelection2() { 
 		
-		GlobalKnowledge.loadSpecification(prop.getProperty("DESIGN_PART_XML"));
+		GlobalKnowledge.loadSpecification(prop.getProperty("DESIGN_PART_ABOX"));
 		
 		//get the feature specification which are not matched till now
 		Model m =
@@ -215,7 +215,7 @@ public class ProcessSelection {
 	@Test
 	public void holedrillselection1(){
 		
-		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_XML"));
+		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_ABOX"));
 		
 		FeatureProcessMatching hs = new FeatureProcessMatching(new String[]{});
 		

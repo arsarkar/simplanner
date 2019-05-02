@@ -11,7 +11,7 @@ CONSTRUCT
     ?i3 cco:has_decimal_value ?tm .
     cco:uses_measurement_unit rdf:type owl:ObjectProperty .
     cco:InchMeasurementUnit rdf:type cco:MeasurementUnitOfLength.
-    ?i3 cco:uses_measurement_unit cco:InchMeasurementUnit.
+    ?i3 cco:uses_measurement_unit cco:MillimeterMeasurementUnit.
     ?t cco:inheres_in ?i3 .
   }
 WHERE

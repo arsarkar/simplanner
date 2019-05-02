@@ -92,6 +92,8 @@ public class ProcessCapabilityGraph {
 			   .set(b->b.addConstruct("?cm", "cco:inheres_in", "?im"))
 			   .set(b->b.addConstruct("cco:has_decimal_value", "rdf:type", "owl:DatatypeProperty"))
 			   .set(b->b.addConstruct("?im", "cco:has_decimal_value", "?limit"))
+			   .set(b->b.addConstruct("cco:uses_measurement_unit", "rdf:type", "owl:ObjectProperty"))
+			   .set(b->b.addConstruct("?im", "cco:uses_measurement_unit", "cco:MillimeterMeasurementUnit"))
 			   
 			   .map(b->b.build())
 			   .map(PlanUtil::getConstructBasicPattern)
@@ -111,6 +113,8 @@ public class ProcessCapabilityGraph {
 			   .set(b->b.addConstruct("?cmax", "cco:inheres_in", "?ie1"))
 			   .set(b->b.addConstruct("cco:has_string_value", "rdf:type", "owl:DatatypeProperty"))
 			   .set(b->b.addConstruct("?ie1", "cco:has_string_value", "?eq"))
+			   .set(b->b.addConstruct("cco:uses_measurement_unit", "rdf:type", "owl:ObjectProperty"))
+			   .set(b->b.addConstruct("?ie1", "cco:uses_measurement_unit", "cco:MillimeterMeasurementUnit"))
 			   .set(b->b.addConstruct("cco:uses_equation_type", "rdf:type", "owl:ObjectProperty"))
 			   .set(b->b.addConstruct("?ie1", "cco:uses_equation_type", "cco:JessEquation"))
 			   .set(b->b.addConstruct("cco:expects", "rdf:type", "owl:ObjectProperty"))

@@ -346,7 +346,7 @@ public class PartSpecificationGraph {
 		
 		//create default knowledge with the part name
 		PartSpecificationGraph partGraph = new PartSpecificationGraph("", prop.getProperty("DESIGN_XML"));
-		String designKBPath = prop.getProperty("DESIGN_PART_XML");
+		String designKBPath = prop.getProperty("DESIGN_PART_ABOX");
 		
 //		writePartGraph(partGraph.m, designKBPath, "NTRIPLE");
 		System.out.println("================================================================================================================");
