@@ -4,7 +4,7 @@ PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
 PREFIX  design: <http://www.ohio.edu/ontologies/design#>
 
 SELECT
-?f ?ft ?fq ?dimType ?dim
+?f ?fq ?dimType ?dim
 WHERE{
  ?f   rdf:type              design:HoleSpecification;
       cco:inheres_in        ?i1.

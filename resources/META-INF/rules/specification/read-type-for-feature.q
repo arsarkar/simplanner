@@ -16,10 +16,6 @@ WHERE
     ?i1  rdf:type            design:LabelBearingEntity .
     ?f   cco:inheres_in      ?i1 .
     ?i1  cco:has_text_value  ?fn.
-    
-    ?i2  rdf:type            design:TypeBearingEntity .    
-    ?f   cco:inheres_in      ?i2 .
-    ?i2  cco:has_URI_value   ?ft
   }
 FUNCTION{
 	?ft <- this:getFeatureType(?fn)
