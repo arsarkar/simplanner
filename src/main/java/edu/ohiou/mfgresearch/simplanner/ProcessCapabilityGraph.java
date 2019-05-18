@@ -351,8 +351,7 @@ public class ProcessCapabilityGraph {
 		Function<Table, BasicPattern> expander = IPlanner.createPatternExpander(createFunction());
 		Function<BasicPattern, BasicPattern> updater = IPlanner.createUpdateExecutor(capabilityKB);
 		Table t = TableFactory.create();
-		Binding b = BindingFactory.binding();
-		
+		Binding b = BindingFactory.binding();		
 		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("f"), fNode));
 		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("ft"), NodeFactory.createURI(funcURI)));
 		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("p"), processNode.asNode()));

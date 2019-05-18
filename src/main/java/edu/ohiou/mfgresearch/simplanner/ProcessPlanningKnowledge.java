@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import org.apache.jena.rdf.model.Model;
 import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.lambda.Uni;
+import edu.ohiou.mfgresearch.reader.PropertyReader;
 
 public class ProcessPlanningKnowledge {
 	
@@ -17,6 +18,8 @@ public class ProcessPlanningKnowledge {
 	String capTBoxPath = "C:/Users/sarkara1/git/SIMPOM/resource/mfg-resource.owl";
 	String ppTBoxPath = "C:/Users/sarkara1/git/SIMPOM/impm-u/mfg-plan.owl";
 
+	PropertyReader prop = new PropertyReader();
+	
 	public ProcessPlanningKnowledge() {
 		
 	}
@@ -25,10 +28,10 @@ public class ProcessPlanningKnowledge {
 		//assert drilling precedences		
 		Model m = 
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(capTBoxPath))
-		   .set(q->q.addTBox(ppTBoxPath))
-		   .set(q->q.addABox(capABoxPath))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/process-precedence-drilling.q"))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-drilling.q"))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getaBox())
@@ -39,16 +42,16 @@ public class ProcessPlanningKnowledge {
 	}	
 	
 	public static void main(String[] args) {
+		PropertyReader prop = new PropertyReader();
 		ProcessPlanningKnowledge ppk = new ProcessPlanningKnowledge();
 		Model pp = ppk.processPlanningKnowledge1();
 		try {
-			pp.write(new FileOutputStream(new File("C:/Users/sarkara1/git/simplanner/resources/META-INF/kb/pp1.owl")), "RDF/XML");
+			pp.write(new FileOutputStream(new File(prop.getProperty("PROCESS_PRECEDENCE_ABOX"))), "RDF/XML");
 			pp.write(System.out, "NTRIPLE");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 	
 }

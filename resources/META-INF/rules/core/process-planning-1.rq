@@ -1,0 +1,30 @@
+PREFIX  fpmatch: <edu.ohiou.mfgresearch.services.FeatureProcessMatching>
+PREFIX  rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
+
+CONSTRUCT{
+?pCurrent plan:succeeds ?pMatch.
+}
+WHERE{
+?p0	rdf:type plan:RootProcess.
+?p0	rdf:type plan:PlannedProcess.
+?p0	plan:precedes* ?pCurrent.
+
+?pCurrent   rdf:type	?ptNext.
+?pPrevious	rdf:type	?ptNext.
+?pPrevious	plan:hasSucceedingProcess ?pNext.
+?pNext		rdf:type	?pType.
+
+?pCurrent	cco:has_output		?f.
+?f				cco:designated_by 	?ice1.
+?ice1   		cco:inheres_in       	?i1.	  
+?i1  			rdf:type              	design:LabelBearingEntity;
+				cco:has_text_value  ?fName.
+
+FILTER NOT EXISTS {?pCurrent plan:precedes ?p2}.
+}
+FUNCTION{
+	?pMatch <- fpmatch:ask_to_match(?f, ?pNext)
+}

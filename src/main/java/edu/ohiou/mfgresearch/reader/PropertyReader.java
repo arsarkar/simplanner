@@ -72,4 +72,7 @@ public class PropertyReader {
 		return expand(iriMap.get(abbreviate(uri)));
 	}
 
+	public String getNS(String prefix){
+		return nsMap.get(prefix);
+	}
 }

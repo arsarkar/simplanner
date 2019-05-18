@@ -11,6 +11,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.SimpleBindings;
 
+import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -56,16 +57,21 @@ public class FeatureProcessMatching {
 		localPath = IMPM.createSessionFolder();
 	}
 	
+	public void loadLocalKB(Model m){
+		localKB.add(m);
+	}
+	
 	/**
 	 * event to update local belief
 	 */
-	public void loadSpecifications(String featureName){
+	public void loadSpecifications(String featureIRI){
 		//load specifications for the given feature
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(GlobalKnowledge.getSpecification()))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-feature-specifications.rq"))
-		   .set(q->q.getPlan(0).addVarBinding("fName", ResourceFactory.createStringLiteral(featureName)))
+//		   .set(q->q.getPlan(0).addVarBinding("fName", ResourceFactory.createStringLiteral(featureName)))
+		   										//bind the last intermediate feature (featureIRi) to filter out every dimension which are already matched
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
@@ -121,12 +127,17 @@ public class FeatureProcessMatching {
 	
 	/**
 	 * Service to post feature specification
-	 * @param featureIRI
+	 * 
+	 * @param featureIRI the intermediate feature IRI
+	 * @param processType type of process to be matched
+	 * @return process IRIs generated for each function (capability profile) matched 
 	 */
-	public void ask_to_match(String featureName, String processType){
-		
-		
-		
+	public static Node[] ask_to_match(String featureName, String processType){
+		FeatureProcessMatching matching = new FeatureProcessMatching(new String[]{});
+		matching.loadSpecifications(featureName);
+		matching.loadCapability(processType);
+		matching.execute(featureName, processType);
+		return null; 
 	} 
 	
 	

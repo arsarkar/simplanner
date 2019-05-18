@@ -1,5 +1,8 @@
 package edu.ohiou.mfgresearch.simplanner;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.Iterator;
 import java.util.function.Function;
 
@@ -20,6 +23,7 @@ import edu.ohiou.mfgresearch.plan.IPlanner;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
 import edu.ohiou.mfgresearch.services.GlobalKnowledge;
 import edu.ohiou.mfgresearch.services.FeatureProcessMatching;
+import edu.ohiou.mfgresearch.services.FeatureProcessSelection;
 
 public class ProcessSelection {
 	
@@ -213,7 +217,7 @@ public class ProcessSelection {
 	}
 	
 	@Test
-	public void holedrillselection1(){
+	public void holedrillMatching1(){
 		
 		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_ABOX"));
 		
@@ -248,6 +252,33 @@ public class ProcessSelection {
 		
 	}
 	
-	
+	@Test
+	public void processSelection1(){
+		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_ABOX"));
+		GlobalKnowledge.loadInitialPlan();
+		GlobalKnowledge.loadStockFeature("SIMPLE HOLE(4)");
+		
+		FeatureProcessSelection selection = new FeatureProcessSelection(new String[]{});
+		
+		selection.ask_to_select_processes("SIMPLE HOLE(4)");
+		
+		try {
+			selection.getLocalKB().write(new FileOutputStream(new File(new PropertyReader().getNS("git1")+"impm-ind/plan/psec-int-1.rdf")), "RDF/XML");
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+//		   .set(q->q.addABox(ModelFactory.createDefaultModel().read("C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/plan1.rdf")))
+		   .set(q->q.addABox(selection.getLocalKB()))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/process-selection-1.rq"))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getaBox())
+		   .onFailure(e->e.printStackTrace(System.out));
+	}
 
 }

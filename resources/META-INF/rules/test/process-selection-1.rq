@@ -1,0 +1,20 @@
+PREFIX  rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
+
+SELECT ?pTypeNext ?f 
+WHERE{
+?p0	rdf:type plan:RootProcess.
+?p0	rdf:type plan:PlannedProcess.
+?p0	plan:succeeds* ?pCurrent.
+
+?pCurrent   rdf:type	?pType.
+?pPrevious	rdf:type	?pType.
+?pPrevious	plan:hasSucceedingProcess ?pNext.
+?pNext		rdf:type	?pTypeNext.
+
+?pCurrent	cco:has_output	?f.
+
+FILTER NOT EXISTS {?pCurrent plan:succeeds ?p2}.
+}

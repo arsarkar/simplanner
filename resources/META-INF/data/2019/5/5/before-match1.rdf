@@ -1,0 +1,386 @@
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:j.0="http://www.ontologyrepository.com/CommonCoreOntologies/"
+    xmlns="http://www.ohio.edu/simplanner/plan2019/5/5/917205#"
+    xmlns:j.1="http://www.ohio.edu/ontologies/design#"
+    xmlns:j.2="http://www.ohio.edu/ontologies/manufacturing-capability#">
+  <j.1:FeatureQualityMap rdf:about="http://www.ohio.edu/simplanner/design2019/5/2/724804#FeatureQualityMap_I5900">
+    <j.1:describes_map_with>
+      <j.1:FeatureSpecification rdf:about="http://www.ohio.edu/simplanner/design2019/5/2/724804#FeatureSpecification_I2318">
+        <j.0:represents rdf:resource="http://www.ohio.edu/simplanner/design2019/5/2/724804#FeatureRepresentation_I7243"/>
+      </j.1:FeatureSpecification>
+    </j.1:describes_map_with>
+    <j.1:describes_map_with>
+      <j.1:DepthSpecification rdf:about="http://www.ohio.edu/simplanner/design2019/5/2/724804#DepthSpecification_I6678">
+        <j.0:inheres_in>
+          <j.1:MeasurementBearingEntity rdf:about="http://www.ohio.edu/simplanner/design2019/5/2/724804#MeasurementBearingEntity_I4895">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >2.0</j.0:has_decimal_value>
+          </j.1:MeasurementBearingEntity>
+        </j.0:inheres_in>
+        <j.0:represents rdf:resource="http://www.ohio.edu/simplanner/design2019/5/2/724804#QualityRepresentation_I7401"/>
+      </j.1:DepthSpecification>
+    </j.1:describes_map_with>
+  </j.1:FeatureQualityMap>
+  <j.1:FeatureQualityMap rdf:about="http://www.ohio.edu/simplanner/design2019/5/2/724804#FeatureQualityMap_I1885">
+    <j.1:describes_map_with rdf:resource="http://www.ohio.edu/simplanner/design2019/5/2/724804#FeatureSpecification_I2318"/>
+    <j.1:describes_map_with>
+      <j.1:RoundnessSpecification rdf:about="http://www.ohio.edu/simplanner/design2019/5/2/724804#ToleranceSpecification_I1908">
+        <j.0:inheres_in>
+          <j.1:MeasurementBearingEntity rdf:about="http://www.ohio.edu/simplanner/design2019/5/2/724804#MeasurementBearingEntity_I1571">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >0.001</j.0:has_decimal_value>
+          </j.1:MeasurementBearingEntity>
+        </j.0:inheres_in>
+        <j.0:represents rdf:resource="http://www.ohio.edu/simplanner/design2019/5/2/724804#ToleranceRepresentation_I6558"/>
+      </j.1:RoundnessSpecification>
+    </j.1:describes_map_with>
+  </j.1:FeatureQualityMap>
+  <j.2:RoundnessCapability rdf:about="http://www.ohio.edu/ontologies/capability-implanner#roundness9817">
+    <j.2:demarcates rdf:resource="http://www.ohio.edu/ontologies/capability-implanner#holemaking5347"/>
+    <j.0:references>
+      <j.1:RoundnessSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#roundnessspecification3474"/>
+    </j.0:references>
+    <j.0:is_measured_by>
+      <j.0:MeasurementInformationContentEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#measurementinformationcontententity4873">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity3803">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >9.999999999999E10</j.0:has_decimal_value>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MaximumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#maximumordinalmeasurementinformation4676"/>
+        </j.0:is_measured_by>
+      </j.0:MeasurementInformationContentEntity>
+    </j.0:is_measured_by>
+    <j.0:is_measured_by>
+      <j.0:MeasurementInformationContentEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#measurementinformationcontententity5254">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity5122">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >0.1016</j.0:has_decimal_value>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MinimumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#minimumordinalmeasurementinformation7786"/>
+        </j.0:is_measured_by>
+      </j.0:MeasurementInformationContentEntity>
+    </j.0:is_measured_by>
+  </j.2:RoundnessCapability>
+  <j.2:DepthLimitCapability rdf:about="http://www.ohio.edu/ontologies/capability-implanner#depthlimit5000">
+    <j.2:demarcates rdf:resource="http://www.ohio.edu/ontologies/capability-implanner#holemaking5347"/>
+    <j.0:references>
+      <j.1:DepthSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#depthspecification3350"/>
+    </j.0:references>
+    <j.0:is_measured_by>
+      <j.0:Equation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#equation8556">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity4988">
+            <j.0:has_string_value>(* 12 ?arg1)</j.0:has_string_value>
+            <j.0:uses_equation_type rdf:resource="http://www.ontologyrepository.com/CommonCoreOntologies/JessEquation"/>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MaximumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#maximumordinalmeasurementinformation9913"/>
+        </j.0:is_measured_by>
+        <j.0:expects>
+          <j.1:DiameterSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#diameterspecification5880">
+            <j.0:inheres_in>
+              <j.1:MeasurementBearingEntity rdf:about="http://www.ohio.edu/simplanner/design2019/5/2/724804#MeasurementBearingEntity_I7467">
+                <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+                >2.0</j.0:has_decimal_value>
+              </j.1:MeasurementBearingEntity>
+            </j.0:inheres_in>
+            <j.0:is_tokenized_by>?arg1</j.0:is_tokenized_by>
+          </j.1:DiameterSpecification>
+        </j.0:expects>
+      </j.0:Equation>
+    </j.0:is_measured_by>
+    <j.0:is_measured_by>
+      <j.0:MeasurementInformationContentEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#measurementinformationcontententity5812">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity7712">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >0.0</j.0:has_decimal_value>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MinimumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#minimumordinalmeasurementinformation5889"/>
+        </j.0:is_measured_by>
+      </j.0:MeasurementInformationContentEntity>
+    </j.0:is_measured_by>
+  </j.2:DepthLimitCapability>
+  <j.2:ParallelismCapability rdf:about="http://www.ohio.edu/ontologies/capability-implanner#parallelism8063">
+    <j.2:demarcates rdf:resource="http://www.ohio.edu/ontologies/capability-implanner#holemaking5347"/>
+    <j.0:references>
+      <j.1:ParallelismSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#parallelismspecification1793"/>
+    </j.0:references>
+    <j.0:is_measured_by>
+      <j.0:MeasurementInformationContentEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#measurementinformationcontententity1943">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity6376">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >9.999999999999E10</j.0:has_decimal_value>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MaximumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#maximumordinalmeasurementinformation6094"/>
+        </j.0:is_measured_by>
+      </j.0:MeasurementInformationContentEntity>
+    </j.0:is_measured_by>
+    <j.0:is_measured_by>
+      <j.0:Equation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#equation4757">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity8763">
+            <j.0:has_string_value>(+ (* (** (/ ?arg1 ?arg2) 3) 0.0254) 0.0762)</j.0:has_string_value>
+            <j.0:uses_equation_type rdf:resource="http://www.ontologyrepository.com/CommonCoreOntologies/JessEquation"/>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MinimumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#minimumordinalmeasurementinformation3189"/>
+        </j.0:is_measured_by>
+        <j.0:expects>
+          <j.1:DiameterSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#diameterspecification3815">
+            <j.0:inheres_in rdf:resource="http://www.ohio.edu/simplanner/design2019/5/2/724804#MeasurementBearingEntity_I7467"/>
+            <j.0:is_tokenized_by>?arg2</j.0:is_tokenized_by>
+          </j.1:DiameterSpecification>
+        </j.0:expects>
+        <j.0:expects>
+          <j.1:DepthSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#depthspecification6829">
+            <j.0:inheres_in rdf:resource="http://www.ohio.edu/simplanner/design2019/5/2/724804#MeasurementBearingEntity_I4895"/>
+            <j.0:is_tokenized_by>?arg1</j.0:is_tokenized_by>
+          </j.1:DepthSpecification>
+        </j.0:expects>
+      </j.0:Equation>
+    </j.0:is_measured_by>
+  </j.2:ParallelismCapability>
+  <j.2:ToolDiameterCapability rdf:about="http://www.ohio.edu/ontologies/capability-implanner#tooldiameter1680">
+    <j.2:demarcates rdf:resource="http://www.ohio.edu/ontologies/capability-implanner#holemaking5347"/>
+    <j.0:references>
+      <j.1:DiameterSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#diameterspecification7155"/>
+    </j.0:references>
+    <j.0:is_measured_by>
+      <j.0:MeasurementInformationContentEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#measurementinformationcontententity4582">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity9463">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >50.8</j.0:has_decimal_value>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MaximumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#maximumordinalmeasurementinformation8677"/>
+        </j.0:is_measured_by>
+      </j.0:MeasurementInformationContentEntity>
+    </j.0:is_measured_by>
+    <j.0:is_measured_by>
+      <j.0:MeasurementInformationContentEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#measurementinformationcontententity6631">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity9865">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >1.5875</j.0:has_decimal_value>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MinimumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#minimumordinalmeasurementinformation6147"/>
+        </j.0:is_measured_by>
+      </j.0:MeasurementInformationContentEntity>
+    </j.0:is_measured_by>
+  </j.2:ToolDiameterCapability>
+  <j.2:TruePositionCapability rdf:about="http://www.ohio.edu/ontologies/capability-implanner#trueposition9262">
+    <j.2:demarcates rdf:resource="http://www.ohio.edu/ontologies/capability-implanner#holemaking5347"/>
+    <j.0:references>
+      <j.1:TruePositionSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#truepositionspecification6904"/>
+    </j.0:references>
+    <j.0:is_measured_by>
+      <j.0:MeasurementInformationContentEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#measurementinformationcontententity1181">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity2949">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >9.999999999999E10</j.0:has_decimal_value>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MaximumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#maximumordinalmeasurementinformation5351"/>
+        </j.0:is_measured_by>
+      </j.0:MeasurementInformationContentEntity>
+    </j.0:is_measured_by>
+    <j.0:is_measured_by>
+      <j.0:MeasurementInformationContentEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#measurementinformationcontententity5346">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity2899">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >0.2032</j.0:has_decimal_value>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MinimumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#minimumordinalmeasurementinformation4388"/>
+        </j.0:is_measured_by>
+      </j.0:MeasurementInformationContentEntity>
+    </j.0:is_measured_by>
+  </j.2:TruePositionCapability>
+  <rdf:Description rdf:about="http://www.ohio.edu/ontologies/capability-implanner#twistdrilling0101">
+    <j.0:realizes rdf:resource="http://www.ohio.edu/ontologies/capability-implanner#holemaking5347"/>
+  </rdf:Description>
+  <j.2:SurfaceFinishCapability rdf:about="http://www.ohio.edu/ontologies/capability-implanner#surfacefinish1807">
+    <j.2:demarcates rdf:resource="http://www.ohio.edu/ontologies/capability-implanner#holemaking5347"/>
+    <j.0:references>
+      <j.1:SurfaceFinishSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#surfacefinishspecification9010"/>
+    </j.0:references>
+    <j.0:is_measured_by>
+      <j.0:MeasurementInformationContentEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#measurementinformationcontententity3969">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity7657">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >9.999999999999E10</j.0:has_decimal_value>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MaximumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#maximumordinalmeasurementinformation2736"/>
+        </j.0:is_measured_by>
+      </j.0:MeasurementInformationContentEntity>
+    </j.0:is_measured_by>
+    <j.0:is_measured_by>
+      <j.0:MeasurementInformationContentEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#measurementinformationcontententity3568">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity4283">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >2.5</j.0:has_decimal_value>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MinimumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#minimumordinalmeasurementinformation4783"/>
+        </j.0:is_measured_by>
+      </j.0:MeasurementInformationContentEntity>
+    </j.0:is_measured_by>
+  </j.2:SurfaceFinishCapability>
+  <j.2:PositiveToleranceCapability rdf:about="http://www.ohio.edu/ontologies/capability-implanner#positivetolerance4878">
+    <j.2:demarcates rdf:resource="http://www.ohio.edu/ontologies/capability-implanner#holemaking5347"/>
+    <j.0:references>
+      <j.1:PositiveToleranceSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#positivetolerancespecification9446"/>
+    </j.0:references>
+    <j.0:is_measured_by>
+      <j.0:MeasurementInformationContentEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#measurementinformationcontententity4561">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity2642">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >9.999999999999E10</j.0:has_decimal_value>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MaximumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#maximumordinalmeasurementinformation5483"/>
+        </j.0:is_measured_by>
+      </j.0:MeasurementInformationContentEntity>
+    </j.0:is_measured_by>
+    <j.0:is_measured_by>
+      <j.0:Equation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#equation2528">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity4008">
+            <j.0:has_string_value>(+ (* 0.03527 (sqrt ?arg1) ) 0.0762)</j.0:has_string_value>
+            <j.0:uses_equation_type rdf:resource="http://www.ontologyrepository.com/CommonCoreOntologies/JessEquation"/>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MinimumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#minimumordinalmeasurementinformation3072"/>
+        </j.0:is_measured_by>
+        <j.0:expects>
+          <j.1:DiameterSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#diameterspecification7470">
+            <j.0:inheres_in rdf:resource="http://www.ohio.edu/simplanner/design2019/5/2/724804#MeasurementBearingEntity_I7467"/>
+            <j.0:is_tokenized_by>?arg1</j.0:is_tokenized_by>
+          </j.1:DiameterSpecification>
+        </j.0:expects>
+      </j.0:Equation>
+    </j.0:is_measured_by>
+  </j.2:PositiveToleranceCapability>
+  <j.2:NegativeToleranceCapability rdf:about="http://www.ohio.edu/ontologies/capability-implanner#negativetolerance5215">
+    <j.2:demarcates rdf:resource="http://www.ohio.edu/ontologies/capability-implanner#holemaking5347"/>
+    <j.0:references>
+      <j.1:NegativeToleranceSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#negativetolerancespecification4202"/>
+    </j.0:references>
+    <j.0:is_measured_by>
+      <j.0:MeasurementInformationContentEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#measurementinformationcontententity7604">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity5972">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >9.999999999999E10</j.0:has_decimal_value>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MaximumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#maximumordinalmeasurementinformation7909"/>
+        </j.0:is_measured_by>
+      </j.0:MeasurementInformationContentEntity>
+    </j.0:is_measured_by>
+    <j.0:is_measured_by>
+      <j.0:Equation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#equation1705">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity5743">
+            <j.0:has_string_value>(* 0.03527  (sqrt ?arg1 ) )</j.0:has_string_value>
+            <j.0:uses_equation_type rdf:resource="http://www.ontologyrepository.com/CommonCoreOntologies/JessEquation"/>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MinimumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#minimumordinalmeasurementinformation2935"/>
+        </j.0:is_measured_by>
+        <j.0:expects>
+          <j.1:DiameterSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#diameterspecification1235">
+            <j.0:inheres_in rdf:resource="http://www.ohio.edu/simplanner/design2019/5/2/724804#MeasurementBearingEntity_I7467"/>
+            <j.0:is_tokenized_by>?arg1</j.0:is_tokenized_by>
+          </j.1:DiameterSpecification>
+        </j.0:expects>
+      </j.0:Equation>
+    </j.0:is_measured_by>
+  </j.2:NegativeToleranceCapability>
+  <j.2:StraightnessCapability rdf:about="http://www.ohio.edu/ontologies/capability-implanner#straightness3954">
+    <j.2:demarcates rdf:resource="http://www.ohio.edu/ontologies/capability-implanner#holemaking5347"/>
+    <j.0:references>
+      <j.1:StraightnessSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#straightnessspecification2440"/>
+    </j.0:references>
+    <j.0:is_measured_by>
+      <j.0:MeasurementInformationContentEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#measurementinformationcontententity6198">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity4420">
+            <j.0:has_decimal_value rdf:datatype="http://www.w3.org/2001/XMLSchema#double"
+            >9.999999999999E10</j.0:has_decimal_value>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MaximumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#maximumordinalmeasurementinformation6066"/>
+        </j.0:is_measured_by>
+      </j.0:MeasurementInformationContentEntity>
+    </j.0:is_measured_by>
+    <j.0:is_measured_by>
+      <j.0:Equation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#equation5922">
+        <j.0:inheres_in>
+          <j.0:InformationBearingEntity rdf:about="http://www.ohio.edu/ontologies/capability-implanner#informationbearingentity4105">
+            <j.0:has_string_value>(+ (* 0.127 (** (/ ?arg1 ?arg2) 3)) 0.0508)</j.0:has_string_value>
+            <j.0:uses_equation_type rdf:resource="http://www.ontologyrepository.com/CommonCoreOntologies/JessEquation"/>
+          </j.0:InformationBearingEntity>
+        </j.0:inheres_in>
+        <j.0:is_measured_by>
+          <j.0:MinimumOrdinalMeasurementInformation rdf:about="http://www.ohio.edu/ontologies/capability-implanner#minimumordinalmeasurementinformation1886"/>
+        </j.0:is_measured_by>
+        <j.0:expects>
+          <j.1:DiameterSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#diameterspecification8955">
+            <j.0:inheres_in rdf:resource="http://www.ohio.edu/simplanner/design2019/5/2/724804#MeasurementBearingEntity_I7467"/>
+            <j.0:is_tokenized_by>?arg2</j.0:is_tokenized_by>
+          </j.1:DiameterSpecification>
+        </j.0:expects>
+        <j.0:expects>
+          <j.1:DepthSpecification rdf:about="http://www.ohio.edu/ontologies/capability-implanner#depthspecification5417">
+            <j.0:inheres_in rdf:resource="http://www.ohio.edu/simplanner/design2019/5/2/724804#MeasurementBearingEntity_I4895"/>
+            <j.0:is_tokenized_by>?arg1</j.0:is_tokenized_by>
+          </j.1:DepthSpecification>
+        </j.0:expects>
+      </j.0:Equation>
+    </j.0:is_measured_by>
+  </j.2:StraightnessCapability>
+  <j.1:FeatureQualityMap rdf:about="http://www.ohio.edu/simplanner/design2019/5/2/724804#FeatureQualityMap_I1771">
+    <j.1:describes_map_with rdf:resource="http://www.ohio.edu/simplanner/design2019/5/2/724804#FeatureSpecification_I2318"/>
+    <j.1:describes_map_with>
+      <j.1:DiameterSpecification rdf:about="http://www.ohio.edu/simplanner/design2019/5/2/724804#DiameterSpecification_I9690">
+        <j.0:inheres_in rdf:resource="http://www.ohio.edu/simplanner/design2019/5/2/724804#MeasurementBearingEntity_I7467"/>
+        <j.0:represents rdf:resource="http://www.ohio.edu/simplanner/design2019/5/2/724804#QualityRepresentation_I5958"/>
+      </j.1:DiameterSpecification>
+    </j.1:describes_map_with>
+  </j.1:FeatureQualityMap>
+</rdf:RDF>
