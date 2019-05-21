@@ -4,7 +4,11 @@ PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
 PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
 
 CONSTRUCT{
-?p cco:realizes ?func.
+cap:demarcates		rdf:type	owl:ObjectProperty.
+cco:references		rdf:type	owl:ObjectProperty.
+cco:is_measured_by	rdf:type	owl:ObjectProperty.
+cco:inheres_in			rdf:type	owl:ObjectProperty.
+cco:has_decimal_value	rdf:type	owl:DatatypeProperty.
 ?capa	rdf:type ?capaType;
 			cap:demarcates	?func;
 			cco:references	?ref.
@@ -45,6 +49,7 @@ WHERE{
 ?minOrd	rdf:type	cco:MinimumOrdinalMeasurementInformation.
 ?minIBE	rdf:type	cco:InformationBearingEntity;
 			cco:has_decimal_value	?min.	
+FILTER (?pType NOT IN (owl:NamedIndividual))
 }	
 
 

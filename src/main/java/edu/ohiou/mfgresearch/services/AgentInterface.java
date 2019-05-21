@@ -1,4 +1,4 @@
-package edu.ohiou.mfgresearch.simplanner;
+package edu.ohiou.mfgresearch.services;
 
 public interface AgentInterface {
 

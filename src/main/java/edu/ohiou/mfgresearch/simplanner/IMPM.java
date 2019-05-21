@@ -120,8 +120,8 @@ public final class IMPM {
 	 * Generate a session folder under data folder
 	 * in path data/<year>/<month>/<day>
 	 */
-	public static String createSessionFolder(){
-		String path = data+createSessionPath();
+	public static String createSessionFolder(String p){
+		String path = p.length()>0?p:data+createSessionPath();
 		createFolder(path);
 		return path;
 	}

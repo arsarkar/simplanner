@@ -35,6 +35,7 @@ public class GlobalKnowledge {
 
 	private static GlobalKnowledge KB;
 	private Model specificationKB;
+	private Model partKB;
 	private Model planKB;
 	private static PropertyReader prop = new PropertyReader();
 	
@@ -46,13 +47,22 @@ public class GlobalKnowledge {
 		return KB.specificationKB;
 	}
 	
+	public static Model getPart(){
+		load();
+		return KB.partKB;
+	}
+	
 	public static Model getPlan(){
 		load();
 		return KB.planKB;
 	}
 
-	public static void addModel(Model m){
-		KB.specificationKB.add(m);
+	public static void appendPartKB(Model m){
+		KB.partKB.add(m);
+	}
+	
+	public static void appendPlanKB(Model m){
+		KB.planKB.add(m);
 	}
 	
 	public static void loadSpecification(String url){
@@ -89,15 +99,37 @@ public class GlobalKnowledge {
 	}
 	
 	
-	
+	/**
+	 * Load the stock feature, only creates a FormFeature and ICE1 which points to the type and label bearing entity 
+	 * of the specification 
+	 * @param featureName
+	 */
 	public static void loadStockFeature(String featureName){
 		load();
-		//create stock feature
+		if(KB.partKB == null){
+			KB.partKB = ModelFactory.createDefaultModel();
+		}
+		//two queries are required to insert the assertions in different KB
+		//create the stock feature and save to the specification KB
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(KB.specificationKB)) 
 		   .set(q->q.addABox(KB.planKB)) 
-		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature.rq"))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature2.rq"))
+		   .set(q->q.getPlan(0).addVarBinding("fName", ResourceFactory.createPlainLiteral(featureName)))
+		   .set(q->q.setLocal=true)
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .onSuccess(m->KB.partKB.add(m));
+		//assert the stock feature is output of the root planned process
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addABox(KB.specificationKB)) 
+		   .set(q->q.addABox(KB.planKB))  
+		   .set(q->q.addABox(KB.partKB)) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature1.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("fName", ResourceFactory.createPlainLiteral(featureName)))
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())

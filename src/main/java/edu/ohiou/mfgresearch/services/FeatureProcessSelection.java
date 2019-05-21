@@ -44,7 +44,7 @@ public class FeatureProcessSelection {
 		Omni.of(localIRI)
 			.map(path->localKB.add(ModelFactory.createDefaultModel().read(path)));
 		IMPM.clearSessionPath();
-		localPath = IMPM.createSessionFolder();
+		localPath = IMPM.createSessionFolder("");
 	}
 
 	/**
@@ -66,13 +66,13 @@ public class FeatureProcessSelection {
 		   .get();
 	}
 	
-	public void loadProcessPrecedence(String[] functionType){
-		//precedence among processes relavant to the feature type
+	public void loadProcessPrecedence(){
+		System.out.println("\n||"+this.getClass().getSimpleName()+"||>>"+"loading process precedence by rule process-precedence-drilling-wo-holestarting.q");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
 		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-drilling.q"))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-drilling-wo-holestarting.q"))
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
@@ -82,51 +82,40 @@ public class FeatureProcessSelection {
 	}
 	
 	public void ask_to_select_processes(String featureName){
+		
 		//register known matching services and load specification to them
-		matchingService = new FeatureProcessMatching(new String[]{});	
+//		matchingService = new FeatureProcessMatching(new String[]{});	
 		//is it required for this agent to know specification? I don't think so
-		matchingService.loadLocalKB(loadSpecifications(featureName)); 
+//		matchingService.loadLocalKB(loadSpecifications(featureName)); 
 		//load the plan KB 
-		localKB.add(GlobalKnowledge.getPlan());
+		//localKB.add(GlobalKnowledge.getPlan());
 		execute();
 	}
 	
 	public void execute(){
 		
 		//load process precedence
-		loadProcessPrecedence(new String[]{IMPM.capability+"HoleStarting",
-											IMPM.capability+"HoleMaking",
-											IMPM.capability+"HoleImproving",
-											IMPM.capability+"HoleFinishing"});
-		
-		//check if the feature specification is completely matched
-//		Uni.of(FunQL::new)
-//		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
-//		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
-//		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
-//		   .set(q->q.addPlan("resources/META-INF/rules/process-planning-1.rq"))
-//		   .set(q->q.setLocal=true)
-//		   .map(q->q.execute())
-//		   .map(q->q.getBelief())
-//		   .map(b->b.getLocalABox())
-//		   .onFailure(e->e.printStackTrace(System.out))
-//		   .onSuccess(m->localKB.add(m));
-		
-		
+		loadProcessPrecedence();		
 		
 		//get the latest process planned 
-//		Uni.of(FunQL::new)
-//		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
-//		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
-//		   .set(q->q.addABox(GlobalKnowledge.getPlan()))
-//		   .set(q->q.addPlan("resources/META-INF/rules/process-planning-1.rq"))
-//		   .set(q->q.setLocal=true)
-//		   .map(q->q.execute())
-//		   .map(q->q.getBelief())
-//		   .map(b->b.getLocalABox())
-//		   .onFailure(e->e.printStackTrace(System.out))
-//		   .onSuccess(m->localKB.add(m));	
+		boolean stopIteration = false;
 		
+		while(!stopIteration){
+			System.out.println("\n||"+this.getClass().getSimpleName()+"||>>"+"match feature by process-planning-1.rq");
+			boolean	isSuccessful = 	
+					Uni.of(FunQL::new)
+					   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+					   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+					   .set(q->q.addABox(localKB))
+					   .set(q->q.addABox(GlobalKnowledge.getPlan()))
+					   .set(q->q.addPlan("resources/META-INF/rules/core/process-planning-1.rq"))
+					   .set(q->q.setLocal=true)
+					   .map(q->q.execute())
+					   .set(q->localKB.add(q.getBelief().getLocalABox()))
+					   .map(q->q.isQuerySuccess())
+					   .get();	
+			stopIteration = !isSuccessful;
+		}
 	}
 	
 	

@@ -3,28 +3,33 @@ PREFIX  rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
 PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
 PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
 
 CONSTRUCT{
-?pCurrent plan:succeeds ?pMatch.
+cco:has_output rdf:type	owl:ObjectProperty.
+cco:has_input rdf:type	owl:ObjectProperty.
+plan:precedes rdf:type	owl:ObjectProperty.
+?f2	rdf:type		design:FormFeature.
+?pNext1	rdf:type ?pType;
+			cco:has_output	?f2;
+			cco:has_input		?f1.
+?pCurrent	plan:precedes	?pNext1.
 }
 WHERE{
 ?p0	rdf:type plan:RootProcess.
 ?p0	rdf:type plan:PlannedProcess.
 ?p0	plan:precedes* ?pCurrent.
 
-?pCurrent   rdf:type	?ptNext.
-?pPrevious	rdf:type	?ptNext.
+?pCurrent   rdf:type	?pt.
+?pPrevious	rdf:type	?pt.
 ?pPrevious	plan:hasSucceedingProcess ?pNext.
 ?pNext		rdf:type	?pType.
 
-?pCurrent	cco:has_output		?f.
-?f				cco:designated_by 	?ice1.
-?ice1   		cco:inheres_in       	?i1.	  
-?i1  			rdf:type              	design:LabelBearingEntity;
-				cco:has_text_value  ?fName.
+?pCurrent	cco:has_output		?f1.
+?f1			rdf:type					design:FormFeature.
 
 FILTER NOT EXISTS {?pCurrent plan:precedes ?p2}.
 }
 FUNCTION{
-	?pMatch <- fpmatch:ask_to_match(?f, ?pNext)
+	?f2 <- fpmatch:ask_to_match(?f1,?pNext)
 }

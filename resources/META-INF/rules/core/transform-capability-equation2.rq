@@ -11,14 +11,14 @@ WHERE{
 	SELECT ?ice ?ibe ?eq
 	(group_concat(?dim) as ?args)
 	WHERE{
-	?ice		cco:inheres_in			?ibe;
-				rdf:type	cco:Equation;
-				cco:expects	?arg.
-	?ibe		cco:has_string_value ?eq.
-	?arg		rdf:type	?argType;
-				cco:inheres_in	?dm;
-				cco:is_tokenized_by	?token.
-	?dm		cco:has_decimal_value	?dim.
+		?ice		cco:inheres_in			?ibe;
+					rdf:type	cco:Equation;
+					cco:expects	?arg.
+		?ibe		cco:has_string_value ?eq.
+		?arg		rdf:type	?argType;
+					cco:inheres_in	?dm;
+					cco:is_tokenized_by	?token.
+		?dm		cco:has_decimal_value	?dim.
 	}
 	GROUP BY ?ice ?ibe ?eq
 	ORDER BY ?eq ASC(?token)

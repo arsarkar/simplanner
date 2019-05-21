@@ -4,10 +4,18 @@ PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
 PREFIX  design: <http://www.ohio.edu/ontologies/design#>
 
 CONSTRUCT{
- ?f   rdf:type              design:FeatureSpecification;
+cco:inheres_in		rdf:type	owl:ObjectProperty.
+cco:represents	rdf:type	owl:ObjectProperty.
+design:describes_map_with		rdf:type	owl:ObjectProperty.
+cco:has_text_value		rdf:type	owl:DatatypeProperty.
+cco:has_decimal_value		rdf:type	owl:DatatypeProperty.
+ ?fs   rdf:type              design:FeatureSpecification;
+	  cco:inheres_in       ?i1;
 	  cco:represents		?r.
- ?fq  rdf:type              design:FeatureQualityMap;
-      design:describes_map_with ?f;
+ ?i1  rdf:type              	design:LabelBearingEntity;
+	   cco:has_text_value  ?fName.
+ ?fq  rdf:type          	design:FeatureQualityMap;
+      design:describes_map_with ?fs;
 	  design:describes_map_with ?d.
  ?d	  rdf:type 			?dimType;	
  	  cco:inheres_in		?dm;
@@ -16,19 +24,26 @@ CONSTRUCT{
  	  cco:has_decimal_value 	?dim.	 
 }
 WHERE{
- ?f   rdf:type              design:FeatureSpecification;
-      cco:inheres_in       ?i1;
-	  cco:represents		?r.
- ?i1  rdf:type              design:LabelBearingEntity;
-      cco:has_text_value   ?fName.
- ?fq  rdf:type              design:FeatureQualityMap;
-      design:describes_map_with ?f;
-	  design:describes_map_with ?d.
- ?d	rdf:type 			?dimType;	
-		cco:inheres_in		?dm;
-	  cco:represents		?rd.		
- ?dm  rdf:type				design:MeasurementBearingEntity;
- 	  cco:has_decimal_value 	?dim.	 	  
+ ?fs  				rdf:type              				design:FeatureSpecification;
+					cco:inheres_in       				?i1;
+					cco:represents					?r.
+ ?i1  				rdf:type              				design:LabelBearingEntity;
+					cco:has_text_value  			?fName.
+ ?fq  				rdf:type              				design:FeatureQualityMap;
+					design:describes_map_with 	?fs;
+					design:describes_map_with 	?d.
+ ?d				rdf:type 							?dimType;	
+					cco:inheres_in						?dm;
+					cco:represents					?rd.		
+ ?dm  			rdf:type								design:MeasurementBearingEntity;
+					cco:has_decimal_value 		?dim.		
+					
+?ice1  			rdf:type            					cco:FormFeatureIdentifier; 
+					cco:inheres_in       				?i1.
+ ?f1   			rdf:type              				design:FormFeature;
+					cco:designated_by 				?ice1.
+ FILTER NOT EXISTS {  ?d1	  	cco:inheres_in			?f1.
+								?d1		cco:concretizes		?d.}			
  FILTER(?dimType IN (design:DiameterSpecification, design:DepthSpecification, design:RoundnessSpecification, design:SurfaceFinishSpecification))	 
 }	
 

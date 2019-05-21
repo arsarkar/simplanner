@@ -5,11 +5,8 @@ PREFIX  design: <http://www.ohio.edu/ontologies/design#>
 PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
 
 CONSTRUCT{
- ?f1   rdf:type              design:FormFeature;
-	    cco:designated_by ?ice1.
- ?ice1   rdf:type            cco:FormFeatureIdentifier; 
-			cco:inheres_in       ?i1;
-			cco:inheres_in       ?i2.
+cco:has_output		rdf:type owl:ObjectProperty .
+ ?f1   rdf:type              design:FormFeature.
  ?p    cco:has_output		?f1.
 }
 WHERE{
@@ -20,6 +17,11 @@ WHERE{
       cco:has_text_value   ?fName.
  ?i2  rdf:type            design:TypeBearingEntity;    
 	  cco:has_URI_value    ?ft.
+ ?ice1   rdf:type            cco:FormFeatureIdentifier; 
+			cco:inheres_in       ?i1;
+			cco:inheres_in       ?i2.
+ ?f1   rdf:type              design:FormFeature;
+		cco:designated_by ?ice1.	
  ?p   rdf:type			plan:RootProcess;
 	   rdf:type			plan:PlannedProcess.
 }	

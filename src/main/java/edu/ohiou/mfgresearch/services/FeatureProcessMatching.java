@@ -3,18 +3,13 @@ package edu.ohiou.mfgresearch.services;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.SimpleBindings;
-
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.core.Var;
 
 import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.lambda.Omni;
@@ -42,7 +37,17 @@ public class FeatureProcessMatching {
 		   .set(s->localKB.write(s, "RDF/XML"))
 		   .set(s->s.flush())
 		   .set(s->s.close());
-		localKB = ModelFactory.createDefaultModel().read(localPath+fileName);	
+//		localKB = ModelFactory.createDefaultModel().read(localPath+fileName);	
+	}
+	
+	public void saveKB(String fileName, Model m){
+		Uni.of(localPath+fileName)
+		   .map(File::new)
+		   .map(FileOutputStream::new)
+		   .set(s->m.write(s, "RDF/XML"))
+		   .set(s->s.flush())
+		   .set(s->s.close());
+//		localKB = ModelFactory.createDefaultModel().read(localPath+fileName);	
 	}
 	
 	public FeatureProcessMatching(String[] localIRI) {
@@ -54,24 +59,23 @@ public class FeatureProcessMatching {
 		Omni.of(localIRI)
 			.map(path->localKB.add(ModelFactory.createDefaultModel().read(path)));
 		IMPM.clearSessionPath();
-		localPath = IMPM.createSessionFolder();
-	}
-	
-	public void loadLocalKB(Model m){
-		localKB.add(m);
+		localPath = IMPM.createSessionFolder(prop.getProperty("PLAN_ARCHIVE_FOLDER"));
 	}
 	
 	/**
 	 * event to update local belief
 	 */
-	public void loadSpecifications(String featureIRI){
+	public void loadSpecifications(Node featureIRI){
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"load specifications for feature "+ featureIRI.getURI());
+
 		//load specifications for the given feature
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(GlobalKnowledge.getSpecification()))
+		   .set(q->q.addABox(GlobalKnowledge.getPart()))
+		   //.set(q->saveKB("FPM-local-transfer-feature-specification-before.rdf", q.getBelief().getaBox()))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-feature-specifications.rq"))
-//		   .set(q->q.getPlan(0).addVarBinding("fName", ResourceFactory.createStringLiteral(featureName)))
-		   										//bind the last intermediate feature (featureIRi) to filter out every dimension which are already matched
+		   .set(q->q.getPlan(0).addVarBinding("f1", ResourceFactory.createResource(featureIRI.getURI()))) //bind the last intermediate feature (featureIRi) to filter out every dimension which are already matched
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
@@ -79,18 +83,22 @@ public class FeatureProcessMatching {
 		   .onFailure(e->e.printStackTrace(System.out))
 		   .onSuccess(m->localKB.add(m))
 		   ;
+		reloadKB("FPM-local-transfer-feature-specification.rdf");
 	}
 	
 	/**
 	 * event to update capability
 	 */
-	public void loadCapability(String processType){
+	public void loadCapability(Node processIRI){
+
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"load capability for process "+ processIRI.getURI());
 		//load capability with both max and min as equation
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"running rule transfer-capability-measure.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(prop.getIRIPath(IMPM.capability_IMPM))) //capability repository 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-measure.rq"))
-		   .set(q->q.getPlan(0).addVarBinding("pType", ResourceFactory.createResource(processType)))
+		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
@@ -99,11 +107,12 @@ public class FeatureProcessMatching {
 		   .onSuccess(m->localKB.add(m));
 		
 		//load capability with max as measurement and min as equation
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"running rule transfer-capability-measure-equation.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(prop.getIRIPath(IMPM.capability_IMPM))) //capability repository 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-measure-equation.rq"))
-		   .set(q->q.getPlan(0).addVarBinding("pType", ResourceFactory.createResource(processType)))
+		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
@@ -112,17 +121,20 @@ public class FeatureProcessMatching {
 		   .onSuccess(m->localKB.add(m));
 		
 		//load capability with max as equation and min as measurement
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"running rule transfer-capability-equation-measure.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(prop.getIRIPath(IMPM.capability_IMPM))) //capability repository 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-equation-measure.rq"))
-		   .set(q->q.getPlan(0).addVarBinding("pType", ResourceFactory.createResource(processType)))
+		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
 		   .onSuccess(m->localKB.add(m));
+		
+		reloadKB("FPM-local-transfer-capability.rdf");
 	}	
 	
 	/**
@@ -132,20 +144,50 @@ public class FeatureProcessMatching {
 	 * @param processType type of process to be matched
 	 * @return process IRIs generated for each function (capability profile) matched 
 	 */
-	public static Node[] ask_to_match(String featureName, String processType){
+	public static Node ask_to_match(Node featureIRI, Node processIRI){
+		
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"Testing whether feature " + featureIRI.getURI() + " matches process " + processIRI.getURI() + "|\n");
+		
 		FeatureProcessMatching matching = new FeatureProcessMatching(new String[]{});
-		matching.loadSpecifications(featureName);
-		matching.loadCapability(processType);
-		matching.execute(featureName, processType);
-		return null; 
+		
+		//load localKB 
+		matching.loadSpecifications(featureIRI);
+		matching.loadCapability(processIRI);
+		
+		//perform core rules
+		matching.execute();
+		
+		//perform updates to global KB
+		matching.postProcessing();
+		
+		//select result of execution
+		return matching.selectResult(featureIRI); 
 	} 
-	
-	
-	
-	public void execute(String featureName, String processType){
+
+	private Node selectResult(Node featureIRI) {
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"select intermediate feature to return.");
+		List<Node> intermFeatures = new LinkedList<Node>();
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addABox(localKB))
+		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/core/select_interim_feature.rq"))
+		   .set(q->q.setSelectPostProcess(t->{
+			   t.rows().forEachRemaining(b->{
+				   intermFeatures.add(b.get(Var.alloc("f1")));
+			   });
+			   return t;
+		   }))
+		   .map(q->q.execute());
+		
+		return intermFeatures.size()>0?intermFeatures.get(0):null;
+	}
+
+	public void execute(){
 		
 		//first rule: assign ibe of specifications to corresponding argument ICE by matching argument type with specification type
 		//localKB.write(System.out, "NTRIPLE");
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"running rule transform-capability-equation1... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
@@ -159,6 +201,7 @@ public class FeatureProcessMatching {
 		
 		//second rule: assign concatenated argument sepcifications to equations ICE with is_tokenized_by
 		//localKB.write(System.out, "NTRIPLE");
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"running rule transform-capability-equation2... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
@@ -172,6 +215,7 @@ public class FeatureProcessMatching {
 		
 		//second rule: assign concatenated argument sepcifications to equations ICE with is_tokenized_by
 		//localKB.write(System.out, "NTRIPLE");
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"running rule transform-capability-equation3... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
@@ -186,6 +230,7 @@ public class FeatureProcessMatching {
 		reloadKB("before-match1.rdf");
 		
 		//third rule: specification-capability matching for max and min both measurement type
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"running rule specification-capability-matching-limit.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
@@ -195,22 +240,38 @@ public class FeatureProcessMatching {
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
-		   .set(m->localKB.add(m))
-		   .set(m->GlobalKnowledge.addModel(m));
-		
-		//create an intermediate feature 
-		//third rule: specification-capability matching for max and min both measurement type
+		   .set(m->localKB.add(m));		
+
+	}	
+	
+	private void postProcessing() {
+		//create an intermediate feature (only when at least one dimension spec is concretized)
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"running rule create-interm-feature.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
-		   .set(q->q.addPlan("resources/META-INF/rules/core/create-output-feature.rq"))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/create-interm-feature.rq"))
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
 		   .set(m->localKB.add(m))
-		   .set(m->GlobalKnowledge.addModel(m));
+		   .set(m->GlobalKnowledge.appendPartKB(m));
+		
+		//assert dimensions to intermediate feature 
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"running rule create-interm-feature-dimensions.rq... ");
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addABox(localKB)) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/create-interm-feature-dimensions.rq"))
+		   .set(q->q.setLocal=true)
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .set(m->localKB.add(m))
+		   .set(m->GlobalKnowledge.appendPartKB(m));
 	}
 	
 	public Double matchSpecCapMeasure(Double dim, Double max, Double min) throws Exception{

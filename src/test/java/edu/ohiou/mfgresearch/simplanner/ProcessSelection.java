@@ -223,13 +223,13 @@ public class ProcessSelection {
 		
 		FeatureProcessMatching hs = new FeatureProcessMatching(new String[]{});
 		
-		hs.loadSpecifications("SIMPLE HOLE(4)");
-		hs.loadCapability("http://www.ohio.edu/ontologies/manufacturing-capability#TwistDrilling");
+		hs.loadSpecifications(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/5/2/724804#FormFeature_I3443").asNode());
+		hs.loadCapability(ResourceFactory.createResource("http://www.ohio.edu/ontologies/capability-implanner#twistdrilling0101").asNode());
 		
 		System.out.println("---------------------------------------------------------------------------------------------------------------------");
 		System.out.println("---------------------------------------------------------------------------------------------------------------------");
 		
-		hs.execute("SIMPLE HOLE(4)", "http://www.ohio.edu/ontologies/manufacturing-capability#TwistDrilling");				
+		hs.execute();				
 		
 //		try {
 //			hs.getLocalKB().write(new FileOutputStream(new File("C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/plan1.rdf")), "RDF/XML");
@@ -237,8 +237,6 @@ public class ProcessSelection {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-		
-		
 		
 //		Uni.of(FunQL::new)
 //		   .set(q->q.addTBox("C:/Users/sarkara1/git/SIMPOM/resource/mfg-resource.owl"))
@@ -265,20 +263,18 @@ public class ProcessSelection {
 		try {
 			selection.getLocalKB().write(new FileOutputStream(new File(new PropertyReader().getNS("git1")+"impm-ind/plan/psec-int-1.rdf")), "RDF/XML");
 		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
-//		   .set(q->q.addABox(ModelFactory.createDefaultModel().read("C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/plan1.rdf")))
-		   .set(q->q.addABox(selection.getLocalKB()))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/process-selection-1.rq"))
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getaBox())
-		   .onFailure(e->e.printStackTrace(System.out));
+//		Uni.of(FunQL::new)
+//		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+//		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+//		   .set(q->q.addABox(selection.getLocalKB()))
+//		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/test/process-selection-1.rq"))
+//		   .map(q->q.execute())
+//		   .map(q->q.getBelief())
+//		   .map(b->b.getaBox())
+//		   .onFailure(e->e.printStackTrace(System.out));
 	}
 
 }

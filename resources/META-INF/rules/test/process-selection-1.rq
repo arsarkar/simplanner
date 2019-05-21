@@ -2,19 +2,21 @@ PREFIX  rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
 PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
 PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
 
-SELECT ?pTypeNext ?f 
+SELECT ?pType ?f
 WHERE{
 ?p0	rdf:type plan:RootProcess.
 ?p0	rdf:type plan:PlannedProcess.
-?p0	plan:succeeds* ?pCurrent.
+?p0	plan:precedes* ?pCurrent.
 
-?pCurrent   rdf:type	?pType.
-?pPrevious	rdf:type	?pType.
+?pCurrent   rdf:type	?pTNext.
+?pPrevious	rdf:type	?pTNext.
 ?pPrevious	plan:hasSucceedingProcess ?pNext.
-?pNext		rdf:type	?pTypeNext.
+?pNext		rdf:type	?pType.
 
-?pCurrent	cco:has_output	?f.
+?pCurrent	cco:has_output		?f.
+?f				rdf:type		design:FormFeature.
 
-FILTER NOT EXISTS {?pCurrent plan:succeeds ?p2}.
+FILTER NOT EXISTS {?pCurrent plan:precedes ?p2}.
 }
