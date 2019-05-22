@@ -118,7 +118,8 @@ public class FeatureProcessSelection {
 		boolean stopIteration = false;
 
 		Graph g = new Graph();
-		GraphViewer v = new GraphViewer(g, new FeatureProcessLayouter(g, new Point2D.Double(0,0)), GraphViewer.VIEW_2D);
+		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, new Point2D.Double(0,0));
+		GraphViewer v = new GraphViewer(g,fpl, GraphViewer.VIEW_2D);
 		v.display();
 		int counter = 0;
 //		
@@ -166,7 +167,7 @@ public class FeatureProcessSelection {
 					   .get();	
 			
 			//display the new planned processes in the tree display
-			
+			fpl.currentY += 1.0;
 			
 			stopIteration = !isSuccessful;
 //			g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node ("a" + counter));
