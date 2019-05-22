@@ -166,12 +166,27 @@ public class FeatureProcessMatching {
 
 	private Node selectResult(Node featureIRI) {
 		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"select intermediate feature to return.");
+		
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"running rule mark-unsatisfied-feature.rq... ");
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addABox(localKB)) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/mark-unsatisfied-feature.rq"))
+		   .set(q->q.getPlan(0).addVarBinding("f1", ResourceFactory.createResource(featureIRI.getURI())))
+		   .set(q->q.setLocal=true)
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .set(m->localKB.add(m))
+		   .set(m->GlobalKnowledge.appendPartKB(m));
+		
 		List<Node> intermFeatures = new LinkedList<Node>();
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
 		   .set(q->q.addABox(localKB))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/core/select_interim_feature.rq"))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/select_interim_feature.rq"))
 		   .set(q->q.setSelectPostProcess(t->{
 			   t.rows().forEachRemaining(b->{
 				   intermFeatures.add(b.get(Var.alloc("f1")));
@@ -241,6 +256,18 @@ public class FeatureProcessMatching {
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
 		   .set(m->localKB.add(m));		
+		
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"running rule specification-capability-not-matching-limit.rq... ");
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addABox(localKB)) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/specification-capability-not-matching-limit.rq"))
+		   .set(q->q.setLocal=true)
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .set(m->localKB.add(m));	
 
 	}	
 	
@@ -251,6 +278,19 @@ public class FeatureProcessMatching {
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create-interm-feature.rq"))
+		   .set(q->q.setLocal=true)
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .set(m->localKB.add(m))
+		   .set(m->GlobalKnowledge.appendPartKB(m));
+		
+		System.out.println("\n||"+FeatureProcessMatching.class.getSimpleName()+"||>>"+"running rule create-final-feature.rq... ");
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addABox(localKB)) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/create-final-feature.rq"))
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
