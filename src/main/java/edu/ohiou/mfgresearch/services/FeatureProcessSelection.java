@@ -1,5 +1,6 @@
 package edu.ohiou.mfgresearch.services;
 
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileOutputStream;
 
@@ -9,9 +10,12 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
 
 import edu.ohiou.mfgresearch.io.FunQL;
+import edu.ohiou.mfgresearch.labimp.graph.Graph;
+import edu.ohiou.mfgresearch.labimp.graph.GraphViewer;
 import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
+import edu.ohiou.mfgresearch.reader.graph.FeatureProcessLayouter;
 import edu.ohiou.mfgresearch.simplanner.IMPM;
 
 public class FeatureProcessSelection {
@@ -99,7 +103,10 @@ public class FeatureProcessSelection {
 		
 		//get the latest process planned 
 		boolean stopIteration = false;
-		
+		Graph g = new Graph();
+		GraphViewer v = new GraphViewer(g, new FeatureProcessLayouter(g, new Point2D.Double(0,0)), GraphViewer.VIEW_2D);
+		v.display();
+		int i = 0;
 		while(!stopIteration){
 			System.out.println("\n||"+this.getClass().getSimpleName()+"||>>"+"match feature by process-planning-1.rq");
 			boolean	isSuccessful = 	
@@ -115,6 +122,8 @@ public class FeatureProcessSelection {
 					   .map(q->q.isQuerySuccess())
 					   .get();	
 			stopIteration = !isSuccessful;
+			g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node ("a" + i));
+			i++;
 		}
 	}
 	
