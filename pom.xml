@@ -154,5 +154,10 @@
 			<version>1.7.25</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>edu.ohiou.mfgresearch</groupId>
+			<artifactId>labimp.graph</artifactId>
+			<version>1.0</version>
+		</dependency>
   </dependencies>
 </project>
