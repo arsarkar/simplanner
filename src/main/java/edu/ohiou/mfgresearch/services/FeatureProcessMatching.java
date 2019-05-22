@@ -171,7 +171,7 @@ public class FeatureProcessMatching {
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
 		   .set(q->q.addABox(localKB))
-		   .set(q->q.addPlan("C:/Users/sarkara1/git/simplanner/resources/META-INF/rules/core/select_interim_feature.rq"))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/select_interim_feature.rq"))
 		   .set(q->q.setSelectPostProcess(t->{
 			   t.rows().forEachRemaining(b->{
 				   intermFeatures.add(b.get(Var.alloc("f1")));
