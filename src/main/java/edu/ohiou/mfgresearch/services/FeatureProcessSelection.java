@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.labimp.graph.Arc;
 import edu.ohiou.mfgresearch.labimp.graph.DirectedArc;
+import edu.ohiou.mfgresearch.labimp.graph.Graph;
 import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
@@ -116,7 +117,7 @@ public class FeatureProcessSelection {
 		
 		while(!stopIteration){
 			counter += 1;
-			System.out.println("\n||"+this.getClass().getSimpleName()+"||>>"+"match feature by process-planning-1.rq. iteration ---> " + counter);
+			log.info("match feature by process-planning-1.rq. iteration ---> " + counter);
 			boolean	isSuccessful = 	
 					Uni.of(FunQL::new)
 					   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
@@ -144,7 +145,6 @@ public class FeatureProcessSelection {
 					   .get();	
 			
 			//display the new planned processes in the tree display
-			
 			
 			stopIteration = !isSuccessful;
 		}
