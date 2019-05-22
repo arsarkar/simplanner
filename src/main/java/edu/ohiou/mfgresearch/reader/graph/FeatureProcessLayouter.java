@@ -15,7 +15,7 @@ import edu.ohiou.mfgresearch.labimp.graph.*;
 public class FeatureProcessLayouter extends GraphLayouter {
 	
 	double currentX = 0.0;
-	double currentY = 0.0;
+	public double currentY = 0.0;
 
 	/**
 	 * @param graph
@@ -29,7 +29,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	public void nodeAdded(Node n) {
 		vertices.put(n, new Vertex (n, new Point2D.Double(currentX, currentY)));
 		currentX += 1.0;
-		currentY += 1.0;
+//		
 		if (canvas != null) canvas.repaint();
 	}
 
