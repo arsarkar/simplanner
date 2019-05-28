@@ -1,5 +1,6 @@
 package edu.ohiou.mfgresearch.services;
 
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.LinkedList;
@@ -15,12 +16,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.ohiou.mfgresearch.io.FunQL;
+import edu.ohiou.mfgresearch.labimp.graph.Graph;
+import edu.ohiou.mfgresearch.labimp.graph.GraphViewer;
+import edu.ohiou.mfgresearch.labimp.graph.NotMemberException;
+import edu.ohiou.mfgresearch.labimp.graph.AlreadyMemberException;
 import edu.ohiou.mfgresearch.labimp.graph.Arc;
 import edu.ohiou.mfgresearch.labimp.graph.DirectedArc;
-import edu.ohiou.mfgresearch.labimp.graph.Graph;
+
 import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
+import edu.ohiou.mfgresearch.reader.graph.FeatureProcessLayouter;
 import edu.ohiou.mfgresearch.simplanner.IMPM;
 
 public class FeatureProcessSelection {
@@ -110,14 +116,18 @@ public class FeatureProcessSelection {
 		
 		//get the latest process planned 
 		boolean stopIteration = false;
+
+		Graph g = new Graph();
+		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 10.0);
+		GraphViewer v = new GraphViewer(g,fpl, GraphViewer.VIEW_2D);
+		v.display();
 		int counter = 0;
-		
-		List<edu.ohiou.mfgresearch.labimp.graph.Node> nodes = new LinkedList<edu.ohiou.mfgresearch.labimp.graph.Node>();
-		List<Arc> arcs = new LinkedList<Arc>();
-		
+//		
+//		List<edu.ohiou.mfgresearch.labimp.graph.Node> nodes = new LinkedList<edu.ohiou.mfgresearch.labimp.graph.Node>();
+//		List<Arc> arcs = new LinkedList<Arc>();
 		while(!stopIteration){
 			counter += 1;
-			log.info("match feature by process-planning-1.rq. iteration ---> " + counter);
+//			System.out.println("\n||"+this.getClass().getSimpleName()+"||>>"+"match feature by process-planning-1.rq. iteration ---> " + counter);
 			boolean	isSuccessful = 	
 					Uni.of(FunQL::new)
 					   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
@@ -127,15 +137,23 @@ public class FeatureProcessSelection {
 					   .set(q->q.addABox(GlobalKnowledge.getPlan()))
 					   .set(q->q.addPlan("resources/META-INF/rules/core/process-planning-1.rq"))
 					   .set(q->q.setLocal=true)
-					   .set(q->q.setSelectPostProcess(tab->{
+					   .set(q->q.setServicePostProcess(tab->{
+						   int numChildren = tab.size();
+						   if(fpl.getRank()>0) fpl.nextOrbit();
+						   fpl.setNumPlanets(numChildren);
 						   tab.rows().forEachRemaining(b->{
-							   Node parent = b.get(Var.alloc("pCurrent"));
-							   edu.ohiou.mfgresearch.labimp.graph.Node labParentNode = new edu.ohiou.mfgresearch.labimp.graph.Node(parent);
-							   if(!nodes.contains(labParentNode)) nodes.add(labParentNode);
-							   Node child = b.get(Var.alloc("pNext"));
-							   edu.ohiou.mfgresearch.labimp.graph.Node labChildNode = new edu.ohiou.mfgresearch.labimp.graph.Node(parent);
-							   if(!nodes.contains(labChildNode)) nodes.add(labChildNode);
-							   arcs.add(new DirectedArc(labParentNode, labChildNode));
+							   Node parent = b.get(Var.alloc("pCurrent"));	
+							   if(fpl.getRank()==0) {
+								   g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (parent.getLocalName()));
+								   fpl.nextOrbit();
+							   }
+							   Node child = b.get(Var.alloc("pNext1"));
+							   if (!g.hasObject(child.getLocalName())) {
+								   g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (child.getLocalName()));
+								   Uni.of(g)
+								   	  .set(g1->g1.addDirectedArc(parent.getLocalName(), child.getLocalName(), new String("precedes")))
+								   	  .onFailure(e->e.printStackTrace(System.out));
+							   }
 						   });
 						   return tab;
 					   }))
@@ -147,6 +165,7 @@ public class FeatureProcessSelection {
 			//display the new planned processes in the tree display
 			
 			stopIteration = !isSuccessful;
+		
 		}
 	}
 	
