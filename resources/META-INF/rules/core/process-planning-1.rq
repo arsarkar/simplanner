@@ -27,7 +27,6 @@ WHERE{
 
 ?pCurrent	cco:has_output		?f1.
 ?f1			rdf:type					design:FormFeature.
-
 FILTER NOT EXISTS {?pCurrent plan:precedes ?p2}.
 }
 FUNCTION{

@@ -11,6 +11,7 @@ cco:inheres_in			rdf:type owl:ObjectProperty .
 			cco:inheres_in       ?i1;
 			cco:inheres_in       ?i2.
  ?f1   rdf:type              design:FormFeature;
+		rdf:type				 design:IntermediateFeature;
 		cco:designated_by ?ice1.
 }
 WHERE{

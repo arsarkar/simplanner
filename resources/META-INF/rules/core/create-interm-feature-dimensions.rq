@@ -16,6 +16,7 @@ WHERE{
  ?fq  	rdf:type              design:FeatureQualityMap;
 		design:describes_map_with ?f;
 		design:describes_map_with ?d.	
+		
  ?d1	cco:concretizes	?d;
 		rdf:type				?dt.
  ?f1	  rdf:type			design:FormFeature;
