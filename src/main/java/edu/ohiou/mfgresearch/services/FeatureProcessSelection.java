@@ -118,7 +118,7 @@ public class FeatureProcessSelection {
 		boolean stopIteration = false;
 
 		Graph g = new Graph();
-		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 10.0);
+		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 5.0);
 		GraphViewer v = new GraphViewer(g,fpl, GraphViewer.VIEW_2D);
 		v.display();
 		int counter = 0;
@@ -155,6 +155,7 @@ public class FeatureProcessSelection {
 								   	  .onFailure(e->e.printStackTrace(System.out));
 							   }
 						   });
+						   fpl.repositionEdges();
 						   return tab;
 					   }))
 					   .map(q->q.execute())
