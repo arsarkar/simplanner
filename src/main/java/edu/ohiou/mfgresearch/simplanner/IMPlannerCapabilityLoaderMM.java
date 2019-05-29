@@ -21,7 +21,7 @@ public class IMPlannerCapabilityLoaderMM {
 			//Hole starting function
 			//spot drilling profile
 			String holeStarting1 = graph.postFunction("HoleStarting", "http://www.ohio.edu/ontologies/capability-implanner#spotdrilling0101");
-			graph.postCapability("function="+holeStarting1, "capability=TruePosition", "min=0.000154", "max=99999999999.99", "reference=http://www.ohio.edu/ontologies/design#TruePositionSpecification");
+			graph.postCapability("function="+holeStarting1, "capability=TruePosition", "min=0", "max=0.000154", "reference=http://www.ohio.edu/ontologies/design#TruePositionSpecification");
 //			graph.postCapability("function="+holeStarting1, "capability=ToolDiameter", "min=1.5875", "max=50.8", "reference=http://www.ohio.edu/ontologies/design#DiameterSpecification");
 //			graph.postCapability("function="+holeStarting1, "capability=PositiveTolerance", "min=((0.3527 * (sqrt ?arg1)) + 0.762)", "max=99999999999.99", "arg1=http://www.ohio.edu/ontologies/design#DiameterSpecification", "reference=http://www.ohio.edu/ontologies/design#PositiveToleranceSpecification");
 //			graph.postCapability("function="+holeStarting1, "capability=NegativeTolerance", "min=(0.3527 * (sqrt ?arg1) )", "max=99999999999.99", "arg1=http://www.ohio.edu/ontologies/design#DiameterSpecification", "reference=http://www.ohio.edu/ontologies/design#NegativeToleranceSpecification");

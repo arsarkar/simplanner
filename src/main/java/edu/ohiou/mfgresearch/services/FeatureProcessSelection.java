@@ -118,15 +118,21 @@ public class FeatureProcessSelection {
 		boolean stopIteration = false;
 
 		Graph g = new Graph();
-		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, new Point2D.Double(0,0));
+
+//		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, new Point2D.Double(0,0));
+
+		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 10.0);
+
 		GraphViewer v = new GraphViewer(g,fpl, GraphViewer.VIEW_2D);
 		v.display();
 		int counter = 0;
 //		
 //		List<edu.ohiou.mfgresearch.labimp.graph.Node> nodes = new LinkedList<edu.ohiou.mfgresearch.labimp.graph.Node>();
 //		List<Arc> arcs = new LinkedList<Arc>();
+
 //		
 //>>>>>>> df48bb43aecb02eab998c0e3b45cf21787386286
+
 		while(!stopIteration){
 			counter += 1;
 //			System.out.println("\n||"+this.getClass().getSimpleName()+"||>>"+"match feature by process-planning-1.rq. iteration ---> " + counter);
@@ -139,25 +145,25 @@ public class FeatureProcessSelection {
 					   .set(q->q.addABox(GlobalKnowledge.getPlan()))
 					   .set(q->q.addPlan("resources/META-INF/rules/core/process-planning-1.rq"))
 					   .set(q->q.setLocal=true)
-					   .set(q->q.setSelectPostProcess(tab->{
+
+					   .set(q->q.setServicePostProcess(tab->{
+						   int numChildren = tab.size();
+						   if(fpl.getRank()>0) fpl.nextOrbit();
+						   fpl.setNumPlanets(numChildren);
 						   tab.rows().forEachRemaining(b->{
-							   Node parent = b.get(Var.alloc("pCurrent"));
-							   
-							   if (!g.hasObject(parent.getLocalName())) {
+							   Node parent = b.get(Var.alloc("pCurrent"));	
+							   if(fpl.getRank()==0) {
 								   g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (parent.getLocalName()));
+								   fpl.nextOrbit();
 							   }
-//							   edu.ohiou.mfgresearch.labimp.graph.Node labParentNode = new edu.ohiou.mfgresearch.labimp.graph.Node(parent);
-//							   if(!nodes.contains(labParentNode)) nodes.add(labParentNode);
-							   Node child = b.get(Var.alloc("pNext"));
+							   Node child = b.get(Var.alloc("pNext1"));
 							   if (!g.hasObject(child.getLocalName())) {
 								   g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (child.getLocalName()));
 								   Uni.of(g)
-								   	  .set(g1->g1.addDirectedArc(parent.getLocalName(), child.getLocalName()))
+								   	  .set(g1->g1.addDirectedArc(parent.getLocalName(), child.getLocalName(), new String("precedes")))
 								   	  .onFailure(e->e.printStackTrace(System.out));
 							   }
-//							   edu.ohiou.mfgresearch.labimp.graph.Node labChildNode = new edu.ohiou.mfgresearch.labimp.graph.Node(parent);
-//							   if(!nodes.contains(labChildNode)) nodes.add(labChildNode);
-//							   arcs.add(new DirectedArc(labParentNode, labChildNode));
+
 						   });
 						   return tab;
 					   }))
@@ -167,10 +173,9 @@ public class FeatureProcessSelection {
 					   .get();	
 			
 			//display the new planned processes in the tree display
-			fpl.currentY += 1.0;
-			
+
 			stopIteration = !isSuccessful;
-//			g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node ("a" + counter));
+
 		
 		}
 	}
