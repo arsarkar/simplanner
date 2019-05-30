@@ -26,6 +26,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	int rankOfOrbit = 0;
 	int numPlanets = 0;
 	double angle = Math.PI;
+	double beginAngle, endAngle, expansionFactor;
 	List<PlanetPosition> positions = new LinkedList<PlanetPosition>(); 
 	Map<Node, double[]> orbitRanges = new HashMap<Node, double[]>();
 	Map<Node, Integer> numChildren = new HashMap<Node, Integer>();
@@ -36,9 +37,12 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	 * @param graph
 	 * @param point
 	 */
-	public FeatureProcessLayouter(Graph graph, double deltaRadius) {
+	public FeatureProcessLayouter(Graph graph, double deltaRadius, double beginAngle, double endAngle, double expansionFactor) {
 		super(graph, new Point2D.Double(0,0));
 		this.deltaRadius = deltaRadius;
+		this.beginAngle = beginAngle;
+		this.endAngle = endAngle;
+		this.expansionFactor = expansionFactor;
 	}
 	
 	public void nextOrbit(){
@@ -47,6 +51,8 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		numChildren.clear();
 		currentArcs.clear();
 		calculateNextOrbitPositions();
+//		beginAngle = beginAngle * (expansionFactor - 1);
+//		endAngle = endAngle * (1 + expansionFactor);
 	}
 
 	public int getRank(){
@@ -70,31 +76,6 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	@Override
 	public void arcAdded(Arc a) {
 		super.arcAdded(a);
-//		try {				
-//			Arc2d arc = new Arc2d(new Point2d(0.0, 0.0), deltaRadius*rankOfOrbit);
-//			
-//			if(orbitRanges.size()>0){
-//				Node parent = a.getParentNode();
-//				if(numChildren.get(parent)!=null){
-//					numChildren.put(parent, numChildren.get(parent)+1);
-//				}
-//				else{
-//					numChildren.put(parent, 1);
-//				}
-//				double[] posRange = orbitRanges.get(parent);
-//				
-//				angle = angle + posRange[0] + (posRange[1]-posRange[0]) / numChildren.get(parent);
-//			}
-//			else{
-//				angle = angle + (360/numPlanets)*(Math.PI/180);
-//			}
-//			
-////			positions.add(new PlanetPosition(a.getChildNode(), angle));
-//			Point2d p = arc.getPoint(angle);
-//			vertices.put(a.getChildNode(), new Vertex (a.getChildNode(), new Point2D.Double(p.x, p.y)));
-//		} catch (InvalidArcException e) {
-//			e.printStackTrace();
-//		}
 		if(rankOfOrbit>0) {
 			currentArcs.add(a);
 			Node parent = a.getParentNode();
@@ -109,20 +90,12 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	
 	@Override
 	public void repositionEdges() {
-		//sort by parents
-//		Collections.sort(positions, (p1, p2)->{
-//			if(p1.getParent()==null) return 0;
-//			if(p1.getParent().equals(p2.getParent())){
-//				return 0;
-//			}
-//			return 1;
-//		});
-		
-		//create an orbit
-		Arc2d arc = Uni.of(deltaRadius*rankOfOrbit).map(r->new Arc2d(new Point2d(0.0, 0.0), r)).get();
 		
 		//add children planents for each parent planet
-		for(Node parent:numChildren.keySet()){
+		for(Node parent:numChildren.keySet()){			
+			//create an orbit
+			Point2D center = vertices.get(parent).geettPosition();
+			Arc2d arc = Uni.of(deltaRadius).map(r->new Arc2d(new Point2d(center.getX(), center.getY()), r)).get();
 			//get the range of angle for this parent
 			double[] posRange = orbitRanges.get(parent);
 			double spacing = (posRange[1]-posRange[0]) / (numChildren.get(parent));
@@ -149,7 +122,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		// TODO Auto-generated method stub
 		LinkedList<Shape> returnList = super.geetDrawList();
 		try {
-			returnList.addAll(new Arc2d(new Point2d(0.0, 0.0), deltaRadius*rankOfOrbit).geetDrawList());
+			if(rankOfOrbit>0) returnList.addAll(new Arc2d(new Point2d(0.0, 0.0), deltaRadius*rankOfOrbit).geetDrawList());
 		} catch (InvalidArcException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -175,28 +148,50 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		Collections.sort(positions, (p1, p2)->{
 			return p1.angle>p2.angle?1:(p1.angle==p2.angle?0:-1);
 		});
-		int s = positions.size();
-		orbitRanges.clear();
-		for(int i=0;i<s;i++){
-			int previ = i-1<0?s-1:i-1;double ba = 0.0;double ea= 0.0;
-			if(positions.get(i).getAngle() > positions.get(previ).getAngle()){
-				ba = positions.get(previ).getAngle() + (Math.abs(positions.get(i).getAngle() - positions.get(previ).getAngle()) / 2);
+		
+		if(rankOfOrbit==1){
+			//when parent is only a center
+			orbitRanges.put(positions.get(0).getN(), new double[]{beginAngle, endAngle});
+		}
+		else{
+			int s = positions.size();
+			double bAngle = 0, eAngle = 0;
+			for(int i=0;i<s;i++){
+				if(i==0){
+					bAngle = beginAngle;
+					eAngle = positions.get(i).getAngle() + (Math.abs(positions.get(i+1).getAngle() - positions.get(i).getAngle()) / 2);
+				}
+				else if(i==s-1){
+					bAngle = positions.get(i-1).getAngle() + (Math.abs(positions.get(i).getAngle() - positions.get(i-1).getAngle()) / 2);
+					eAngle = endAngle;
+				}
+				else{
+					bAngle = positions.get(i-1).getAngle() + (Math.abs(positions.get(i).getAngle() - positions.get(i-1).getAngle()) / 2);
+					eAngle = positions.get(i).getAngle() + (Math.abs(positions.get(i+1).getAngle() - positions.get(i).getAngle()) / 2);
+				}
+				
+//				int previ = i-1<0?s-1:i-1; double ba = 0.0;double ea= 0.0;
+//				if(positions.get(i).getAngle() > positions.get(previ).getAngle()){
+//					ba = positions.get(previ).getAngle() + (Math.abs(positions.get(i).getAngle() - positions.get(previ).getAngle()) / 2);
+//				}
+//				else if(positions.get(i).getAngle() < positions.get(previ).getAngle()){
+//					ba = positions.get(previ).getAngle() + (Math.abs(positions.get(i).getAngle() + (Math.PI*2 - positions.get(previ).getAngle())) / 2);
+//				}
+//				ba = ba>Math.PI*2?ba-Math.PI*2:ba;
+//				ba = ba==Math.PI*2?0:ba;
+//				
+//				int nexti = i+1<s?i+1:0;
+//				if(positions.get(nexti).getAngle() > positions.get(i).getAngle()){
+//					ea = positions.get(i).getAngle() + (Math.abs(positions.get(nexti).getAngle() - positions.get(i).getAngle()) / 2);
+//				}
+//				else if(positions.get(nexti).getAngle() < positions.get(i).getAngle()){
+//					ea = positions.get(i).getAngle() + (Math.abs(positions.get(nexti).getAngle() + (Math.PI*2 - positions.get(i).getAngle())) / 2);
+//				}
+//				ea = ea>Math.PI*2?ea-Math.PI*2:ea;
+//				ea = ea==Math.PI*2?0:ea;
+				
+				orbitRanges.put(positions.get(i).getN(), new double[]{bAngle, eAngle});
 			}
-			else if(positions.get(i).getAngle() < positions.get(previ).getAngle()){
-				ba = positions.get(previ).getAngle() + (Math.abs(positions.get(i).getAngle() + (Math.PI*2 - positions.get(previ).getAngle())) / 2);
-			}
-			ba = ba>Math.PI*2&&ba!=0.0?ba-Math.PI*2:ba;
-			ba = ba==Math.PI*2?0:ba;
-			int nexti = i+1<s?i+1:0;
-			if(positions.get(nexti).getAngle() > positions.get(i).getAngle()){
-				ea = positions.get(i).getAngle() + (Math.abs(positions.get(nexti).getAngle() - positions.get(i).getAngle()) / 2);
-			}
-			else if(positions.get(nexti).getAngle() < positions.get(i).getAngle()){
-				ea = positions.get(i).getAngle() + (Math.abs(positions.get(nexti).getAngle() + (Math.PI*2 - positions.get(i).getAngle())) / 2);
-			}
-			ea = ea>Math.PI*2&&ea!=0.0?ea-Math.PI*2:ea;
-			ea = ea==Math.PI*2?0:ea;
-			orbitRanges.put(positions.get(i).getN(), new double[]{ba, ea==0?Math.PI*2:ea});
 		}
 		positions.clear();
 	}
