@@ -121,7 +121,7 @@ public class FeatureProcessSelection {
 
 //		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, new Point2D.Double(0,0));
 
-		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 10.0, 3, 5, 1.2);
+		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 10.0, 3, 5, 1.09);
 
 		GraphViewer v = new GraphViewer(g,fpl, GraphViewer.VIEW_2D);
 		v.display();
@@ -151,18 +151,27 @@ public class FeatureProcessSelection {
 						   if(fpl.getRank()>0) fpl.nextOrbit();
 						   fpl.setNumPlanets(numChildren);
 						   tab.rows().forEachRemaining(b->{
+							   //add the last process planned, only fires for start process
 							   Node parent = b.get(Var.alloc("pCurrent"));	
 							   if(fpl.getRank()==0) {
 								   g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (parent.getLocalName()));
 								   fpl.nextOrbit();
 							   }
+							   //get the new process individual created
 							   Node child = b.get(Var.alloc("pNext1"));
 							   if (!g.hasObject(child.getLocalName())) {
 								   g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (child.getLocalName()));
 								   Uni.of(g)
 								   	  .set(g1->g1.addDirectedArc(parent.getLocalName(), child.getLocalName(), new String("precedes")))
 								   	  .onFailure(e->e.printStackTrace(System.out));
+								   //get new interm feature created
+								   Node iFeature = b.get(Var.alloc("f2"));
+								   g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (iFeature.getLocalName()));
+								   Uni.of(g)
+								   	  .set(g1->g1.addDirectedArc(child.getLocalName(), iFeature.getLocalName(), new String("has_output")))
+								   	  .onFailure(e->e.printStackTrace(System.out));
 							   }
+							   
 
 						   });
 						   fpl.repositionEdges();
