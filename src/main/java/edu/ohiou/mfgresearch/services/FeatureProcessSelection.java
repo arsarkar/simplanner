@@ -121,7 +121,7 @@ public class FeatureProcessSelection {
 
 //		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, new Point2D.Double(0,0));
 
-		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 10.0);
+		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 10.0, 3, 5, 1.2);
 
 		GraphViewer v = new GraphViewer(g,fpl, GraphViewer.VIEW_2D);
 		v.display();
