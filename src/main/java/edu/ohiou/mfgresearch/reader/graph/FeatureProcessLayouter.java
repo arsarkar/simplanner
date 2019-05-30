@@ -1,4 +1,6 @@
-
+/**
+ * 
+ */
 package edu.ohiou.mfgresearch.reader.graph;
 
 import java.awt.Shape;
@@ -119,6 +121,10 @@ public class FeatureProcessLayouter extends GraphLayouter {
 //			return 1;
 //		});
 		
+		currentArcs.sort((a1,a2)->{
+			return a1.getChildNode().toString().compareTo(a2.getChildNode().toString());
+		});
+		
 		//create an orbit
 		Arc2d arc = Uni.of(deltaRadius*rankOfOrbit).map(r->new Arc2d(new Point2d(0.0, 0.0), r)).get();
 		
@@ -144,7 +150,6 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		super.repositionEdges();
 	}
 	
-	
 	@Override
 	public LinkedList<Shape> geetDrawList() {
 		// TODO Auto-generated method stub
@@ -157,7 +162,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		}
 		return returnList;
 	}
-
+	
 	public Node extractPosition(Node parent){
 		int i = 0;
 		Node child = null;
@@ -179,10 +184,24 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		int s = positions.size();
 		orbitRanges.clear();
 		for(int i=0;i<s;i++){
-			int previ = i-1<0?s-1:i-1;
-			double ba = positions.get(previ).getAngle() + (Math.abs(positions.get(i).getAngle() - positions.get(previ).getAngle()) / 2);
+			int previ = i-1<0?s-1:i-1;double ba = 0.0;double ea= 0.0;
+			if(positions.get(i).getAngle() > positions.get(previ).getAngle()){
+				ba = positions.get(previ).getAngle() + (Math.abs(positions.get(i).getAngle() - positions.get(previ).getAngle()) / 2);
+			}
+			else if(positions.get(i).getAngle() < positions.get(previ).getAngle()){
+				ba = positions.get(previ).getAngle() + (Math.abs(positions.get(i).getAngle() + (Math.PI*2 - positions.get(previ).getAngle())) / 2);
+			}
+			ba = ba>Math.PI*2&&ba!=0.0?ba-Math.PI*2:ba;
+			ba = ba==Math.PI*2?0:ba;
 			int nexti = i+1<s?i+1:0;
-			double ea = positions.get(i).getAngle() + (Math.abs(positions.get(nexti).getAngle() - positions.get(i).getAngle()) / 2);
+			if(positions.get(nexti).getAngle() > positions.get(i).getAngle()){
+				ea = positions.get(i).getAngle() + (Math.abs(positions.get(nexti).getAngle() - positions.get(i).getAngle()) / 2);
+			}
+			else if(positions.get(nexti).getAngle() < positions.get(i).getAngle()){
+				ea = positions.get(i).getAngle() + (Math.abs(positions.get(nexti).getAngle() + (Math.PI*2 - positions.get(i).getAngle())) / 2);
+			}
+			ea = ea>Math.PI*2&&ea!=0.0?ea-Math.PI*2:ea;
+			ea = ea==Math.PI*2?0:ea;
 			orbitRanges.put(positions.get(i).getN(), new double[]{ba, ea==0?Math.PI*2:ea});
 		}
 		positions.clear();
@@ -214,4 +233,3 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	}
 
 }
-
