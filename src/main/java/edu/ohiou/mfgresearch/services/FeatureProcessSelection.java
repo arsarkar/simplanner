@@ -165,6 +165,7 @@ public class FeatureProcessSelection {
 							   }
 
 						   });
+						   fpl.repositionEdges();
 						   return tab;
 					   }))
 					   .map(q->q.execute())
