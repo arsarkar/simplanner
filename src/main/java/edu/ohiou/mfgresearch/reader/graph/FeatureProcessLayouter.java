@@ -1,4 +1,3 @@
-
 package edu.ohiou.mfgresearch.reader.graph;
 
 import java.awt.Shape;
@@ -228,4 +227,3 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	}
 
 }
-
