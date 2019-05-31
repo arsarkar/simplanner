@@ -79,12 +79,12 @@ public class FeatureProcessSelection {
 	}
 	
 	public void loadProcessPrecedence(){
-		log.info("loading process precedence by rule process-precedence-drilling-wo-holestarting.q");
+		log.info("loading process precedence by rule process-precedence-drilling.q");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
 		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-drilling-wo-holestarting.q"))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-drilling-minimal1.q"))
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
@@ -100,7 +100,7 @@ public class FeatureProcessSelection {
 		//is it required for this agent to know specification? I don't think so
 //		matchingService.loadLocalKB(loadSpecifications(featureName)); 
 		//load the plan KB 
-		//localKB.add(GlobalKnowledge.getPlan());
+		//localKB.add(GlobalKnowledge.getPla	n());
 		execute();
 	}
 	
@@ -117,12 +117,12 @@ public class FeatureProcessSelection {
 		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 10.0, 3, 5, 1.09);
 
 		GraphViewer v = new GraphViewer(g,fpl, GraphViewer.VIEW_2D);
-//		if(Boolean.parseBoolean(prop.getProperty("SHOW_PROCESS_GRAPH"))) 
+		if(Boolean.parseBoolean(prop.getProperty("SHOW_PROCESS_GRAPH").trim())) 
 			v.display();
 		
 		//function to select result of process-plan-1 rule and plot in FeatureProcessLayouter
 		Function<Table, Table> plotProcessSelectionTree = tab->{
-//			if(!Boolean.parseBoolean(prop.getProperty("SHOW_PROCESS_GRAPH"))) return tab; 
+			if(!Boolean.parseBoolean(prop.getProperty("SHOW_PROCESS_GRAPH").trim())) return tab; 
 			int numChildren = tab.size();
 			if(fpl.getRank()>0) fpl.nextOrbit();
 			fpl.setNumPlanets(numChildren);

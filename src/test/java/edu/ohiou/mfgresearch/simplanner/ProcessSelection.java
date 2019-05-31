@@ -14,6 +14,7 @@ import org.apache.jena.query.QuerySolutionMap;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.algebra.Table;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,6 +34,18 @@ public class ProcessSelection {
     public void beforeEachTestMethod() {
         prop = new PropertyReader();
     }
+	
+	@Test
+	public void parseBooleanTest(){
+        prop = new PropertyReader();
+        System.out.println(prop.getProperty("SHOW_PROCESS_GRAPH").toCharArray());
+        System.out.println(prop.getProperty("SHOW_PROCESS_GRAPH").toLowerCase().hashCode());
+        System.out.println(new String("true").hashCode());
+        System.out.println(prop.getProperty("SHOW_PROCESS_GRAPH").toLowerCase().trim().equals("true"));
+        System.out.println(Boolean.parseBoolean(prop.getProperty("SHOW_PROCESS_GRAPH").toString()));
+		System.out.println(Boolean.parseBoolean("true"));
+
+	}
 	
 	@Test
 	public void holeTypeFeatureSelection() {

@@ -171,20 +171,6 @@ public class FeatureProcessMatching {
 	private Node selectResult(Node featureIRI) {
 		log.info("select intermediate feature to return.");
 		
-		log.info("running rule mark-unsatisfied-feature.rq... ");
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
-		   .set(q->q.addABox(localKB)) 
-		   .set(q->q.addPlan("resources/META-INF/rules/core/mark-unsatisfied-feature.rq"))
-		   .set(q->q.getPlan(0).addVarBinding("f1", ResourceFactory.createResource(featureIRI.getURI())))
-		   .set(q->q.setLocal=true)
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
-		   .set(m->localKB.add(m))
-		   .set(m->GlobalKnowledge.appendPartKB(m));
-		
 		List<Node> intermFeatures = new LinkedList<Node>();
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
@@ -295,6 +281,19 @@ public class FeatureProcessMatching {
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create-final-feature.rq"))
+		   .set(q->q.setLocal=true)
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .set(m->localKB.add(m))
+		   .set(m->GlobalKnowledge.appendPartKB(m));
+		
+		log.info("running rule create-unsatisfied-feature.rq... ");
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addABox(localKB)) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/create-unsatisfied-feature.rq"))
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())

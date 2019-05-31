@@ -10,4 +10,5 @@ WHERE{
 ?Process	cco:realizes ?Function.
 ?Function	rdf:type	?FunctionType.
 FILTER(?ProcessType NOT IN(owl:NamedIndividual) )
+FILTER(?FunctionType NOT IN(owl:NamedIndividual) )
 }
