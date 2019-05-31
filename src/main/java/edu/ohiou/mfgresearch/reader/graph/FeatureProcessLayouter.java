@@ -34,8 +34,12 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	
 
 	/**
+	 * Create a FeatureProcessLayouter
 	 * @param graph
-	 * @param point
+	 * @param deltaRadius Distance between parent and child process node
+	 * @param beginAngle  Begin limit of the radial span of the tree expansion  
+	 * @param endAngle	  End limit of the radial span of the tree expansion  		
+	 * @param expansionFactor	increment of the expansion for every orbit
 	 */
 	public FeatureProcessLayouter(Graph graph, double deltaRadius, double beginAngle, double endAngle, double expansionFactor) {
 		super(graph, new Point2D.Double(0,0));
@@ -45,6 +49,9 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		this.expansionFactor = expansionFactor;
 	}
 	
+	/**
+	 * Jump to next orbit
+	 */
 	public void nextOrbit(){
 		rankOfOrbit += 1;
 		angle = Math.PI;
@@ -63,10 +70,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		this.numPlanets = numPlanets;
 	}
 	
-//	public void clearPositions(){
-//		positions.clear();
-//	}
-	
+	@Override
 	public void nodeAdded(Node n) {
 		vertices.put(n, new Vertex (n, new Point2D.Double(0.0, 0.0)));
 		if (rankOfOrbit==0) positions.add(new PlanetPosition(n, 0));
@@ -78,7 +82,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		super.arcAdded(a);
 		if(rankOfOrbit>0) {
 			currentArcs.add(a);
-			if(!a.getObject().equals("has_output")){
+			if(!a.getUserObject().equals("has_output")){
 				Node parent = a.getParentNode();
 				if(numChildren.get(parent)!=null){
 					numChildren.put(parent, numChildren.get(parent)+1);
@@ -147,7 +151,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		int i = 0;
 		Node child = null;
 		for(;i<currentArcs.size();i++){
-			if(currentArcs.get(i).getObject().equals(arcLabel)){
+			if(currentArcs.get(i).getUserObject().equals(arcLabel)){
 				if(currentArcs.get(i).getParentNode().equals(parent)){
 					child = currentArcs.get(i).getChildNode();
 					break;

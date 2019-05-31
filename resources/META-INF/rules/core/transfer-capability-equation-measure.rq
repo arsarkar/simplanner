@@ -65,6 +65,10 @@ WHERE{
 ?arg		rdf:type	?argType;
 			cco:is_tokenized_by	?token.
 FILTER (?pType NOT IN (owl:NamedIndividual))
+FILTER (?capaType NOT IN (owl:NamedIndividual))
+FILTER (?refType NOT IN (owl:NamedIndividual))
+FILTER (?argType NOT IN (owl:NamedIndividual))
+FILTER (?eqType NOT IN (owl:NamedIndividual))
 
 }	
 

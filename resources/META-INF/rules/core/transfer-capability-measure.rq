@@ -50,6 +50,8 @@ WHERE{
 ?minIBE	rdf:type	cco:InformationBearingEntity;
 			cco:has_decimal_value	?min.	
 FILTER (?pType NOT IN (owl:NamedIndividual))
+FILTER (?capaType NOT IN (owl:NamedIndividual))
+FILTER (?refType NOT IN (owl:NamedIndividual))
 }	
 
 

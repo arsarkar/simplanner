@@ -70,7 +70,7 @@ public class FeatureProcessMatching {
 	 * event to update local belief
 	 */
 	public void loadSpecifications(Node featureIRI){
-		log.info("load specifications for feature "+ featureIRI.getURI());
+		log.info("load specifications for feature "+ featureIRI.getLocalName());
 
 		//load specifications for the given feature
 		Uni.of(FunQL::new)
@@ -95,7 +95,7 @@ public class FeatureProcessMatching {
 	 */
 	public void loadCapability(Node processIRI){
 
-		log.info("load capability for process "+ processIRI.getURI());
+		log.info("load capability for process "+ processIRI.getLocalName());
 		//load capability with both max and min as equation
 		log.info("running rule transfer-capability-measure.rq... ");
 		Uni.of(FunQL::new)
@@ -150,7 +150,7 @@ public class FeatureProcessMatching {
 	 */
 	public static Node ask_to_match(Node featureIRI, Node processIRI){
 		
-		log.info("Testing whether feature " + featureIRI.getURI() + " matches process " + processIRI.getURI() + "|\n");
+		log.info("Testing whether feature " + featureIRI.getLocalName() + " matches process " + processIRI.getLocalName() + "|\n");
 		
 		FeatureProcessMatching matching = new FeatureProcessMatching(new String[]{});
 		

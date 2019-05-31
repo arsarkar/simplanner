@@ -1,16 +1,15 @@
 package edu.ohiou.mfgresearch.services;
 
-import java.awt.geom.Point2D;
+import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.function.Function;
 
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.algebra.Table;
 import org.apache.jena.sparql.core.Var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,15 +17,11 @@ import org.slf4j.LoggerFactory;
 import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.labimp.graph.Graph;
 import edu.ohiou.mfgresearch.labimp.graph.GraphViewer;
-import edu.ohiou.mfgresearch.labimp.graph.NotMemberException;
-import edu.ohiou.mfgresearch.labimp.graph.AlreadyMemberException;
-import edu.ohiou.mfgresearch.labimp.graph.Arc;
-import edu.ohiou.mfgresearch.labimp.graph.DirectedArc;
-
 import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
 import edu.ohiou.mfgresearch.reader.graph.FeatureProcessLayouter;
+import edu.ohiou.mfgresearch.reader.graph.PropertyArc;
 import edu.ohiou.mfgresearch.simplanner.IMPM;
 
 public class FeatureProcessSelection {
@@ -84,7 +79,7 @@ public class FeatureProcessSelection {
 	}
 	
 	public void loadProcessPrecedence(){
-		System.out.println("\n||"+this.getClass().getSimpleName()+"||>>"+"loading process precedence by rule process-precedence-drilling-wo-holestarting.q");
+		log.info("loading process precedence by rule process-precedence-drilling-wo-holestarting.q");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
@@ -119,23 +114,48 @@ public class FeatureProcessSelection {
 
 		Graph g = new Graph();
 
-//		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, new Point2D.Double(0,0));
-
 		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 10.0, 3, 5, 1.09);
 
 		GraphViewer v = new GraphViewer(g,fpl, GraphViewer.VIEW_2D);
-		v.display();
+//		if(Boolean.parseBoolean(prop.getProperty("SHOW_PROCESS_GRAPH"))) 
+			v.display();
+		
+		//function to select result of process-plan-1 rule and plot in FeatureProcessLayouter
+		Function<Table, Table> plotProcessSelectionTree = tab->{
+//			if(!Boolean.parseBoolean(prop.getProperty("SHOW_PROCESS_GRAPH"))) return tab; 
+			int numChildren = tab.size();
+			if(fpl.getRank()>0) fpl.nextOrbit();
+			fpl.setNumPlanets(numChildren);
+			tab.rows().forEachRemaining(b->{
+				//add the last process planned, only fires for start process
+				Node parent = b.get(Var.alloc("pCurrent"));	
+				if(fpl.getRank()==0) {
+					g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (parent.getLocalName()));
+					fpl.nextOrbit();
+				}
+				//get the new process individual created
+				Node child = b.get(Var.alloc("pNext1"));
+				if (!g.hasObject(child.getLocalName())) {
+					g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (child.getLocalName()));
+					Uni.of(g)
+					.set(g1->g1.addDirectedArc(parent.getLocalName(), child.getLocalName(), new PropertyArc("precedes", Color.GREEN)))
+					.onFailure(e->e.printStackTrace(System.out));
+					//get new interm feature created
+					Node iFeature = b.get(Var.alloc("f2"));
+					g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (iFeature.getLocalName()));
+					Uni.of(g)
+					.set(g1->g1.addDirectedArc(child.getLocalName(), iFeature.getLocalName(), new PropertyArc("has_output", Color.DARK_GRAY)))
+					.onFailure(e->e.printStackTrace(System.out));
+				}
+			});
+			fpl.repositionEdges();
+			return tab;
+		};
+		
 		int counter = 0;
-//		
-//		List<edu.ohiou.mfgresearch.labimp.graph.Node> nodes = new LinkedList<edu.ohiou.mfgresearch.labimp.graph.Node>();
-//		List<Arc> arcs = new LinkedList<Arc>();
-
-//		
-//>>>>>>> df48bb43aecb02eab998c0e3b45cf21787386286
-
 		while(!stopIteration){
 			counter += 1;
-//			System.out.println("\n||"+this.getClass().getSimpleName()+"||>>"+"match feature by process-planning-1.rq. iteration ---> " + counter);
+			log.info("match feature by process-planning-1.rq. iteration ---> " + counter);
 			boolean	isSuccessful = 	
 					Uni.of(FunQL::new)
 					   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
@@ -145,44 +165,11 @@ public class FeatureProcessSelection {
 					   .set(q->q.addABox(GlobalKnowledge.getPlan()))
 					   .set(q->q.addPlan("resources/META-INF/rules/core/process-planning-1.rq"))
 					   .set(q->q.setLocal=true)
-
-					   .set(q->q.setServicePostProcess(tab->{
-						   int numChildren = tab.size();
-						   if(fpl.getRank()>0) fpl.nextOrbit();
-						   fpl.setNumPlanets(numChildren);
-						   tab.rows().forEachRemaining(b->{
-							   //add the last process planned, only fires for start process
-							   Node parent = b.get(Var.alloc("pCurrent"));	
-							   if(fpl.getRank()==0) {
-								   g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (parent.getLocalName()));
-								   fpl.nextOrbit();
-							   }
-							   //get the new process individual created
-							   Node child = b.get(Var.alloc("pNext1"));
-							   if (!g.hasObject(child.getLocalName())) {
-								   g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (child.getLocalName()));
-								   Uni.of(g)
-								   	  .set(g1->g1.addDirectedArc(parent.getLocalName(), child.getLocalName(), new String("precedes")))
-								   	  .onFailure(e->e.printStackTrace(System.out));
-								   //get new interm feature created
-								   Node iFeature = b.get(Var.alloc("f2"));
-								   g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (iFeature.getLocalName()));
-								   Uni.of(g)
-								   	  .set(g1->g1.addDirectedArc(child.getLocalName(), iFeature.getLocalName(), new String("has_output")))
-								   	  .onFailure(e->e.printStackTrace(System.out));
-							   }
-							   
-
-						   });
-						   fpl.repositionEdges();
-						   return tab;
-					   }))
+					   .set(q->q.setServicePostProcess(plotProcessSelectionTree))
 					   .map(q->q.execute())
 					   .set(q->GlobalKnowledge.appendPlanKB(q.getBelief().getLocalABox()))
 					   .map(q->q.isQuerySuccess())
 					   .get();	
-			
-			//display the new planned processes in the tree display
 
 			stopIteration = !isSuccessful;
 
