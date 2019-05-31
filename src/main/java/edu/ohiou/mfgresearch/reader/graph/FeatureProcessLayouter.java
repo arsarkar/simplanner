@@ -83,7 +83,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		super.arcAdded(a);
 		if(rankOfOrbit>0) {
 			currentArcs.add(a);
-			if(!a.getUserObject().equals("has_output")){
+			if(!a.getUserObject().toString().equals("has_output")){
 				Node parent = a.getParentNode();
 				if(numChildren.get(parent)!=null){
 					numChildren.put(parent, numChildren.get(parent)+1);
@@ -152,7 +152,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		int i = 0;
 		Node child = null;
 		for(;i<currentArcs.size();i++){
-			if(currentArcs.get(i).getUserObject().equals(arcLabel)){
+			if(currentArcs.get(i).getUserObject().toString().equals(arcLabel)){
 				if(currentArcs.get(i).getParentNode().equals(parent)){
 					child = currentArcs.get(i).getChildNode();
 					break;
