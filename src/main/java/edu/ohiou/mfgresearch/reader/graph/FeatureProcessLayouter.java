@@ -72,9 +72,10 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	
 	@Override
 	public void nodeAdded(Node n) {
-		vertices.put(n, new Vertex (n, new Point2D.Double(0.0, 0.0)));
+		super.nodeAdded(n);
+//		vertices.put(n, new Vertex (n, new Point2D.Double(0.0, 0.0)));
 		if (rankOfOrbit==0) positions.add(new PlanetPosition(n, 0));
-		if (canvas != null) canvas.repaint();
+//		if (canvas != null) canvas.repaint();
 	}
 
 	@Override
