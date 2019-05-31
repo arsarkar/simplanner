@@ -114,7 +114,9 @@ public class FeatureProcessLayouter extends GraphLayouter {
 				Point2d p = orbit.getPoint(angle);
 				Node child = findChildByParentPlanet(parent, "precedes");
 				//draw the planet node
-				vertices.put(child, new Vertex (child, new Point2D.Double(p.x, p.y)));
+				Vertex v = vertices.get(child);
+				v.settPosition(new Point2D.Double(p.x, p.y));
+//				vertices.put(child, new Vertex (child, new Point2D.Double(p.x, p.y)));
 				//save the angle in the positions
 				positions.add(new PlanetPosition(child, angle));
 				System.out.println("DNS + ARKO> " + "P>" + child + ", angle>" + angle );
@@ -124,7 +126,10 @@ public class FeatureProcessLayouter extends GraphLayouter {
 				Point2d p1 = orbit.getPoint(angle+.3);
 				Node sat = findChildByParentPlanet(child, "has_output");
 				//draw the satellite node
-				vertices.put(sat, new Vertex (sat, new Point2D.Double(p1.x, p1.y)));
+//				vertices.put(sat, new Vertex (sat, new Point2D.Double(p1.x, p1.y)));
+				v = vertices.get(child);
+				v.settPosition(new Point2D.Double(p1.x, p1.y));
+
 				//increment the angle
 				angle = angle + spacing;
 			}
