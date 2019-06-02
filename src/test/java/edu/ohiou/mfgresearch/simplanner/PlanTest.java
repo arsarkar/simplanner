@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.ohiou.mfgresearch.io.FunQL;
+import edu.ohiou.mfgresearch.labimp.graph.GraphViewer;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.plan.IPlanner;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
@@ -98,4 +99,6 @@ public class PlanTest {
 		   .set(q->q.execute())
 		   .onFailure(e->e.printStackTrace(System.out));		
 	}
+	
+
 }

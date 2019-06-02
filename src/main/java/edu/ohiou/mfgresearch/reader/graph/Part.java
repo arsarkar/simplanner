@@ -21,9 +21,13 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-@Command(name="part", description="reads the specifications from a given part design")
-class Part implements Runnable {
+@Command(name="part", description="reads the specifications from a given part design", helpCommand = true)
+class Part implements Runnable {	
 	
+	public Part() {
+//		System.out.println("in Part constructor!");
+	}
+
 	PropertyReader prop = new PropertyReader();
 	Model m = ModelFactory.createDefaultModel();
 	

@@ -408,7 +408,6 @@ public class ProcessCapabilityGraph {
 			.select(a->a.split("=")[0].equals("arg5"), a->params.put("arg5", a.split("=")[1]))
 			;
 		
-//		ProcessCapabilityGraph capabilityGraph = new ProcessCapabilityGraph("C:/Users/sarkara1/git/SIMPOM/resource/aboxes/process-capability-mm.owl");
 		try {
 //			capabilityGraph = new ProcessCapabilityGraph(params.containsKey("path")?capabilityKBPath:params.get("path").trim());
 			
