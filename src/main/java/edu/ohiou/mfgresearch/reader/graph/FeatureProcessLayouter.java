@@ -1,5 +1,6 @@
 package edu.ohiou.mfgresearch.reader.graph;
 
+import java.awt.Color;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
@@ -83,7 +84,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		super.arcAdded(a);
 		if(rankOfOrbit>0) {
 			currentArcs.add(a);
-			if(!a.getUserObject().toString().equals("has_output")){
+			if(!a.getUserObject().equals(new ColoredArc("", Color.MAGENTA))){
 				Node parent = a.getParentNode();
 				if(numChildren.get(parent)!=null){
 					numChildren.put(parent, numChildren.get(parent)+1);
@@ -112,23 +113,20 @@ public class FeatureProcessLayouter extends GraphLayouter {
 			for(int i=0;i<numChildren.get(parent); i++){
 				//calculate angle
 				Point2d p = orbit.getPoint(angle);
-				Node child = findChildByParentPlanet(parent, "precedes");
+				Node child = findChildByParentPlanet(parent, new ColoredArc("", Color.GREEN));
 				//draw the planet node
-				Vertex v = vertices.get(child);
-				v.settPosition(new Point2D.Double(p.x, p.y));
+				vertices.get(child).settPosition(new Point2D.Double(p.x, p.y));
 //				vertices.put(child, new Vertex (child, new Point2D.Double(p.x, p.y)));
 				//save the angle in the positions
 				positions.add(new PlanetPosition(child, angle));
-				System.out.println("DNS + ARKO> " + "P>" + child + ", angle>" + angle );
+//				System.out.println("DNS + ARKO> " + "P>" + child + ", angle>" + angle );
 			
 				//add the satellite node
-				Arc2d satOrb = Uni.of(deltaRadius/2).map(r->new Arc2d(new Point2d(center.getX(), center.getY()), r)).get();
-				Point2d p1 = orbit.getPoint(angle+.3);
-				Node sat = findChildByParentPlanet(child, "has_output");
+				Arc2d satOrb = Uni.of(deltaRadius*0.7).map(r->new Arc2d(new Point2d(center.getX(), center.getY()), r)).get();
+				Point2d p1 = satOrb.getPoint(angle+.2);
+				Node sat = findChildByParentPlanet(child, new ColoredArc("", Color.MAGENTA));
 				//draw the satellite node
-//				vertices.put(sat, new Vertex (sat, new Point2D.Double(p1.x, p1.y)));
-				v = vertices.get(child);
-				v.settPosition(new Point2D.Double(p1.x, p1.y));
+				vertices.get(sat).settPosition(new Point2D.Double(p1.x, p1.y));
 
 				//increment the angle
 				angle = angle + spacing;
@@ -153,11 +151,11 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		return returnList;
 	}
 
-	public Node findChildByParentPlanet(Node parent, String arcLabel){
+	public Node findChildByParentPlanet(Node parent, ColoredArc arc){
 		int i = 0;
 		Node child = null;
 		for(;i<currentArcs.size();i++){
-			if(currentArcs.get(i).getUserObject().toString().equals(arcLabel)){
+			if(currentArcs.get(i).getUserObject().equals(arc)){
 				if(currentArcs.get(i).getParentNode().equals(parent)){
 					child = currentArcs.get(i).getChildNode();
 					break;

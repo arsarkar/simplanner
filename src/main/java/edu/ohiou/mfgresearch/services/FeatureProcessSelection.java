@@ -21,7 +21,8 @@ import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
 import edu.ohiou.mfgresearch.reader.graph.FeatureProcessLayouter;
-import edu.ohiou.mfgresearch.reader.graph.PropertyArc;
+import edu.ohiou.mfgresearch.reader.graph.ColoredArc;
+import edu.ohiou.mfgresearch.reader.graph.ColoredNode;
 import edu.ohiou.mfgresearch.simplanner.IMPM;
 
 public class FeatureProcessSelection {
@@ -84,7 +85,7 @@ public class FeatureProcessSelection {
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
 		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-drilling-minimal1.q"))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-drilling-wo-holestarting.q"))
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
@@ -114,7 +115,7 @@ public class FeatureProcessSelection {
 
 		Graph g = new Graph();
 
-		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 10.0, 3, 5, 1.09);
+		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 10.0, 3, 5, 1.3);
 
 		GraphViewer v = new GraphViewer(g,fpl, GraphViewer.VIEW_2D);
 		if(Boolean.parseBoolean(prop.getProperty("SHOW_PROCESS_GRAPH").trim())) 
@@ -131,20 +132,24 @@ public class FeatureProcessSelection {
 				Node parent = b.get(Var.alloc("pCurrent"));	
 				if(fpl.getRank()==0) {
 					g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (parent.getLocalName()));
+//					g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (new ColoredNode(parent.getLocalName(), Color.BLACK)));
 					fpl.nextOrbit();
 				}
 				//get the new process individual created
 				Node child = b.get(Var.alloc("pNext1"));
 				if (!g.hasObject(child.getLocalName())) {
 					g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (child.getLocalName()));
+//					g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (new ColoredNode(child.getLocalName(), Color.BLACK)));
 					Uni.of(g)
-					.set(g1->g1.addDirectedArc(parent.getLocalName(), child.getLocalName(), new PropertyArc("precedes", Color.GREEN)))
+					.set(g1->g1.addDirectedArc(parent.getLocalName(), child.getLocalName(), new ColoredArc("", Color.GREEN)))
+//					.set(g1->g1.addDirectedArc(new ColoredNode(parent.getLocalName(), Color.BLACK), new ColoredNode(child.getLocalName(), Color.BLACK), new ColoredArc("precedes", Color.GREEN)))
 					.onFailure(e->e.printStackTrace(System.out));
 					//get new interm feature created
 					Node iFeature = b.get(Var.alloc("f2"));
 					g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (iFeature.getLocalName()));
 					Uni.of(g)
-					.set(g1->g1.addDirectedArc(child.getLocalName(), iFeature.getLocalName(), new PropertyArc("has_output", Color.DARK_GRAY)))
+					.set(g1->g1.addDirectedArc(child.getLocalName(), iFeature.getLocalName(), new ColoredArc("", Color.MAGENTA)))
+//					.set(g1->g1.addDirectedArc(new ColoredNode(child.getLocalName(), Color.BLACK), new ColoredNode(iFeature.getLocalName(), Color.BLACK), new ColoredArc("has_output", Color.MAGENTA)))
 					.onFailure(e->e.printStackTrace(System.out));
 				}
 			});

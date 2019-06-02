@@ -9,11 +9,11 @@ import java.util.LinkedList;
 import edu.ohiou.mfgresearch.labimp.basis.DrawString;
 import edu.ohiou.mfgresearch.labimp.graph.DrawObject;
 
-public class PropertyArc extends DrawObject {
+public class ColoredArc extends DrawObject {
 	
 	String label = "";
 	
-	public PropertyArc(String label, Color c) {
+	public ColoredArc(String label, Color c) {
 		super(new Point2D.Double(0, 0));
 		setColor(c);
 		this.label = label;
@@ -47,6 +47,11 @@ public class PropertyArc extends DrawObject {
 	public void makeDrawSets() {
 		canvas.addDrawShapes(getColor(), geetDrawList());
 
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return obj.toString().equals(this.toString()) && ((ColoredArc) obj).getColor().equals(this.getColor());
 	}
 
 	@Override
