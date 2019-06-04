@@ -54,9 +54,29 @@ public class ProcessCapabilityGraph {
 	String capabilityKBURI = "http://www.ohio.edu/ontologies/capability-implanner";
 	String capabilityKBPath = prop.getProperty("CAPABILITY_ABOX");
 	Model capabilityKB;
-	
+	public Model getCapabilityKB() {
+		return capabilityKB;
+	}
+
 	ProcessCapabilityLoader loader;
 	Function<String, String> newIndiForType =c->capabilityKBURI+ "#" +c.toLowerCase()+IMPM.newHash(4);
+	
+	/**
+	 * returns the pattern for creating new process 
+	 * @return
+	 */
+	private BasicPattern createProcess(){
+		return
+			Uni.of(ConstructBuilder::new)
+			   .set(b->b.addPrefix("rdf", IMPM.rdf))
+			   .set(b->b.addPrefix("owl", IMPM.owl))
+			   .set(b->b.addPrefix("cco", IMPM.cco))
+			   .set(b->b.addPrefix("capa", IMPM.capability))
+			   .set(b->b.addConstruct("?p", "rdf:type", "?pt"))
+			   .map(b->b.build())
+			   .map(PlanUtil::getConstructBasicPattern)
+			   .get();
+	}
 	
 	/**
 	 * returns the pattern for creating a function individual tied to process individual
@@ -207,10 +227,11 @@ public class ProcessCapabilityGraph {
 			;
 	};
 	
-	public ProcessCapabilityGraph(String uri) {
+	public ProcessCapabilityGraph(String uri, Model m) {
 		//load the capability KB
 		capabilityKB = ModelFactory.createDefaultModel();
 		if(uri.length()>0) capabilityKB.read(uri);
+		if(m!=null) capabilityKB.add(m);
 	}
 
 	public Query getConstructQuery(String capability){
@@ -292,7 +313,7 @@ public class ProcessCapabilityGraph {
 		return mNode;
 	}
 	
-	public void crateCapability(Node functionInstance, String capability, String referenceType, Node maxICE, Node minICE) throws Exception{
+	public Node crateCapability(Node functionInstance, String capability, String referenceType, Node maxICE, Node minICE) throws Exception{
 		
 		//check capability
 		Node capabilityNode;
@@ -323,11 +344,30 @@ public class ProcessCapabilityGraph {
 			
 			t.addBinding(b);
 			expander.andThen(updater).apply(t);
+			return capabilityNode;
 		}
 	}	
 
 	private boolean isValidCapability(String capability) {
 		return true;
+	}
+	
+	/**
+	 * Create new process from the given type URI
+	 * @param processURI type URI
+	 * @return
+	 */
+	public String createNewProcess(String processURI) {
+		String pNode =  newIndiForType.apply((NodeFactory.createURI(processURI).getLocalName()));
+		Function<Table, BasicPattern> expander = IPlanner.createPatternExpander(createProcess());
+		Function<BasicPattern, BasicPattern> updater = IPlanner.createUpdateExecutor(capabilityKB);
+		Table t = TableFactory.create();
+		Binding b = BindingFactory.binding();		
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("p"), NodeFactory.createURI(pNode)));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("pt"), NodeFactory.createURI(processURI)));
+		t.addBinding(b);
+		expander.andThen(updater).apply(t);
+		return pNode;
 	}
 	
 	/**
@@ -340,10 +380,18 @@ public class ProcessCapabilityGraph {
 	public Node createNewFunction(String function, String processURI) throws Exception{
 		//check function
 		String funcURI = "";
-		if(!function.contains("http")) funcURI = Uni.of(function).map(mapFunctionType).get();
+		Node fNode;
+		if(!function.contains("http")) {
+			fNode = NodeFactory.createURI(newIndiForType.apply(function));
+			funcURI = Uni.of(function).map(mapFunctionType).get();
+		}
+		else{
+			funcURI = function;
+			fNode = NodeFactory.createURI(newIndiForType.apply(NodeFactory.createURI(funcURI).getLocalName()));
+			
+		}
 		if(!isValidFunction(funcURI)) throw new Exception("Function " + funcURI + " is not present in " + IMPM.capability); 
 		
-		Node fNode = NodeFactory.createURI(newIndiForType.apply(function));
 		Resource processNode = capabilityKB.getResource(processURI);
 		
 		if(processNode==null) throw new Exception("Process " + processURI + " is not present in the supplied KB");    
@@ -460,7 +508,7 @@ public class ProcessCapabilityGraph {
 		
 		Map<String, String> params = new HashMap<String, String>();
 		Node maxICE = null, minICE = null;		
-		ProcessCapabilityGraph capabilityGraph = new ProcessCapabilityGraph("");
+		ProcessCapabilityGraph capabilityGraph = new ProcessCapabilityGraph("", null);
 		try {
 			Map<String, String> argTypes = new HashMap<String, String>();
 			argTypes.put("?arg1", "http://www.ohio.edu/ontologies/design#DepthSpecification");
