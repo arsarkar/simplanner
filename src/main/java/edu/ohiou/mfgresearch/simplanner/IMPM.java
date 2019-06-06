@@ -3,11 +3,15 @@ package edu.ohiou.mfgresearch.simplanner;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 import edu.ohiou.mfgresearch.lambda.Uni;
 
 public final class IMPM {
+	
+	static Map<String, String> unitMap = new HashMap<String, String>();	
 	
 	//namespaces
 	private static final String default_ns = "http://www.ohio.edu/ontologies";
@@ -84,6 +88,27 @@ public final class IMPM {
 	public static final String is_measured_by = cco+"/is_measured_by";	
 	public static final String designated_by = cco+"/designated_by";	
 	public static final String inheres_in = cco+"/inheres_in";
+	
+	public static String getUnit(String unit){
+		if(unitMap.size()==0) loadUnit();
+		for(String k:unitMap.keySet()){
+			if(unitMap.get(k).contains(unit)){
+				return k;
+			}
+		}
+		return IMPM.cco+"/UnknownUnit";
+	}
+	
+	public static void loadUnit(){
+		unitMap.put(IMPM.cco+"/CentimeterMeasurementUnit", "cm, centimeter");
+		unitMap.put(IMPM.cco+"/DecimeterMeasurementUnit", "dm, decimeter");
+		unitMap.put(IMPM.cco+"/FootMeasurementUnit", "ft, foot");
+		unitMap.put(IMPM.cco+"/InchMeasurementUnit", "in, inch");
+		unitMap.put(IMPM.cco+"/KilometerMeasurementUnit", "km, kilometer");
+		unitMap.put(IMPM.cco+"/MeterMeasurementUnit", "m, meter");
+		unitMap.put(IMPM.cco+"/MileMeasurementUnit", "mile");
+		unitMap.put(IMPM.cco+"/MillimeterMeasurementUnit", "mm, millimeter");
+	}
 	
 	//utility functions
 	public static String newHash(int length){

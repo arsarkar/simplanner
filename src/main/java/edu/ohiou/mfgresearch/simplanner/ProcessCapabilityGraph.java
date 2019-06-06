@@ -113,7 +113,7 @@ public class ProcessCapabilityGraph {
 			   .set(b->b.addConstruct("cco:has_decimal_value", "rdf:type", "owl:DatatypeProperty"))
 			   .set(b->b.addConstruct("?im", "cco:has_decimal_value", "?limit"))
 			   .set(b->b.addConstruct("cco:uses_measurement_unit", "rdf:type", "owl:ObjectProperty"))
-			   .set(b->b.addConstruct("?im", "cco:uses_measurement_unit", "cco:MillimeterMeasurementUnit"))
+			   .set(b->b.addConstruct("?im", "cco:uses_measurement_unit", "?unit"))
 			   
 			   .map(b->b.build())
 			   .map(PlanUtil::getConstructBasicPattern)
@@ -134,7 +134,7 @@ public class ProcessCapabilityGraph {
 			   .set(b->b.addConstruct("cco:has_string_value", "rdf:type", "owl:DatatypeProperty"))
 			   .set(b->b.addConstruct("?ie1", "cco:has_string_value", "?eq"))
 			   .set(b->b.addConstruct("cco:uses_measurement_unit", "rdf:type", "owl:ObjectProperty"))
-			   .set(b->b.addConstruct("?ie1", "cco:uses_measurement_unit", "cco:MillimeterMeasurementUnit"))
+			   .set(b->b.addConstruct("?ie1", "cco:uses_measurement_unit", "?unit"))
 			   .set(b->b.addConstruct("cco:uses_equation_type", "rdf:type", "owl:ObjectProperty"))
 			   .set(b->b.addConstruct("?ie1", "cco:uses_equation_type", "cco:JessEquation"))
 			   .set(b->b.addConstruct("cco:expects", "rdf:type", "owl:ObjectProperty"))
@@ -280,6 +280,39 @@ public class ProcessCapabilityGraph {
 			String argT = aTypes.get(i).substring(aTypes.get(i).lastIndexOf("#")+1, aTypes.get(i).length());
 			b = Algebra.merge(b, BindingFactory.binding(Var.alloc("a"+i), NodeFactory.createURI(newIndiForType.apply(argT))));
 			b = Algebra.merge(b, BindingFactory.binding(Var.alloc("ag"+i), NodeFactory.createLiteralByValue(args.get(i), XSDDatatype.XSDstring)));
+			b = Algebra.merge(b, BindingFactory.binding(Var.alloc("unit"), NodeFactory.createURI(IMPM.getUnit("mm"))));
+		}
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("eq"), NodeFactory.createLiteralByValue(equation, XSDDatatype.XSDstring)));
+		t.addBinding(b);
+		expander.andThen(updater).apply(t);	
+		return eqNode;
+	}
+	
+	public Node createCapabilityEquationUnit(String equation, Map<String, String> argTypes, String unit, boolean isMax) throws Exception{		
+		List<String> args = getArgsFromEquation(equation);
+		List<String> aTypes = new LinkedList<String>();
+		for(String a:args){
+			if(argTypes.containsKey(a)){
+				aTypes.add(argTypes.get(a));
+			}
+		}
+		if(args.size() != aTypes.size()){
+			throw new Exception("Arguments are not supplied properly!");
+		}
+		BasicPattern patMax = createEquationLimit(args.size()); 
+		Function<Table, BasicPattern> expander = IPlanner.createPatternExpander(patMax);
+		Function<BasicPattern, BasicPattern> updater = IPlanner.createUpdateExecutor(capabilityKB);
+		Table t = TableFactory.create();
+		Binding b = BindingFactory.binding();
+		Node eqNode = NodeFactory.createURI(newIndiForType.apply("Equation"));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("cmax"), eqNode));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("ie1"), NodeFactory.createURI(newIndiForType.apply("InformationBearingEntity"))));
+		for(int i=0; i<args.size(); i++){
+			b = Algebra.merge(b, BindingFactory.binding(Var.alloc("at"+i), ResourceFactory.createResource(aTypes.get(i)).asNode()));
+			String argT = aTypes.get(i).substring(aTypes.get(i).lastIndexOf("#")+1, aTypes.get(i).length());
+			b = Algebra.merge(b, BindingFactory.binding(Var.alloc("a"+i), NodeFactory.createURI(newIndiForType.apply(argT))));
+			b = Algebra.merge(b, BindingFactory.binding(Var.alloc("ag"+i), NodeFactory.createLiteralByValue(args.get(i), XSDDatatype.XSDstring)));
+			b = Algebra.merge(b, BindingFactory.binding(Var.alloc("unit"), NodeFactory.createURI(IMPM.getUnit(unit))));
 		}
 		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("eq"), NodeFactory.createLiteralByValue(equation, XSDDatatype.XSDstring)));
 		t.addBinding(b);
@@ -308,6 +341,24 @@ public class ProcessCapabilityGraph {
 		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("cm"), mNode));
 		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("im"), NodeFactory.createURI(newIndiForType.apply("InformationBearingEntity"))));
 		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("limit"), NodeFactory.createLiteral(String.valueOf(limit), XSDDatatype.XSDdouble)));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("unit"), NodeFactory.createURI(IMPM.getUnit("mm"))));
+		t.addBinding(b);
+		expander.andThen(updater).apply(t);
+		return mNode;
+	}
+
+	public Node createCapabilityLimitUnit(double limit, String unit, boolean isMax) throws Exception{
+		
+		BasicPattern pat = createMeasurementLimit();
+		Function<Table, BasicPattern> expander = IPlanner.createPatternExpander(pat);
+		Function<BasicPattern, BasicPattern> updater = IPlanner.createUpdateExecutor(capabilityKB);
+		Table t = TableFactory.create();
+		Binding b = BindingFactory.binding();
+		Node mNode = NodeFactory.createURI(newIndiForType.apply("MeasurementInformationContentEntity"));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("cm"), mNode));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("im"), NodeFactory.createURI(newIndiForType.apply("InformationBearingEntity"))));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("limit"), NodeFactory.createLiteral(String.valueOf(limit), XSDDatatype.XSDdouble)));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("unit"), NodeFactory.createURI(IMPM.getUnit(unit))));
 		t.addBinding(b);
 		expander.andThen(updater).apply(t);
 		return mNode;
@@ -321,7 +372,7 @@ public class ProcessCapabilityGraph {
 			capabilityNode = NodeFactory.createURI(newIndiForType.apply(capability));
 			capability = Uni.of(capability).map(mapCapabilityType).get();
 		}else{
-			capabilityNode = NodeFactory.createURI(newIndiForType.apply(capability.substring(capability.lastIndexOf("/"), capability.length()-1)));
+			capabilityNode = NodeFactory.createURI(newIndiForType.apply(capability.substring(capability.lastIndexOf("#")+1, capability.length())));
 		}		
 		if(!isValidCapability(capability)) throw new Exception("Capability " + capability + " is not present in " + IMPM.capability);
 		else {
@@ -347,7 +398,7 @@ public class ProcessCapabilityGraph {
 			return capabilityNode;
 		}
 	}	
-
+	
 	private boolean isValidCapability(String capability) {
 		return true;
 	}

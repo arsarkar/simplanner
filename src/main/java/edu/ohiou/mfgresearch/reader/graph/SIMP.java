@@ -26,6 +26,7 @@ public class SIMP{
 	
 	private static Part part = null;
 	private static Process process = null;
+	private static Plan plan = null;
 	
 	public static Part getPart(){
 		if(part==null) part = new Part();
@@ -35,6 +36,11 @@ public class SIMP{
 	public static Process getProcess(){
 		if(process==null) process = new Process();
 		return process;
+	}
+	
+	public static Plan getPlan(){
+		if(plan==null) plan = new Plan();
+		return plan;
 	}
 	
 	public static void main(String[] args) {
@@ -57,6 +63,9 @@ public class SIMP{
 					break;
 				case "process":
 					CommandLine.run(getProcess(), Arrays.copyOfRange(args, 1, args.length));
+					break;	
+				case "plan":
+					CommandLine.run(getPlan(), Arrays.copyOfRange(args, 1, args.length));
 					break;	
 				case "e":
 					cont = false;

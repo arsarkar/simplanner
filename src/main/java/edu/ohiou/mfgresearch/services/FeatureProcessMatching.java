@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.jena.graph.Node;
+import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -103,7 +104,15 @@ public class FeatureProcessMatching {
 		   .set(q->q.addABox(prop.getIRIPath(IMPM.capability_IMPM))) //capability repository 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-measure.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
-		   .set(q->q.setLocal=true)
+		   .set(q->q.setLocal=true)		   
+		   .set(q->q.setSelectPostProcess(tab->{
+			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   return tab;
+		   }))
+		   .set(q->q.setServicePostProcess(tab->{
+			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
@@ -118,6 +127,14 @@ public class FeatureProcessMatching {
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-measure-equation.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.setLocal=true)
+		   .set(q->q.setSelectPostProcess(tab->{
+			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   return tab;
+		   }))
+		   .set(q->q.setServicePostProcess(tab->{
+			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
@@ -132,6 +149,14 @@ public class FeatureProcessMatching {
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-equation-measure.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.setLocal=true)
+		   .set(q->q.setSelectPostProcess(tab->{
+			   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   return tab;
+		   }))
+		   .set(q->q.setServicePostProcess(tab->{
+			   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
@@ -241,6 +266,14 @@ public class FeatureProcessMatching {
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/specification-capability-matching-limit.rq"))
 		   .set(q->q.setLocal=true)
+		   .set(q->q.setSelectPostProcess(tab->{
+			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   return tab;
+		   }))
+		   .set(q->q.setServicePostProcess(tab->{
+			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())

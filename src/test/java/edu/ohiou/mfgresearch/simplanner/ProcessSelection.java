@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.util.Iterator;
 import java.util.function.Function;
 
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -37,6 +38,9 @@ public class ProcessSelection {
 	
 	@Test
 	public void parseBooleanTest(){
+		System.out.println(IMPM.getUnit("mm"));
+		System.out.println(IMPM.getUnit("cm"));
+		
         prop = new PropertyReader();
         System.out.println(prop.getProperty("SHOW_PROCESS_GRAPH").toCharArray());
         System.out.println(prop.getProperty("SHOW_PROCESS_GRAPH").toLowerCase().hashCode());
@@ -271,7 +275,7 @@ public class ProcessSelection {
 		
 		FeatureProcessSelection selection = new FeatureProcessSelection(new String[]{});
 		
-		selection.ask_to_select_processes("SIMPLE HOLE(4)");
+		selection.ask_to_select_holemaking_processes(NodeFactory.createBlankNode());
 		
 		try {
 			selection.getLocalKB().write(new FileOutputStream(new File(new PropertyReader().getNS("git1")+"impm-ind/plan/psec-int-1.rdf")), "RDF/XML");

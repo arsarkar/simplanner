@@ -71,6 +71,12 @@ public class GlobalKnowledge {
 		System.out.println("Specification is loaded onto global knowledge base.");
 	}
 	
+	public static void loadSpecification(Model m){
+		load();
+		KB.specificationKB = m;
+		System.out.println("Specification is loaded onto global knowledge base.");
+	}
+	
 	private static BasicPattern createPatternInitialPlan(){
 		return
 			Uni.of(ConstructBuilder::new)

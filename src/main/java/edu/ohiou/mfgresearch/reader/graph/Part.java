@@ -144,4 +144,8 @@ class Part implements Runnable {
 		   .onFailure(e->e.printStackTrace(System.out))
 		   ;	
 	}
+
+	public Model getModel() {
+		return m;
+	}
 }

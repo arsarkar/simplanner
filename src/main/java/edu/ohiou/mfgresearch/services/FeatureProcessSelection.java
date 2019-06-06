@@ -79,7 +79,7 @@ public class FeatureProcessSelection {
 		   .get();
 	}
 	
-	public void loadProcessPrecedence(){
+	public void loadProcessPrecedence(String[] functionTypes){
 		log.info("loading process precedence by rule process-precedence-drilling.q");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
@@ -94,21 +94,31 @@ public class FeatureProcessSelection {
 		   .onSuccess(m->localKB.add(m));
 	}
 	
-	public void ask_to_select_processes(String featureName){
+	/**
+	 * Service to plan holemaking
+	 * @param featureName
+	 */
+	public void ask_to_select_holemaking_processes(Node featureSpecification){
+	
+		//load process precedence for the particular service 
+		loadProcessPrecedence(new String[]{"HoleStarting", "HoleMaking", "HoleImproving", "HoleFinishing"});
 		
-		//register known matching services and load specification to them
-//		matchingService = new FeatureProcessMatching(new String[]{});	
-		//is it required for this agent to know specification? I don't think so
-//		matchingService.loadLocalKB(loadSpecifications(featureName)); 
-		//load the plan KB 
-		//localKB.add(GlobalKnowledge.getPla	n());
 		execute();
 	}
 	
-	public void execute(){
+	/**
+	 * service to plan slotmaking
+	 * @param featureName
+	 */
+	public void ask_to_select_slotmaking_processes(Node featureSpecification){
 		
-		//load process precedence
-		loadProcessPrecedence();		
+		//load process precedence for the particular service 
+		loadProcessPrecedence(new String[]{"SlotRoughing", "SlotFinising"});
+		
+		execute();
+	}
+	
+	public void execute(){		
 		
 		//get the latest process planned 
 		boolean stopIteration = false;
@@ -174,10 +184,10 @@ public class FeatureProcessSelection {
 					   .map(q->q.execute())
 					   .set(q->GlobalKnowledge.appendPlanKB(q.getBelief().getLocalABox()))
 					   .map(q->q.isQuerySuccess())
-					   .get();	
-
+					   .get();			
+			
+			
 			stopIteration = !isSuccessful;
-
 		
 		}
 	}

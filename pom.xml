@@ -91,7 +91,6 @@
 			   </exclusion>
 			</exclusions>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.apache.jena/jena-extras -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-querybuilder</artifactId>
@@ -144,10 +143,6 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.25</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
-		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-simple</artifactId> 
-			<version>1.7.25</version> <scope>compile</scope> </dependency> -->
-		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
