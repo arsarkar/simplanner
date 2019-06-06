@@ -11,21 +11,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.jena.graph.Node;
-import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
-import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.sparql.algebra.Table;
-import org.apache.jena.sparql.algebra.TableFactory;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.util.ResultSetUtils;
-
 import edu.ohiou.mfgresearch.io.FunQL;
-import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
 import edu.ohiou.mfgresearch.simplanner.IMPM;
@@ -78,13 +71,18 @@ class Process implements Runnable {
 	@Option(names={"-new", "--create"}, description="Add/modify capability for a process. the capability is added to new function if '-func' is provided")
 	private boolean create = false;
 	
+	@Option(names={"-clear"}, description="sure to clear the knowledge base?", interactive=true)
+	private boolean clear = false;
+	
+	@Option(names={"-u", "--unit"}, paramLabel="Unit", description="set the unit, default unit is set to millimeter.")
+	private String unit = IMPM.getUnit("mm");
 	
 	@Option(names = "-min") double minLimit=Double.NaN;
 	@Option(names = "-max") double maxLimit=Double.NaN;		
 	@Option(names = "-ref") String reference;
 	
 	@ArgGroup(exclusive = false, multiplicity = "0..1")
-	private Equation equation;
+	private Equation equation =null;
 	static class Equation {
 		@Option(names = "-eq", required=false) String eqn;
 		@Parameters(arity = "1..*") String[] argms;
@@ -115,6 +113,11 @@ class Process implements Runnable {
 
 	@Override
 	public void run() {
+		if(clear){
+			m = ModelFactory.createDefaultModel();
+			System.out.println("KB is cleared! Either load a new model or create facts...");
+			clear = false;
+		}
 		if(path!=null){
 			if(save){
 				Uni.of(path)
@@ -129,7 +132,8 @@ class Process implements Runnable {
 			else{
 				Uni.of(path)
 				   .map(p->p.getPath())
-				   .map(pa->m.read(pa))
+				   .map(pa->ModelFactory.createDefaultModel().read(pa))
+				   .set(m1->m.add(m1))
 				   .onFailure(e->System.err.println(e.getMessage()))
 				   .onSuccess(m->System.out.printf("RDF is read from %s\n",path.getAbsolutePath()));				
 			}
@@ -159,6 +163,7 @@ class Process implements Runnable {
 				System.err.println("Failed to create capability due to \n"+e.getMessage());
 			}
 			create = false;
+			equation = null;
 			minLimit=Double.NaN;
 			maxLimit=Double.NaN;		
 			return;
@@ -167,9 +172,7 @@ class Process implements Runnable {
 		processURI ="";
 		functionURI = "";
 		capaType = "";
-	}
-	
-	
+	}	
 	
 	private boolean isTypeURI(String uri){
 		return tBox.getOntClass(uri)!=null;
@@ -202,36 +205,37 @@ class Process implements Runnable {
 			}
 			functionIns = pcg.createNewFunction(functionURI.trim(), processIns).getURI();
 			System.out.println("new function added " + functionIns);
-			m = pcg.getCapabilityKB();
+			m.add(pcg.getCapabilityKB());
 			readProcess(processIns.trim(), functionIns);
 		}
 		else{
 			functionIns = functionURI.trim();
+			System.out.println(functionIns + " is an instance of a Function");
 		}
 		if(capaType.length()>0){
 			//check limits 
 			if(maxLimit==Double.NaN && minLimit==Double.NaN){
-				System.err.println("need at least a min or max limit");
+				System.err.println("need at least a min or max limit, currently both limits cannot be equations.");
 			}
 			else{
 				Node maxICE = null, minICE = null;
 				if(equation!=null && minLimit!=Double.NaN){
 					System.out.println("Setting max limit = " + equation.eqn.trim() + ", min limit = " + minLimit);
 					//process equation as max 
-					maxICE = pcg.createCapabilityEquation(equation.eqn.trim(), findArgs(equation.eqn.trim(), equation.argms), true);
-					minICE = pcg.createCapabilityLimit(minLimit, false);
+					maxICE = pcg.createCapabilityEquationUnit(equation.eqn.trim(), findArgs(equation.eqn.trim(), equation.argms), unit, true);
+					minICE = pcg.createCapabilityLimitUnit(minLimit, unit, false);
 				}
 				else if(equation!=null && maxLimit!=Double.NaN){
 					System.out.println("Setting max limit = " + maxLimit + ", min limit = " + equation.eqn.trim());
 					//process equation as min
-					maxICE = pcg.createCapabilityLimit(maxLimit, true);
-					minICE = pcg.createCapabilityEquation(equation.eqn.trim(), findArgs(equation.eqn.trim(), equation.argms), false);
+					maxICE = pcg.createCapabilityLimitUnit(maxLimit, unit, true);
+					minICE = pcg.createCapabilityEquationUnit(equation.eqn.trim(), findArgs(equation.eqn.trim(), equation.argms), unit, false);
 				}
 				else if(maxLimit!=Double.NaN && minLimit!=Double.NaN){
 					System.out.println("Setting max limit = " + maxLimit + ", min limit = " + minLimit);
 					//both limits are crisp
-					maxICE = pcg.createCapabilityLimit(maxLimit, true);
-					minICE = pcg.createCapabilityLimit(minLimit, false);
+					maxICE = pcg.createCapabilityLimitUnit(maxLimit, unit, true);
+					minICE = pcg.createCapabilityLimitUnit(minLimit, unit, false);
 				}
 				else{
 					System.err.println("Not enough data is provided to proceed...");
@@ -240,7 +244,7 @@ class Process implements Runnable {
 				Node capabilityIns = pcg.crateCapability(ResourceFactory.createResource(functionIns).asNode(), 
 											capaType.trim(), reference.trim(), maxICE, minICE);
 				System.out.println("New Capability added to profile "+ capabilityIns.getURI());
-				m = pcg.getCapabilityKB();
+				m.add(pcg.getCapabilityKB());
 				readCapability(functionIns, capaType);
 			}			
 		}
