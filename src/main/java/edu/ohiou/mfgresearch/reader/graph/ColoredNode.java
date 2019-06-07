@@ -69,7 +69,7 @@ public class ColoredNode extends DrawObject {
 	@Override
 	public String toToolTipString() {
 		// TODO Auto-generated method stub
-		return "tooltip of form feature";
+		return tooltip;
 	}
 
 	public void setTooltip(String tooltip) {
