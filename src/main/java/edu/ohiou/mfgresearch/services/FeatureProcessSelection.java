@@ -6,11 +6,15 @@ import java.io.FileOutputStream;
 import java.util.function.Function;
 
 import org.apache.jena.graph.Node;
+import org.apache.jena.ontology.OntModel;
+import org.apache.jena.ontology.OntModelSpec;
+import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.algebra.Table;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.binding.Binding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +37,10 @@ public class FeatureProcessSelection {
 	String localPath;
 	PropertyReader prop = new PropertyReader();
 	FeatureProcessMatching matchingService;
+	
+	OntModel tBoxDesign = Uni.of(ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM))
+							.set(model->model.read(prop.getIRIPath(IMPM.design)))
+							.get();
 	
 	public Model getLocalKB() {
 		return localKB;
@@ -155,12 +163,57 @@ public class FeatureProcessSelection {
 					.onFailure(e->e.printStackTrace(System.out));
 					//get new interm feature created
 					Node iFeature = b.get(Var.alloc("f2"));
-//					g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (iFeature.getLocalName()));
-					g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (new ColoredNode(iFeature.getLocalName(), Color.ORANGE)));
-					Uni.of(g)
-//					.set(g1->g1.addDirectedArc(child.getLocalName(), iFeature.getLocalName(), new ColoredArc("", Color.MAGENTA)))
-					.set(g1->g1.addDirectedArc(new ColoredNode(child.getLocalName(), Color.BLACK), new ColoredNode(iFeature.getLocalName(), Color.BLACK), new ColoredArc("has_output", Color.MAGENTA)))
-					.onFailure(e->e.printStackTrace(System.out));
+					
+					Uni.of(FunQL::new)
+					   .set(q->q.addTBox(tBoxDesign))
+					   .set(q->q.addABox(GlobalKnowledge.getPart()))
+					   .set(q->q.addPlan("resources/META-INF/rules/reader/read-interm-feature.q"))
+					   .set(q->q.getPlan(0).addVarBinding("f1", ResourceFactory.createResource(iFeature.getURI())))
+					   .set(q->q.setSelectPostProcess(tab1->{
+						   if(tab1.isEmpty()){
+							   g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (new ColoredNode(iFeature.getLocalName(), Color.CYAN)));
+							   Uni.of(g)
+							      .set(g1->g1.addDirectedArc(new ColoredNode(child.getLocalName(), Color.BLACK), new ColoredNode(iFeature.getLocalName(), Color.BLACK), new ColoredArc("has_output", Color.MAGENTA)))
+								  .onFailure(e->e.printStackTrace(System.out));
+							   return tab1;	
+						   }
+						   else{
+							   ResultSetFormatter.out(System.out, tab1.toResultSet(), q.getAllPrefixMapping());
+							   String ft = tab1.rows().next().get(Var.alloc("ft")).getURI();
+							   //get satisfied dimension and tolerances
+							   StringBuilder s = new StringBuilder();
+							   s.append(" concretizes ");
+							   tab1.rows().forEachRemaining(b1->{
+								   s.append(" ").append(b1.get(Var.alloc("d")).getLocalName());
+							   });
+
+							   ColoredNode cn = null; 
+							   if(ft.equals("http://www.ohio.edu/ontologies/design#IntermediateFormFeature")){
+								   cn = new ColoredNode(iFeature.getLocalName(), Color.BLUE);
+								   cn.setTooltip(s.toString());
+							   }
+							   else if(ft.equals("http://www.ohio.edu/ontologies/design#UnsatisfiedFeature")){
+								   cn = new ColoredNode(iFeature.getLocalName(), Color.RED);
+								   cn.setTooltip(s.toString());
+							   }
+							   else if(ft.equals("http://www.ohio.edu/ontologies/design#FinalFeature")){
+								   cn = new ColoredNode(iFeature.getLocalName(), Color.CYAN);
+								   cn.setTooltip(s.toString());
+							   }
+							   g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (cn));
+							   final ColoredNode chNode = cn;
+							   Uni.of(g)
+							      .set(g1->g1.addDirectedArc(new ColoredNode(child.getLocalName(), Color.BLACK), chNode, new ColoredArc("has_output", Color.MAGENTA)))
+								  .onFailure(e->e.printStackTrace(System.out));
+							   return tab1;							   
+						   }
+					   }))
+					   .map(q->q.execute());
+					
+//					g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (new ColoredNode(iFeature.getLocalName(), Color.ORANGE)));
+//					Uni.of(g)
+//					.set(g1->g1.addDirectedArc(new ColoredNode(child.getLocalName(), Color.BLACK), new ColoredNode(iFeature.getLocalName(), Color.BLACK), new ColoredArc("has_output", Color.MAGENTA)))
+//					.onFailure(e->e.printStackTrace(System.out));
 				}
 			});
 			fpl.repositionEdges();

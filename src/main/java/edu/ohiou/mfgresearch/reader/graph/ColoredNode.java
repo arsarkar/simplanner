@@ -12,6 +12,7 @@ import edu.ohiou.mfgresearch.labimp.graph.DrawObject;
 public class ColoredNode extends DrawObject {
 	
 	String label = "";
+	String tooltip = "";
 	
 	public ColoredNode(String label, Color c) {
 		super(new Point2D.Double(0, 0));
@@ -64,6 +65,15 @@ public class ColoredNode extends DrawObject {
 		// TODO Auto-generated method stub
 		return label.hashCode();
 	}
-	
+
+	@Override
+	public String toToolTipString() {
+		// TODO Auto-generated method stub
+		return "tooltip of form feature";
+	}
+
+	public void setTooltip(String tooltip) {
+		this.tooltip = tooltip;
+	}
 	
 }
