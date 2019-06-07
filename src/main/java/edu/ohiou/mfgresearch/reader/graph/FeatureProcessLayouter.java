@@ -29,8 +29,8 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	double angle = Math.PI;
 	double beginAngle, endAngle, expansionFactor;
 	List<PlanetPosition> positions = new LinkedList<PlanetPosition>(); 
-	Map<Node, double[]> orbitRanges = new HashMap<Node, double[]>();
-	Map<Node, Integer> numChildren = new HashMap<Node, Integer>();
+	Map<ColoredNode, double[]> orbitRanges = new HashMap<ColoredNode, double[]>();
+	Map<ColoredNode, Integer> numChildren = new HashMap<ColoredNode, Integer>();
 	List<Arc> currentArcs = new LinkedList<Arc>();
 	
 
@@ -75,7 +75,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	public void nodeAdded(Node n) {
 		super.nodeAdded(n);
 //		vertices.put(n, new Vertex (n, new Point2D.Double(0.0, 0.0)));
-		if (rankOfOrbit==0) positions.add(new PlanetPosition(n, 0));
+		if (rankOfOrbit==0) positions.add(new PlanetPosition((ColoredNode) n.getUserObject(), 0));
 //		if (canvas != null) canvas.repaint();
 	}
 
@@ -85,7 +85,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		if(rankOfOrbit>0) {
 			currentArcs.add(a);
 			if(!a.getUserObject().equals(new ColoredArc("", Color.MAGENTA))){
-				Node parent = a.getParentNode();
+				ColoredNode parent = (ColoredNode) a.getParentNode().getUserObject();
 				if(numChildren.get(parent)!=null){
 					numChildren.put(parent, numChildren.get(parent)+1);
 				}
@@ -100,11 +100,12 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	public void repositionEdges() {
 		
 		//add children planents for each parent planet
-		for(Node parent:numChildren.keySet()){			
+		for(ColoredNode parent:numChildren.keySet()){			
 			//create an orbit
-			Point2D center = vertices.get(parent).geettPosition();
+			Point2D center = getVertexByObject(parent).geettPosition();
 			Arc2d orbit = Uni.of(deltaRadius).map(r->new Arc2d(new Point2d(center.getX(), center.getY()), r)).get();
 			//get the range of angle for this parent
+			if(!orbitRanges.containsKey(parent)) continue;
 			double[] posRange = orbitRanges.get(parent);
 			double spacing = (posRange[1]-posRange[0]) / (numChildren.get(parent));
 			angle = posRange[0]+spacing/2; //set the initial angle
@@ -113,20 +114,20 @@ public class FeatureProcessLayouter extends GraphLayouter {
 			for(int i=0;i<numChildren.get(parent); i++){
 				//calculate angle
 				Point2d p = orbit.getPoint(angle);
-				Node child = findChildByParentPlanet(parent, new ColoredArc("", Color.GREEN));
+				Node child = findChildByParentPlanet(parent, new ColoredArc("precedes", Color.GREEN));
 				//draw the planet node
-				vertices.get(child).settPosition(new Point2D.Double(p.x, p.y));
+				getVertexByObject((ColoredNode) child.getUserObject()).settPosition(new Point2D.Double(p.x, p.y));
 //				vertices.put(child, new Vertex (child, new Point2D.Double(p.x, p.y)));
 				//save the angle in the positions
-				positions.add(new PlanetPosition(child, angle));
+				positions.add(new PlanetPosition((ColoredNode) child.getUserObject(), angle));
 //				System.out.println("DNS + ARKO> " + "P>" + child + ", angle>" + angle );
 			
 				//add the satellite node
 				Arc2d satOrb = Uni.of(deltaRadius*0.7).map(r->new Arc2d(new Point2d(center.getX(), center.getY()), r)).get();
 				Point2d p1 = satOrb.getPoint(angle+.2);
-				Node sat = findChildByParentPlanet(child, new ColoredArc("", Color.MAGENTA));
+				Node sat = findChildByParentPlanet((ColoredNode) child.getUserObject(), new ColoredArc("has_output", Color.MAGENTA));
 				//draw the satellite node
-				vertices.get(sat).settPosition(new Point2D.Double(p1.x, p1.y));
+				getVertexByObject((ColoredNode) sat.getUserObject()).settPosition(new Point2D.Double(p1.x, p1.y));
 
 				//increment the angle
 				angle = angle + spacing;
@@ -135,6 +136,21 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		}
 		
 		super.repositionEdges();
+	}
+	
+	/**
+	 * get the vertex from the vertices by matching the user object of the node
+	 * @param cn
+	 * @return
+	 */
+	public Vertex getVertexByObject(ColoredNode cn){
+		Vertex v = null;
+		for(Node n:vertices.keySet()){
+			if(n.getUserObject().equals(cn)){
+				return vertices.get(n);
+			}
+		}
+		return null;
 	}
 	
 	
@@ -151,12 +167,12 @@ public class FeatureProcessLayouter extends GraphLayouter {
 		return returnList;
 	}
 
-	public Node findChildByParentPlanet(Node parent, ColoredArc arc){
+	public Node findChildByParentPlanet(ColoredNode parent, ColoredArc arc){
 		int i = 0;
 		Node child = null;
 		for(;i<currentArcs.size();i++){
 			if(currentArcs.get(i).getUserObject().equals(arc)){
-				if(currentArcs.get(i).getParentNode().equals(parent)){
+				if(currentArcs.get(i).getParentNode().getUserObject().equals(parent)){
 					child = currentArcs.get(i).getChildNode();
 					break;
 				}
@@ -204,18 +220,18 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	}
 
 	class PlanetPosition{
-		Node n;
+		ColoredNode n;
 //		Node parent;
 		double angle;		
 		
-		public PlanetPosition(Node n, double angle) {
+		public PlanetPosition(ColoredNode n, double angle) {
 			super();
 			this.n = n;
 //			this.parent = parent;
 			this.angle = angle;
 		}
 				
-		public Node getN() {
+		public ColoredNode getN() {
 			return n;
 		}
 		

@@ -58,4 +58,12 @@ public class ColoredNode extends DrawObject {
 	public String toString() {
 		return label;
 	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return label.hashCode();
+	}
+	
+	
 }
