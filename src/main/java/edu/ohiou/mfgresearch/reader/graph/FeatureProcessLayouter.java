@@ -114,7 +114,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 			for(int i=0;i<numChildren.get(parent); i++){
 				//calculate angle
 				Point2d p = orbit.getPoint(angle);
-				Node child = findChildByParentPlanet(parent, new ColoredArc("", Color.GREEN));
+				Node child = findChildByParentPlanet(parent, new ColoredArc("precedes", Color.GREEN));
 				//draw the planet node
 				getVertexByObject((ColoredNode) child.getUserObject()).settPosition(new Point2D.Double(p.x, p.y));
 //				vertices.put(child, new Vertex (child, new Point2D.Double(p.x, p.y)));
@@ -125,7 +125,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 				//add the satellite node
 				Arc2d satOrb = Uni.of(deltaRadius*0.7).map(r->new Arc2d(new Point2d(center.getX(), center.getY()), r)).get();
 				Point2d p1 = satOrb.getPoint(angle+.2);
-				Node sat = findChildByParentPlanet((ColoredNode) child.getUserObject(), new ColoredArc("", Color.MAGENTA));
+				Node sat = findChildByParentPlanet((ColoredNode) child.getUserObject(), new ColoredArc("has_output", Color.MAGENTA));
 				//draw the satellite node
 				getVertexByObject((ColoredNode) sat.getUserObject()).settPosition(new Point2D.Double(p1.x, p1.y));
 

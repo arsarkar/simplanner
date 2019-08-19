@@ -268,7 +268,7 @@ public class ProcessSelection {
 	}
 	
 	@Test
-	public void processSelection1(){
+	public void processSelectionHole(){
 		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_ABOX"));
 		GlobalKnowledge.loadInitialPlan();
 		GlobalKnowledge.loadStockFeature("SIMPLE HOLE(4)");
@@ -296,4 +296,20 @@ public class ProcessSelection {
 //		   .onFailure(e->e.printStackTrace(System.out));
 	}
 
+	@Test
+	public void processSelectionSlot(){
+		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_ABOX"));
+		GlobalKnowledge.loadInitialPlan();
+		GlobalKnowledge.loadStockFeature("RECTANGULAR_SLOT(7)");
+		
+		FeatureProcessSelection selection = new FeatureProcessSelection(new String[]{});
+		
+		selection.ask_to_select_milling_processes(NodeFactory.createBlankNode());
+		
+		try {
+			selection.getLocalKB().write(new FileOutputStream(new File(new PropertyReader().getNS("git1")+"impm-ind/plan/psec-int-2.rdf")), "RDF/XML");
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		}
+	}
 }

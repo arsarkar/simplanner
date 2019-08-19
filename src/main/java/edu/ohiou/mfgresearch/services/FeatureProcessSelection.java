@@ -87,7 +87,7 @@ public class FeatureProcessSelection {
 		   .get();
 	}
 	
-	public void loadProcessPrecedence(String[] functionTypes){
+	public void loadDrillingProcessPrecedence(String[] functionTypes){
 		log.info("loading process precedence by rule process-precedence-drilling.q");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
@@ -102,6 +102,29 @@ public class FeatureProcessSelection {
 		   .onSuccess(m->localKB.add(m));
 	}
 	
+	public void loadMillingProcessPrecedence(String[] functionTypes){
+		log.info("loading process precedence by rule process-precedence-milling.q");
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addABox(prop.getProperty("CAPABILITY_MILL_ABOX_MM")))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-peripheralmilling.q"))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-slotmilling.q"))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-facemilling.q"))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-slabmilling.q"))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-sidemilling.q"))		
+		   .set(q->q.setLocal=true)
+		   .set(q->q.setSelectPostProcess(tab->{
+			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   return tab;
+		   }))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .onSuccess(m->localKB.add(m));
+	}
+	
 	/**
 	 * Service to plan holemaking
 	 * @param featureName
@@ -109,7 +132,7 @@ public class FeatureProcessSelection {
 	public void ask_to_select_holemaking_processes(Node featureSpecification){
 	
 		//load process precedence for the particular service 
-		loadProcessPrecedence(new String[]{"HoleStarting", "HoleMaking", "HoleImproving", "HoleFinishing"});
+		loadDrillingProcessPrecedence(new String[]{"HoleStarting", "HoleMaking", "HoleImproving", "HoleFinishing"});
 		
 		execute();
 	}
@@ -118,10 +141,10 @@ public class FeatureProcessSelection {
 	 * service to plan slotmaking
 	 * @param featureName
 	 */
-	public void ask_to_select_slotmaking_processes(Node featureSpecification){
+	public void ask_to_select_milling_processes(Node featureSpecification){
 		
 		//load process precedence for the particular service 
-		loadProcessPrecedence(new String[]{"SlotRoughing", "SlotFinising"});
+		loadMillingProcessPrecedence(new String[]{"SlotRoughing", "SlotFinising"});
 		
 		execute();
 	}
@@ -234,6 +257,10 @@ public class FeatureProcessSelection {
 					   .set(q->q.addPlan("resources/META-INF/rules/core/process-planning-1.rq"))
 					   .set(q->q.setLocal=true)
 					   .set(q->q.setServicePostProcess(plotProcessSelectionTree))
+					   .set(q->q.setSelectPostProcess(tab->{
+						   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+						   return tab;
+					   }))
 					   .map(q->q.execute())
 					   .set(q->GlobalKnowledge.appendPlanKB(q.getBelief().getLocalABox()))
 					   .map(q->q.isQuerySuccess())

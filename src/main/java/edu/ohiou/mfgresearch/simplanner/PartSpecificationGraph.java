@@ -373,14 +373,14 @@ public class PartSpecificationGraph {
 		//load all dimensions of the features
 		Model m6 = partGraph.runRule_FeatureToleranceMeasure(m5);
 		System.out.println("================================================================================================================");
-		writePartGraph(m6, designKBPath, "NTRIPLE");
+		//writePartGraph(m6, designKBPath, "NTRIPLE");
 		//infer type
 		Model m7 = ModelFactory.createDefaultModel().read(designKBPath);
 		Model m8 = partGraph.runRule_inferFeatureType(m7);
 		Model m9 = partGraph.runRule_inferMeasurementTypeDiameter(m8);
 		Model m10 = partGraph.runRule_inferMeasurementTypeDepth(m9);
 		Model m11 = partGraph.runRule_inferToleranceType(m10);
-		writePartGraph(m11, designKBPath, "TURTLE");
+		writePartGraph(m6, designKBPath, "TURTLE");
 	}	
 }
 
