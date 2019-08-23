@@ -1,0 +1,27 @@
+PREFIX  pplan: <edu.ohiou.mfgresearch.services.PartProcessSelection>
+PREFIX  rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+
+CONSTRUCT{
+	?f1   rdf:type    design:FormFeature;
+			rdf:type	design:IntermediateFormFeature.
+}
+WHERE{
+	?p		rdf:type					design:PartSpecification;
+			cco:inheres_in			?i0.
+	?i0  	rdf:type              		design:LabelBearingEntity;
+			cco:has_text_value	?pName.
+	?pf	rdf:type					design:PartFeatureMap;
+			design:describes_map_with	?p;
+			design:describes_map_with	?fs.
+	?fs  	rdf:type              		design:FeatureSpecification;
+			cco:inheres_in       	?i1.
+	?i1  	rdf:type              		design:LabelBearingEntity;
+			cco:has_text_value   ?fName.			
+}
+FUNCTION{
+	?f <- pplan:createStockFeature(?fName)
+}

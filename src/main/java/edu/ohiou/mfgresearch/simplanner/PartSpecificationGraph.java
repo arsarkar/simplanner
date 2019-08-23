@@ -373,7 +373,7 @@ public class PartSpecificationGraph {
 		//load all dimensions of the features
 		Model m6 = partGraph.runRule_FeatureToleranceMeasure(m5);
 		System.out.println("================================================================================================================");
-		writePartGraph(m6, designKBPath, "NTRIPLE");
+		//writePartGraph(m6, designKBPath, "NTRIPLE");
 		//infer type
 		Model m7 = ModelFactory.createDefaultModel().read(designKBPath);
 		Model m8 = partGraph.runRule_inferFeatureType(m7);

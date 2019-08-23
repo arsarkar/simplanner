@@ -52,9 +52,19 @@ public class GlobalKnowledge {
 		return KB.partKB;
 	}
 	
+	public static void setPart(){
+		load();
+		KB.partKB = ModelFactory.createDefaultModel();
+	}
+	
 	public static Model getPlan(){
 		load();
 		return KB.planKB;
+	}
+	
+	public static void setPlan(){
+		load();
+		KB.planKB = ModelFactory.createDefaultModel();
 	}
 
 	public static void appendPartKB(Model m){
@@ -113,14 +123,14 @@ public class GlobalKnowledge {
 	public static void loadStockFeature(String featureName){
 		load();
 		if(KB.partKB == null){
-			KB.partKB = ModelFactory.createDefaultModel();
+			setPart();
 		}
 		//two queries are required to insert the assertions in different KB
 		//create the stock feature and save to the specification KB
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(KB.specificationKB)) 
-		   .set(q->q.addABox(KB.planKB)) 
+//		   .set(q->q.addABox(KB.planKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature2.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("fName", ResourceFactory.createPlainLiteral(featureName)))
 		   .set(q->q.setLocal=true)
@@ -129,11 +139,15 @@ public class GlobalKnowledge {
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
 		   .onSuccess(m->KB.partKB.add(m));
+		
+		if(KB.planKB == null){
+			KB.planKB = ModelFactory.createDefaultModel();
+		}
 		//assert the stock feature is output of the root planned process
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(KB.specificationKB)) 
-		   .set(q->q.addABox(KB.planKB))  
+//		   .set(q->q.addABox(KB.planKB))  
 		   .set(q->q.addABox(KB.partKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature1.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("fName", ResourceFactory.createPlainLiteral(featureName)))
