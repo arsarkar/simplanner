@@ -22,6 +22,4 @@ WHERE{
       cco:has_text_value   ?fName.
  ?i2  rdf:type            design:TypeBearingEntity;    
 	  cco:has_URI_value    ?ft.
- ?p   rdf:type			plan:RootProcess;
-	   rdf:type			plan:PlannedProcess.
 }	

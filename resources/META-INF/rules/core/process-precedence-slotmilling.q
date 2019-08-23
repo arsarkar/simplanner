@@ -6,10 +6,11 @@ PREFIX cco:<http://www.ontologyrepository.com/CommonCoreOntologies/>
 
 CONSTRUCT{
 	pp:hasSucceedingProcess rdf:type owl:ObjectProperty.
-	?root rdf:type pp:RootProcess.
+	?root 	rdf:type pp:RootProcess.
 	?em1	rdf:type	capa:EndMilling.
 	?em2	rdf:type	capa:EndMilling.
-	?em1 pp:hasSucceedingProcess ?em2. 
+	?root 	pp:hasSucceedingProcess ?em1.
+	?em1 	pp:hasSucceedingProcess ?em2. 
 }
 WHERE{
 	?sr		rdf:type	capa:SlotRoughing.

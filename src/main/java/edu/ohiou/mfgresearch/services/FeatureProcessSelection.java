@@ -129,24 +129,37 @@ public class FeatureProcessSelection {
 	 * Service to plan holemaking
 	 * @param featureName
 	 */
-	public void ask_to_select_holemaking_processes(Node featureSpecification){
+	public static Node[] ask_to_select_holemaking_processes(Node featureSpecification){
+		
+		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 	
 		//load process precedence for the particular service 
-		loadDrillingProcessPrecedence(new String[]{"HoleStarting", "HoleMaking", "HoleImproving", "HoleFinishing"});
+		fpSel.loadDrillingProcessPrecedence(new String[]{"HoleStarting", "HoleMaking", "HoleImproving", "HoleFinishing"});
 		
-		execute();
+		fpSel.execute();
+		
+		return null;
 	}
 	
 	/**
 	 * service to plan slotmaking
 	 * @param featureName
 	 */
-	public void ask_to_select_milling_processes(Node featureSpecification){
+	public static Node[] ask_to_select_milling_processes(Node featureSpecification){
+		
+		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 		
 		//load process precedence for the particular service 
-		loadMillingProcessPrecedence(new String[]{"SlotRoughing", "SlotFinising"});
+		fpSel.loadMillingProcessPrecedence(new String[]{"SlotRoughing", "SlotFinising"});
 		
-		execute();
+		fpSel.execute();
+		
+		//select FeatureActivity instances 
+		
+		//alternative 
+		
+		
+		return null;
 	}
 	
 	public void execute(){		
@@ -261,6 +274,7 @@ public class FeatureProcessSelection {
 						   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
 						   return tab;
 					   }))
+					   .set(q->q.getBelief().getaBox().write(new FileOutputStream(new File("C:\\Users\\sarkara1\\git\\SIMPOM\\plan\\abox-proce-plan2.rdf")), "RDF/XML"))
 					   .map(q->q.execute())
 					   .set(q->GlobalKnowledge.appendPlanKB(q.getBelief().getLocalABox()))
 					   .map(q->q.isQuerySuccess())

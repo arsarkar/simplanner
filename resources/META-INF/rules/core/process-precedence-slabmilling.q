@@ -9,6 +9,7 @@ CONSTRUCT{
 	?root rdf:type pp:RootProcess.
 	?sm1	rdf:type	capa:SlabMilling.
 	?sm2	rdf:type	capa:SlabMilling.
+	?root pp:hasSucceedingProcess ?sm1.
 	?sm1 pp:hasSucceedingProcess ?sm2. 
 }
 WHERE{

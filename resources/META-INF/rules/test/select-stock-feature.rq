@@ -1,0 +1,20 @@
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+PREFIX  plan: <http://www.ohio.edu/ontologies/plan#>
+
+SELECT ?f1 ?ice1 ?i1 ?i2 ?fName ?ft ?p
+WHERE{
+ ?ice1   rdf:type            			cco:FormFeatureIdentifier; 
+			cco:inheres_in       		?i1;
+			cco:inheres_in       		?i2.
+ ?f1   	rdf:type              			design:FormFeature;
+			rdf:type				 		design:IntermediateFormFeature;
+			cco:designated_by 		?ice1.
+ ?p    	cco:has_output			?f1.
+ ?i1  		rdf:type              			design:LabelBearingEntity;
+			cco:has_text_value  	?fName.
+ ?i2  		rdf:type            			design:TypeBearingEntity;    
+			cco:has_URI_value    	?ft.
+}	
