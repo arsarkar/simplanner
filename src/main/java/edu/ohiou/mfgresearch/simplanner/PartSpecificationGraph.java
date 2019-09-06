@@ -371,8 +371,38 @@ public class PartSpecificationGraph {
 		   .map(FileOutputStream::new)
 		   .set(s->kb.write(s, "RDF/XML"))
 		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(s->kb.write(System.out, lang))
+		   .onSuccess(s->{
+			 if(lang.length()>0) kb.write(System.out, lang);
+		   })
 		   ;		
+	}
+	
+	public String loadPart(String path){
+		//load all features for the part
+		Model m1 = runRule_FeatureSpecification(m);
+		//load all features for the part
+		Model m2 = runRule_FeatureType(m1);
+		//load all dimensions of the features
+		Model m3 = runRule_FeatureDimension(m2);
+		//load all dimensions of the features
+		Model m4 = runRule_FeatureDimensionMeasurement(m3);
+		//load all dimensions of the features
+		Model m5 = runRule_FeatureTolerance(m4);
+		//load all dimensions of the features
+		Model m6 = runRule_FeatureToleranceMeasure(m5);
+		writePartGraph(m6, path, "");
+		//infer type
+		Model m7 = ModelFactory.createDefaultModel().read(path);
+		Model m8 = runRule_inferFeatureType(m7);
+		Model m9 = runRule_inferMeasurementTypeDiameter(m8);
+		Model m10 = runRule_inferMeasurementTypeDepth(m9);
+		Model m11 = runRule_inferToleranceType(m10);
+		
+		//load feature precedence
+		Model m12 = runRule_FeaturePrecedence(m11);
+		
+		writePartGraph(m12, path, "");
+		return partLabel;
 	}
 
 	public static void main(String[] args) {

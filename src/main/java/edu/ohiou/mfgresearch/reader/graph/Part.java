@@ -17,6 +17,7 @@ import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
 import edu.ohiou.mfgresearch.simplanner.IMPM;
+import edu.ohiou.mfgresearch.simplanner.PartSpecificationGraph;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -38,6 +39,9 @@ class Part implements Runnable {
 	
 	@Option(names={"-g", "--graph"}, paramLabel="PATH", description="file path or URL of the RDF graph")
 	private File path;	
+	
+	@Option(names={"-file"}, paramLabel="FILE", description="file path or URL of the specification XML")
+	private File file;	
 	
 	@Option(names={"-f", "--feature"}, paramLabel="FEATURE", description="feature name or * for all features")
 	private String featureName="";
@@ -72,7 +76,13 @@ class Part implements Runnable {
 
 	@Override
 	public void run() {
+
 		if(path!=null){
+			if(file!=null){
+				PartSpecificationGraph spec = new PartSpecificationGraph("", file.getPath());
+				String label = spec.loadPart(path.getPath());
+				System.out.println("Part specification " + label + " is loaded from "+ file.getAbsolutePath());
+			}
 			m.read(path.getPath());
 			System.out.printf("RDF is read from %s\n",path.getAbsolutePath());
 			path=null;

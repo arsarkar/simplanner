@@ -94,16 +94,17 @@ public class FeatureProcessSelection {
 	 * @return 
 	 */
 	public static Node[] ask_to_plan_feature(Node featureSpecification, String featureType){
-		if(featureType.equals("http://www.ohio.edu/ontologies/design#Hole")){
+		featureType = featureType.replaceAll("\"", "");
+		if(featureType.equals("Hole")){
 			return ask_to_select_holemaking_processes(featureSpecification);
 		}
-		else if(featureType.equals("http://www.ohio.edu/ontologies/design#Slot")){
+		else if(featureType.equals("Slot")){
 			return ask_to_select_open_slotmaking_processes(featureSpecification);
 		}
-		else if(featureType.equals("http://www.ohio.edu/ontologies/design#Slab")){
+		else if(featureType.equals("Slab")){
 			return ask_to_select_slabmaking_processes(featureSpecification);
 		}
-		else if(featureType.equals("http://www.ohio.edu/ontologies/design#Pocket")){
+		else if(featureType.equals("Pocket")){
 			return ask_to_select_open_pocketmaking_processes(featureSpecification);
 		}
 //		else if(featureType.equals("http://www.ohio.edu/ontologies/design#Chamfer")){
@@ -112,7 +113,7 @@ public class FeatureProcessSelection {
 		else{
 			return new Node[0];
 		}
-	}
+	}	
 	
 	/**
 	 * Service to plan holemaking
@@ -182,7 +183,7 @@ public class FeatureProcessSelection {
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
-		   .set(q->q.addABox(prop.getProperty("CAPABILITY_MILL_ABOX_MM")))
+		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-openpocket.q"))	
 		   .set(q->q.setLocal=true)
 		   .set(q->q.setSelectPostProcess(tab->{
@@ -213,7 +214,7 @@ public class FeatureProcessSelection {
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
-		   .set(q->q.addABox(prop.getProperty("CAPABILITY_MILL_ABOX_MM")))
+		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-slab.q"))	
 		   .set(q->q.setLocal=true)
 		   .set(q->q.setSelectPostProcess(tab->{
