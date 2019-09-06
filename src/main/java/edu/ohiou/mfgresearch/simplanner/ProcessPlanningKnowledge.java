@@ -18,7 +18,7 @@ public class ProcessPlanningKnowledge {
 	String capTBoxPath = "C:/Users/sarkara1/git/SIMPOM/resource/mfg-resource.owl";
 	String ppTBoxPath = "C:/Users/sarkara1/git/SIMPOM/impm-u/mfg-plan.owl";
 
-	PropertyReader prop = new PropertyReader();
+	PropertyReader prop = PropertyReader.getProperty();
 	
 	public ProcessPlanningKnowledge() {
 		
@@ -42,7 +42,7 @@ public class ProcessPlanningKnowledge {
 	}	
 	
 	public static void main(String[] args) {
-		PropertyReader prop = new PropertyReader();
+		PropertyReader prop = PropertyReader.getProperty();
 		ProcessPlanningKnowledge ppk = new ProcessPlanningKnowledge();
 		Model pp = ppk.processPlanningKnowledge1();
 		try {

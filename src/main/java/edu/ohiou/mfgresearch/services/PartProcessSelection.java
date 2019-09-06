@@ -1,5 +1,7 @@
 package edu.ohiou.mfgresearch.services;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
@@ -24,7 +26,7 @@ public class PartProcessSelection {
 	static Logger log = LoggerFactory.getLogger(PartProcessSelection.class);
 	Model localKB;
 	String localPath;
-	static PropertyReader prop = new PropertyReader();
+	static PropertyReader prop = PropertyReader.getProperty();
 	
 	public PartProcessSelection() {
 		
@@ -75,6 +77,7 @@ public class PartProcessSelection {
 		if(GlobalKnowledge.getPlan() == null){
 			GlobalKnowledge.setPlan();
 		}
+		
 		//assert the stock feature is output of the root planned process (required because two unknown is not supported in FunQL yet)
 		log.info("Assert the stock as output of root process ----------------------------------------------------->");
 		Uni.of(FunQL::new)
@@ -97,35 +100,82 @@ public class PartProcessSelection {
 	public Node ask_to_plan(String partName){
 		
 		//read all the features of the part and load stock feature and root process for every feature
-		log.info("Create stock and root process tree for each feature----------------------------------------------------->");
+		//log.info("Create stock and root process tree for each feature----------------------------------------------------->");
+//		Uni.of(FunQL::new)
+//		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+//		   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
+//		   .set(q->q.addPlan("resources/META-INF/rules/core/create-stock-for-features.rq"))
+//		   .set(q->q.getPlan(0).addVarBinding("pName", ResourceFactory.createPlainLiteral(partName)))
+//		   .set(q->q.setLocal=true)
+//		   .map(q->q.execute())
+//		   .map(q->q.getBelief())
+//		   .map(b->b.getLocalABox())
+//		   .onFailure(e->e.printStackTrace(System.out))
+//		   .onSuccess(m->localKB.add(m));
+
+		//Initial plan
+		log.info("load initial plan");
+		GlobalKnowledge.loadInitialPlan();
+		
+		//Root Feature
+		log.info("load root feature and representation");
+		GlobalKnowledge.loadRootFeature();
+		
+		//transform feature precedence (add root representation)
+		log.info("transform feature precedence");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
-		   .set(q->q.addPlan("resources/META-INF/rules/core/create-stock-for-features.rq"))
+		   .set(q->q.addABox(GlobalKnowledge.getPlan())) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/transform_feature_precedence.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("pName", ResourceFactory.createPlainLiteral(partName)))
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->localKB.add(m));
+		   .onSuccess(m->GlobalKnowledge.appendSpecificationKB(m));
+		
+		//download to test
+		Uni.of(GlobalKnowledge.getSpecification())
+		   .set(m->m.add(GlobalKnowledge.getPlan()))
+		   .set(m->m.write(new FileOutputStream(new File("C:/Users/sarkara1/git/SIMPOM/plan/initial_plan.rdf")), "RDF/XML"));
 		
 		//plan every feature
 		log.info("Create occurrence tree for each feature----------------------------------------------------->");
+		boolean stopIteration = false;
+		while(!stopIteration){
+			boolean	isSuccessful =
+				Uni.of(FunQL::new)
+				   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+				   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
+				   .set(q->q.addABox(GlobalKnowledge.getPlan())) 
+				   .set(q->q.addPlan("resources/META-INF/rules/core/feature-precedence-1.rq"))
+//				   .set(q->q.getPlan(0).addVarBinding("pName", ResourceFactory.createPlainLiteral(partName)))
+				   .set(q->q.setLocal=true)
+				   .map(q->q.execute())
+				   .set(q->GlobalKnowledge.appendPlanKB(q.getBelief().getLocalABox()))
+				   .map(q->q.isQuerySuccess())
+				   .get();	
+			stopIteration = !isSuccessful;
+		}
+		execute();
+		return null;
+	}
+	
+	public void createFeaturePrecedenceNetwork(String partName){
+		//feature precedence network (add a start node)
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-planning-0.rq"))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/feature-precedence-0.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("pName", ResourceFactory.createPlainLiteral(partName)))
 		   .set(q->q.setLocal=true)
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->localKB.add(m));
-		
-		execute();
-		return null;
+		   .onSuccess(m->localKB.add(m));		
 	}
 
 	public void execute(){

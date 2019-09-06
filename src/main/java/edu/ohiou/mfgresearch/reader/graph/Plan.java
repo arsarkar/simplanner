@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.core.Var;
 
 import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.lambda.Uni;
@@ -23,10 +24,13 @@ import picocli.CommandLine.Option;
 public class Plan implements Runnable{
 
 	static Plan plan;
-	PropertyReader prop = new PropertyReader();
+	PropertyReader prop = PropertyReader.getProperty();
 	
-	@Option(names={"-feature",}, paramLabel="Feature", description="Currently takes a feature name, but may change in future")
+	@Option(names={"-feature",}, paramLabel="Feature", description="Currently takes a feature name")
 	private String feature="";	
+	
+	@Option(names={"-part",}, paramLabel="Feature", description="Currently takes a part name")
+	private String part="";	
 	
 	@Option(names={"-g", "--graph"}, paramLabel="PATH", description="file path or URL of the part specification RDF")
 	private File path;	
@@ -57,19 +61,36 @@ public class Plan implements Runnable{
 	@Override
 	public void run() {
 		if(path!=null){
-			GlobalKnowledge.loadSpecification(path.getAbsolutePath());
+//			GlobalKnowledge.loadSpecification(path.getAbsolutePath());
 			Uni.of(path)
 			   .map(p->p.getAbsolutePath())
 			   .set(GlobalKnowledge::loadSpecification)
-			   .onFailure(e->System.err.println("Part specification RDF could not be loaded! "+ e.getMessage()));
-			System.out.printf("Specification RDF is read from %s\n",path.getAbsolutePath());
+			   .onFailure(e->System.err.println("Part specification RDF could not be loaded! "+ e.getMessage()))
+			   .onSuccess(p->System.out.printf("Specification RDF is read from %s\n",path.getAbsolutePath()));
 			path=null;
 		}
 		if(feature.length()>0){
-			GlobalKnowledge.loadInitialPlan();
+//			GlobalKnowledge.loadInitialPlan();
 			GlobalKnowledge.loadStockFeature(feature);
-			FeatureProcessSelection selection = new FeatureProcessSelection(new String[]{});
-			selection.ask_to_select_holemaking_processes(NodeFactory.createBlankNode());
+			Uni.of(FunQL::new)
+			   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+			   .set(q->q.addABox(GlobalKnowledge.getSpecification()))
+			   .set(q->q.addPlan("resources/META-INF/rules/reader/read-feature-by-name.q"))
+			   .select(q->!feature.equals("*"), q->q.getPlan(0).addVarBinding("FeatureName", ResourceFactory.createPlainLiteral(feature)))
+			   .set(q->q.setSelectPostProcess(tab->{
+				   if(tab.isEmpty()) System.out.println("No feature is found for feature name " + feature);
+				   tab.rows().forEachRemaining(r->{
+					   String fName = r.get(Var.alloc("FeatureName")).toString();
+					   String fType = r.get(Var.alloc("FeatureType")).toString();
+					   System.out.println("Starting to plan for "+ fName + " of type " + fType);
+					   FeatureProcessSelection.ask_to_plan_feature(null, fType);
+				   });
+				   return tab;
+			   }))
+			   .set(q->q.execute())
+			   .onFailure(e->e.printStackTrace(System.out))
+			   ;
+//			FeatureProcessSelection.ask_to_select_holemaking_processes(NodeFactory.createBlankNode());
 			readPlan();
 			feature = "";
 		}

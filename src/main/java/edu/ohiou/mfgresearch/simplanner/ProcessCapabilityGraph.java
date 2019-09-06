@@ -46,7 +46,7 @@ public class ProcessCapabilityGraph {
 	PropertyReader prop;
 	{
 		log = LogManager.getLogManager().getLogger(PartSpecificationGraph.class.getSimpleName());		
-		prop = new PropertyReader();
+		prop = PropertyReader.getProperty();
 	}
 	
 	//file path

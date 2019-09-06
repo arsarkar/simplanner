@@ -1,0 +1,34 @@
+PREFIX  fpsel: <edu.ohiou.mfgresearch.services.FeatureProcessSelection>
+PREFIX  rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+
+CONSTRUCT{
+	?pCurrent  	plan:precedes 		?pNext.
+}
+WHERE{
+	?p0				rdf:type 				plan:RootProcess.
+	?p0				rdf:type 				plan:PlannedProcess.
+	?p0				plan:precedes* 	?pCurrent.
+	?pCurrent		cco:has_output	?f.
+	?rc				cco:specified_by	?f.
+
+	?pCurrent 	^plan:precedes*	?p3.
+	?p3				cco:has_output	?f3.
+	?r3				cco:specified_by	?f3.
+	
+	?r3				plan:hasSucceedingFeature	?rNext.
+	
+	?fs				cco:represents			?rNext;    
+						cco:inheres_in       	?i2.
+	?i2  				rdf:type            		design:TypeBearingEntity;
+						cco:has_URI_value   ?ft.    
+	
+	FILTER NOT EXISTS {?pCurrent	plan:precedes	?p2}.
+	FILTER (?rc != ?rNext)	
+}
+FUNCTION{
+	?pNext <- fpsel:ask_to_plan_feature(?fs,?ft)
+}
