@@ -32,7 +32,7 @@ import picocli.CommandLine.Parameters;
 @Command(name="process", description="reads the capabiliy of processes")
 class Process implements Runnable {
 
-	PropertyReader prop = new PropertyReader();
+	PropertyReader prop = PropertyReader.getProperty();
 	OntModel tBox = Uni.of(ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM))
 		 				.set(model->model.read(prop.getIRIPath(IMPM.capability)))
 		 				.get();

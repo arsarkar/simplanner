@@ -28,7 +28,7 @@ class Part implements Runnable {
 //		System.out.println("in Part constructor!");
 	}
 
-	PropertyReader prop = new PropertyReader();
+	PropertyReader prop = PropertyReader.getProperty();
 	Model m = ModelFactory.createDefaultModel();
 	
 	private static Part part=null;

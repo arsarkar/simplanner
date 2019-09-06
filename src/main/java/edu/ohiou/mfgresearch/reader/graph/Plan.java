@@ -23,7 +23,7 @@ import picocli.CommandLine.Option;
 public class Plan implements Runnable{
 
 	static Plan plan;
-	PropertyReader prop = new PropertyReader();
+	PropertyReader prop = PropertyReader.getProperty();
 	
 	@Option(names={"-feature",}, paramLabel="Feature", description="Currently takes a feature name, but may change in future")
 	private String feature="";	

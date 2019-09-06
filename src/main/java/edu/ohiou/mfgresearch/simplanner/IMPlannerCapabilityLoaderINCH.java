@@ -12,7 +12,7 @@ public class IMPlannerCapabilityLoaderINCH {
 	}
 
 	public static void main(String[] args) {
-		PropertyReader prop = new PropertyReader();		
+		PropertyReader prop = PropertyReader.getProperty();		
 		graph = new ProcessCapabilityGraph(prop.getProperty("CAPABILITY_ABOX"), null);
 //		newKBPath = args[0];
 		//create hole starting function and capability

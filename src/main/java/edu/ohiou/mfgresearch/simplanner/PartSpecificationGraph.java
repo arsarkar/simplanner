@@ -37,7 +37,7 @@ public class PartSpecificationGraph {
 	PropertyReader prop;
 	{
 		log = LogManager.getLogManager().getLogger(PartSpecificationGraph.class.getSimpleName());		
-		prop = new PropertyReader();
+		prop = PropertyReader.getProperty();
 	}
 	
 	PartFeatureLoader loader;	
@@ -377,7 +377,7 @@ public class PartSpecificationGraph {
 
 	public static void main(String[] args) {
 		
-		PropertyReader prop = new PropertyReader();
+		PropertyReader prop = PropertyReader.getProperty();
 		
 		//create default knowledge with the part name
 		PartSpecificationGraph partGraph = new PartSpecificationGraph("", prop.getProperty("DESIGN_XML"));

@@ -29,7 +29,7 @@ public class LoaderTest {
 	
 	@Test
 	public void testProperty(){
-		PropertyReader prop = new PropertyReader();
+		PropertyReader prop = PropertyReader.getProperty();
 		System.out.println(prop.getIRIPath("http://www.ohio.edu/ontologies/capability-implanner#"));
 		System.out.println(prop.getProperty("DESIGN_XML"));
 	}

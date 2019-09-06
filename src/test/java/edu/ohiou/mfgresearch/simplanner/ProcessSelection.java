@@ -36,7 +36,7 @@ public class ProcessSelection {
 	
 	@Before
     public void beforeEachTestMethod() {
-        prop = new PropertyReader();
+        prop = PropertyReader.getProperty();
     }
 	
 	@Test
@@ -44,7 +44,7 @@ public class ProcessSelection {
 		System.out.println(IMPM.getUnit("mm"));
 		System.out.println(IMPM.getUnit("cm"));
 		
-        prop = new PropertyReader();
+        prop = PropertyReader.getProperty();
         System.out.println(prop.getProperty("SHOW_PROCESS_GRAPH").toCharArray());
         System.out.println(prop.getProperty("SHOW_PROCESS_GRAPH").toLowerCase().hashCode());
         System.out.println(new String("true").hashCode());
@@ -239,7 +239,7 @@ public class ProcessSelection {
 	@Test
 	public void holedrillMatching1(){
 		
-		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_ABOX"));
+		GlobalKnowledge.loadSpecification(PropertyReader.getProperty().getProperty("DESIGN_PART_ABOX"));
 		
 		FeatureProcessMatching hs = new FeatureProcessMatching(new String[]{});
 		
@@ -272,7 +272,7 @@ public class ProcessSelection {
 	
 	@Test
 	public void loadStockFeatures(){
-		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_ABOX"));
+		GlobalKnowledge.loadSpecification(PropertyReader.getProperty().getProperty("DESIGN_PART_ABOX"));
 //		GlobalKnowledge.loadInitialPlan();
 		GlobalKnowledge.loadStockFeature("SIMPLE HOLE(4)");
 		GlobalKnowledge.loadStockFeature("RECTANGULAR_SLOT(7)");
@@ -293,7 +293,7 @@ public class ProcessSelection {
 	
 	@Test
 	public void processSelectionHole(){
-		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_ABOX"));
+		GlobalKnowledge.loadSpecification(PropertyReader.getProperty().getProperty("DESIGN_PART_ABOX"));
 		//GlobalKnowledge.loadInitialPlan();
 		GlobalKnowledge.loadStockFeature("SIMPLE HOLE(4)");
 		
@@ -302,7 +302,7 @@ public class ProcessSelection {
 		FeatureProcessSelection.ask_to_select_holemaking_processes(NodeFactory.createBlankNode());
 		
 		try {
-			selection.getLocalKB().write(new FileOutputStream(new File(new PropertyReader().getNS("git1")+"impm-ind/plan/psec-int-1.rdf")), "RDF/XML");
+			selection.getLocalKB().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-int-1.rdf")), "RDF/XML");
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
@@ -310,7 +310,7 @@ public class ProcessSelection {
 
 	@Test
 	public void processSelectionSlot(){
-		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_ABOX"));
+		GlobalKnowledge.loadSpecification(PropertyReader.getProperty().getProperty("DESIGN_PART_ABOX"));
 		
 		//GlobalKnowledge.loadInitialPlan();
 		GlobalKnowledge.loadStockFeature("RECTANGULAR_SLOT(7)");
@@ -319,7 +319,7 @@ public class ProcessSelection {
 		FeatureProcessSelection.ask_to_select_open_slotmaking_processes(NodeFactory.createBlankNode());
 		
 		try {
-			selection.getLocalKB().write(new FileOutputStream(new File(new PropertyReader().getNS("git1")+"impm-ind/plan/psec-int-rectangular_slot7.rdf")), "RDF/XML");
+			selection.getLocalKB().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-int-rectangular_slot7.rdf")), "RDF/XML");
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
@@ -327,7 +327,7 @@ public class ProcessSelection {
 	
 	@Test
 	public void processSelectionPocket(){
-		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_ABOX"));
+		GlobalKnowledge.loadSpecification(PropertyReader.getProperty().getProperty("DESIGN_PART_ABOX"));
 		
 		//GlobalKnowledge.loadInitialPlan();
 		GlobalKnowledge.loadStockFeature("RECTANGULAR_POCKET(3)");
@@ -336,7 +336,7 @@ public class ProcessSelection {
 		FeatureProcessSelection.ask_to_select_open_pocketmaking_processes(NodeFactory.createBlankNode());
 		
 		try {
-			selection.getLocalKB().write(new FileOutputStream(new File(new PropertyReader().getNS("git1")+"impm-ind/plan/psec-int-rectangular_slot7.rdf")), "RDF/XML");
+			selection.getLocalKB().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-int-rectangular_slot7.rdf")), "RDF/XML");
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
@@ -344,7 +344,7 @@ public class ProcessSelection {
 	
 	@Test
 	public void processSelectionSlab(){
-		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_ABOX"));
+		GlobalKnowledge.loadSpecification(PropertyReader.getProperty().getProperty("DESIGN_PART_ABOX"));
 		
 		//GlobalKnowledge.loadInitialPlan();
 		GlobalKnowledge.loadStockFeature("RECTANGULAR_POCKET(2)");
@@ -353,7 +353,7 @@ public class ProcessSelection {
 		FeatureProcessSelection.ask_to_select_slabmaking_processes(NodeFactory.createBlankNode());
 		
 		try {
-			selection.getLocalKB().write(new FileOutputStream(new File(new PropertyReader().getNS("git1")+"impm-ind/plan/psec-int-rectangular_slot7.rdf")), "RDF/XML");
+			selection.getLocalKB().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-int-rectangular_slot7.rdf")), "RDF/XML");
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
@@ -361,14 +361,14 @@ public class ProcessSelection {
 	
 	@Test
 	public void processPlanPart(){
-		GlobalKnowledge.loadSpecification(new PropertyReader().getProperty("DESIGN_PART_ABOX"));
+		GlobalKnowledge.loadSpecification(PropertyReader.getProperty().getProperty("DESIGN_PART_ABOX"));
 		
 		PartProcessSelection selection = new PartProcessSelection(new String[]{});
 		
 		selection.ask_to_plan("SimplePart-v2");
 		
 		try {
-			selection.getLocalKB().write(new FileOutputStream(new File(new PropertyReader().getNS("git1")+"impm-ind/plan/psec-int-2.rdf")), "RDF/XML");
+			selection.getLocalKB().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-int-2.rdf")), "RDF/XML");
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}

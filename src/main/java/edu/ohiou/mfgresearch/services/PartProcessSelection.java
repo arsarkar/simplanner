@@ -26,7 +26,7 @@ public class PartProcessSelection {
 	static Logger log = LoggerFactory.getLogger(PartProcessSelection.class);
 	Model localKB;
 	String localPath;
-	static PropertyReader prop = new PropertyReader();
+	static PropertyReader prop = PropertyReader.getProperty();
 	
 	public PartProcessSelection() {
 		

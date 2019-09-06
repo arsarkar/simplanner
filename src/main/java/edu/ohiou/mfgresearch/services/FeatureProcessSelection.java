@@ -35,7 +35,7 @@ public class FeatureProcessSelection {
 	
 	Model localKB;
 	String localPath;
-	static PropertyReader prop = new PropertyReader();
+	static PropertyReader prop = PropertyReader.getProperty();
 	FeatureProcessMatching matchingService;
 	
 	OntModel tBoxDesign = Uni.of(ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM))

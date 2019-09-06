@@ -37,7 +37,7 @@ public class GlobalKnowledge {
 	private Model specificationKB;
 	private Model partKB;
 	private Model planKB;
-	private static PropertyReader prop = new PropertyReader();
+	private static PropertyReader prop = PropertyReader.getProperty();
 	
 	private GlobalKnowledge() {
 	}

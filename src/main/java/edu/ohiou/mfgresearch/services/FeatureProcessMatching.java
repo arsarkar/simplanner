@@ -29,7 +29,7 @@ public class FeatureProcessMatching {
 	
 	Model localKB;
 	String localPath;
-	PropertyReader prop = new PropertyReader();
+	PropertyReader prop = PropertyReader.getProperty();
 	
 	public Model getLocalKB() {
 		return localKB;

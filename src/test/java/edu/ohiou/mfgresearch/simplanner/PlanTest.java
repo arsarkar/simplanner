@@ -37,7 +37,7 @@ public class PlanTest {
 	
 	@Before
     public void beforeEachTestMethod() {
-        prop = new PropertyReader();
+        prop = PropertyReader.getProperty();
     }
 	
 	@Test
