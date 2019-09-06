@@ -29,9 +29,9 @@ public interface PartFeatureLoader {
 	
 	public Map<String, String> readFeatureDimensions(String featureName);
 	
-	public String readNextFeature(String featureName);
+	public List<String> readNextFeature(String featureName);
 	
-	public String readPreviousFeature(String featureName);
+	public List<String> readPreviousFeature(String featureName);
 	
 	public Map<String, String> readTolerances(String featureName); 
 	

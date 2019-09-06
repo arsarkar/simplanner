@@ -87,6 +87,10 @@ public class GlobalKnowledge {
 		System.out.println("Specification is loaded onto global knowledge base.");
 	}
 	
+	public static void appendSpecificationKB(Model m){
+		KB.specificationKB.add(m);
+	}	
+	
 	private static BasicPattern createPatternInitialPlan(){
 		return
 			Uni.of(ConstructBuilder::new)
@@ -113,7 +117,21 @@ public class GlobalKnowledge {
 		expander.andThen(updater).apply(Uni.of(TableFactory.create()).set(t->t.addBinding(b)).get());
 		System.out.println("Initial plan is loaded onto global knowledge base.");
 	}
-	
+
+	public static void loadRootFeature() {
+		load();
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addABox(KB.specificationKB)) 
+		   .set(q->q.addABox(KB.planKB)) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/create-root-feature.rq"))
+		   .set(q->q.setLocal=true)
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .onSuccess(m->KB.specificationKB.add(m));
+	}
 	
 	/**
 	 * Load the stock feature, only creates a FormFeature and ICE1 which points to the type and label bearing entity 

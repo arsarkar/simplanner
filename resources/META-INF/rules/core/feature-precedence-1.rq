@@ -1,0 +1,47 @@
+PREFIX  fpsel: <edu.ohiou.mfgresearch.services.FeatureProcessSelection>
+PREFIX  rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>		
+
+CONSTRUCT{
+	?pCurrent  	plan:precedes 		?pNext.
+}
+WHERE{
+	?fs				cco:represents			?rNext;    
+						cco:inheres_in       	?i2.
+	?i2  				rdf:type            		design:TypeBearingEntity;
+						cco:has_URI_value   ?ft.
+	{
+		SELECT ?pCurrent ?rNext (count (distinct ?rp) as ?fpcount) ?frcount
+			WHERE{
+				?pCurrent 	^plan:precedes*	?p4.
+				?p4				cco:has_output	?f4.
+				?r4				cco:specified_by	?f4.						
+				?r4				plan:hasSucceedingFeature	?rNext.
+				?rNext			^plan:hasSucceedingFeature+	?rp	
+				FILTER(?rNext != ?rc)
+				{
+					SELECT ?pCurrent ?rc (count (distinct ?r3) as ?frcount)
+						WHERE{
+							?p0				rdf:type 				plan:RootProcess.
+							?p0				rdf:type 				plan:PlannedProcess.
+							?p0				plan:precedes* 	?pCurrent.
+							?pCurrent		cco:has_output	?f.
+							?rc				cco:specified_by	?f.
+							?pCurrent 	^plan:precedes*	?p3.
+							?p3				cco:has_output	?f3.
+							?r3				cco:specified_by	?f3.
+							FILTER NOT EXISTS {?pCurrent	plan:precedes	?p2}.
+						}
+						GROUP BY ?pCurrent ?rc
+				}
+			}
+			GROUP BY ?pCurrent ?rNext ?frcount
+	}
+	FILTER (?frcount >= ?fpcount)
+}
+FUNCTION{
+	?pNext <- fpsel:ask_to_plan_feature(?fs,?ft)
+}

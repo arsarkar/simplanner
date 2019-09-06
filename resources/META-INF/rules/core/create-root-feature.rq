@@ -1,0 +1,18 @@
+PREFIX  rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+
+CONSTRUCT{
+	cco:specified_by  rdf:type	owl:ObjectProperty.
+	cco:has_output  rdf:type	owl:ObjectProperty.
+	?f0	rdf:type	design:FormFeature.
+	?p0	cco:has_output ?f0.
+	?r0	rdf:type	design:RootFeatureRepresentation;
+			cco:specified_by	?f0.
+}
+WHERE{
+	?p0	rdf:type plan:RootProcess.
+	?p0	rdf:type plan:PlannedProcess.
+}

@@ -5,6 +5,7 @@
         <edu.ohiou.mfgresearch.implanner.features.Slot  featureName="RECTANGULAR_SLOT(7)">
            	<Dimensions slotPoint = '2 1 2'        normal = '0 -1 0'        sweep = '1 0 0'        width = '1.0'        bottomDistance = '-0.0'        positiveSweepLength = '3.0'        negativeSweepLength = '3.0'/>
 			<previousFeature name = "SIMPLE HOLE(4)" />
+			<previousFeature name = "RECTANGULAR_POCKET(3)" />
 			<Tolerances>
 				<Parameter dimensionTolerance="0.002"/>
 				<Parameter surfaceFinish="55"/>
@@ -14,6 +15,7 @@
         <edu.ohiou.mfgresearch.implanner.features.Hole  featureName="SIMPLE HOLE(4)">
             <Dimensions        radius = '1.0'        depth = '2.0'      holeAxis = '-0 -0 1'        axisPoint = '1.91351 2.92519 4'        bottomDistance = '-2.0'/>
 			<nextFeature name = "RECTANGULAR_SLOT(7)" />
+			<previousFeature name = "RECTANGULAR_POCKET(2)" />
 			<Tolerances>
 				<Parameter roundness="0.001"/>
 			</Tolerances>
@@ -21,6 +23,7 @@
         </edu.ohiou.mfgresearch.implanner.features.Hole>
         <edu.ohiou.mfgresearch.implanner.features.Pocket  featureName="RECTANGULAR_POCKET(3)">
             <Dimensions pocketPoint = '2 0 2'        bottomDistance = '-1.0'        normal = '0 -1 0'/>
+            <nextFeature name = "RECTANGULAR_SLOT(7)" />
 			<Tolerances>
 				<Parameter dimensionTolerance="0.002"/>
 				<Parameter surfaceFinish="55"/>
@@ -29,6 +32,7 @@
         </edu.ohiou.mfgresearch.implanner.features.Pocket>
         <edu.ohiou.mfgresearch.implanner.features.Slab  featureName="RECTANGULAR_POCKET(2)">
             <Dimensions pocketPoint = '2 3 5'        bottomDistance = '-1.0'        normal = '0 0 1'/>
+            <nextFeature name = "SIMPLE HOLE(4)" />
 			<Tolerances>
 			</Tolerances>
 	        <processList />                

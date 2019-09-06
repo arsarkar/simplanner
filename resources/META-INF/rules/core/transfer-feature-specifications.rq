@@ -44,7 +44,7 @@ WHERE{
 					cco:designated_by 				?ice1.
  FILTER NOT EXISTS {  ?d1	  	cco:inheres_in			?f1.
 								?d1		cco:concretizes		?d.}			
- FILTER(?dimType IN (design:DiameterSpecification, design:DepthSpecification, design:RoundnessSpecification, design:SurfaceFinishSpecification))	 
+ FILTER(?dimType IN (design:DiameterSpecification, design:DepthSpecification, design:RoundnessSpecification, design:SurfaceFinishSpecification, design:PositiveToleranceSpecification))	 
 }	
 
 

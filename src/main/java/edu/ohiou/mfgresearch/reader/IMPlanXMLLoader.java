@@ -1,6 +1,7 @@
 package edu.ohiou.mfgresearch.reader;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -123,19 +124,37 @@ public class IMPlanXMLLoader implements PartFeatureLoader {
 	}
 
 	@Override
-	public String readNextFeature(String featureName) {
-		String xPath = "//*[@featureName='" + featureName + "']" ;
-		return m.xpath(xPath)
-				.find("nextFeature")
-				.attr("name");
+	public List<String> readNextFeature(String featureName) {
+		String xPath = "//previousFeature[@name='" + featureName + "']" ;
+		
+		List<String> nf =
+			m.xpath(xPath)
+			 .parent()
+			 .attrs("featureName");
+		
+			m.xpath("//*[@featureName='" + featureName + "']/nextFeature")
+			 .attrs("name")
+			 .forEach(f->{
+				 if(!nf.contains(f)) nf.add(f);
+			 });
+		return nf;
 	}
 
 	@Override
-	public String readPreviousFeature(String featureName) {
-		String xPath = "//*[@featureName='" + featureName + "']" ;
-		return m.xpath(xPath)
-				.find("previousFeature")
-				.attr("name");
+	public List<String> readPreviousFeature(String featureName) {
+		String xPath = "//nextFeature[@name='" + featureName + "']" ;
+		
+		List<String> pf =
+			m.xpath(xPath)
+			 .parent()
+			 .attrs("featureName");
+		
+			m.xpath("//*[@featureName='" + featureName + "']/previousFeature")
+			 .attrs("name")
+			 .forEach(f->{
+				 if(!pf.contains(f)) pf.add(f);
+			 });
+		return pf;
 	}
 
 	@Override

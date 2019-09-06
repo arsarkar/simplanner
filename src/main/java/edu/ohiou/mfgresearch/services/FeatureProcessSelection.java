@@ -35,7 +35,7 @@ public class FeatureProcessSelection {
 	
 	Model localKB;
 	String localPath;
-	PropertyReader prop = new PropertyReader();
+	static PropertyReader prop = new PropertyReader();
 	FeatureProcessMatching matchingService;
 	
 	OntModel tBoxDesign = Uni.of(ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM))
@@ -87,42 +87,31 @@ public class FeatureProcessSelection {
 		   .get();
 	}
 	
-	public void loadDrillingProcessPrecedence(String[] functionTypes){
-		log.info("loading process precedence by rule process-precedence-drilling.q");
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
-		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-drilling-wo-holestarting.q"))
-		   .set(q->q.setLocal=true)
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->localKB.add(m));
-	}
-	
-	public void loadMillingProcessPrecedence(String[] functionTypes){
-		log.info("loading process precedence by rule process-precedence-milling.q");
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
-		   .set(q->q.addABox(prop.getProperty("CAPABILITY_MILL_ABOX_MM")))
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-peripheralmilling.q"))
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-slotmilling.q"))
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-facemilling.q"))
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-slabmilling.q"))
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-sidemilling.q"))		
-		   .set(q->q.setLocal=true)
-		   .set(q->q.setSelectPostProcess(tab->{
-			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
-			   return tab;
-		   }))
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->localKB.add(m));
+	/***
+	 * Service to plan feature, delegate to corresponding services as per feature type
+	 * @param featureSpecification
+	 * @param featureType
+	 * @return 
+	 */
+	public static Node[] ask_to_plan_feature(Node featureSpecification, String featureType){
+		if(featureType.equals("http://www.ohio.edu/ontologies/design#Hole")){
+			return ask_to_select_holemaking_processes(featureSpecification);
+		}
+		else if(featureType.equals("http://www.ohio.edu/ontologies/design#Slot")){
+			return ask_to_select_open_slotmaking_processes(featureSpecification);
+		}
+		else if(featureType.equals("http://www.ohio.edu/ontologies/design#Slab")){
+			return ask_to_select_slabmaking_processes(featureSpecification);
+		}
+		else if(featureType.equals("http://www.ohio.edu/ontologies/design#Pocket")){
+			return ask_to_select_open_pocketmaking_processes(featureSpecification);
+		}
+//		else if(featureType.equals("http://www.ohio.edu/ontologies/design#Chamfer")){
+//			return ask_to_select_pocketmaking_processes(featureSpecification);
+//		}
+		else{
+			return new Node[0];
+		}
 	}
 	
 	/**
@@ -134,7 +123,18 @@ public class FeatureProcessSelection {
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 	
 		//load process precedence for the particular service 
-		fpSel.loadDrillingProcessPrecedence(new String[]{"HoleStarting", "HoleMaking", "HoleImproving", "HoleFinishing"});
+		log.info("loading process precedence by rule process-precedence-drilling.q");
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-drilling-wo-holestarting.q"))
+		   .set(q->q.setLocal=true)
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .onSuccess(m->fpSel.localKB.add(m));
 		
 		fpSel.execute();
 		
@@ -145,19 +145,88 @@ public class FeatureProcessSelection {
 	 * service to plan slotmaking
 	 * @param featureName
 	 */
-	public static Node[] ask_to_select_milling_processes(Node featureSpecification){
+	public static Node[] ask_to_select_open_slotmaking_processes(Node featureSpecification){
 		
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 		
 		//load process precedence for the particular service 
-		fpSel.loadMillingProcessPrecedence(new String[]{"SlotRoughing", "SlotFinising"});
+		log.info("loading slot making process precedence by rule process-precedence-openslot.q");
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-openslot.q"))
+		   .set(q->q.setLocal=true)
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .onSuccess(m->fpSel.localKB.add(m));
 		
 		fpSel.execute();
 		
-		//select FeatureActivity instances 
+		return null;
+	}
+	
+	
+	/**
+	 * service to plan pocket making
+	 * @param featureName
+	 */
+	public static Node[] ask_to_select_open_pocketmaking_processes(Node featureSpecification){
 		
-		//alternative 
+		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 		
+		//load process precedence for the particular service 
+		log.info("loading process precedence by rule process-precedence-milling.q");
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addABox(prop.getProperty("CAPABILITY_MILL_ABOX_MM")))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-openpocket.q"))	
+		   .set(q->q.setLocal=true)
+		   .set(q->q.setSelectPostProcess(tab->{
+			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   return tab;
+		   }))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .onSuccess(m->fpSel.localKB.add(m));
+		
+		fpSel.execute();
+		
+		return null;
+	}
+
+	/**
+	 * service to plan slabmaking
+	 * @param featureName
+	 */
+	public static Node[] ask_to_select_slabmaking_processes(Node featureSpecification){
+		
+		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
+		
+		//load process precedence for the particular service 
+		log.info("loading process precedence by rule process-precedence-milling.q");
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addABox(prop.getProperty("CAPABILITY_MILL_ABOX_MM")))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-slab.q"))	
+		   .set(q->q.setLocal=true)
+		   .set(q->q.setSelectPostProcess(tab->{
+			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   return tab;
+		   }))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .onSuccess(m->fpSel.localKB.add(m));
+		
+		fpSel.execute();
 		
 		return null;
 	}
@@ -274,7 +343,6 @@ public class FeatureProcessSelection {
 						   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
 						   return tab;
 					   }))
-					   .set(q->q.getBelief().getaBox().write(new FileOutputStream(new File("C:\\Users\\sarkara1\\git\\SIMPOM\\plan\\abox-proce-plan2.rdf")), "RDF/XML"))
 					   .map(q->q.execute())
 					   .set(q->GlobalKnowledge.appendPlanKB(q.getBelief().getLocalABox()))
 					   .map(q->q.isQuerySuccess())

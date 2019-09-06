@@ -60,6 +60,11 @@ public class PartSpecificationGraph {
 		return loader.readFeatureType(featureName);		
 	}
 	
+	
+	public String[] getNextFeatures(String featureName){
+		return loader.readNextFeature(featureName).toArray(new String[0]);
+	}
+	
 	/**
 	 * service for ruleFeatureDimension1
 	 * dimensions are mapped to proper type
@@ -210,6 +215,36 @@ public class PartSpecificationGraph {
 		   .map(b->b.getaBox())
 		   .onFailure(e->e.printStackTrace(System.out))
 		   .get();
+	}
+	
+	public Model runRule_FeaturePrecedence(Model kb){
+		
+		Model localAbox = ModelFactory.createDefaultModel();
+		
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addABox(kb))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/read_suceeding-features1.q", this))
+		   .set(q->q.setLocal=true)
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .set(m->localAbox.add(m))
+		   .onFailure(e->e.printStackTrace(System.out));	
+		
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addABox(kb))
+		   .set(q->q.addABox(localAbox))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/read_suceeding-features2.q", this))
+		   .set(q->q.setLocal=true)
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .set(m->kb.add(m))		   
+		   .onFailure(e->e.printStackTrace(System.out));
+		
+		return kb;
 	}
 	
 	public Model runRule_FeatureDimension(Model kb){
@@ -373,14 +408,18 @@ public class PartSpecificationGraph {
 		//load all dimensions of the features
 		Model m6 = partGraph.runRule_FeatureToleranceMeasure(m5);
 		System.out.println("================================================================================================================");
-		//writePartGraph(m6, designKBPath, "NTRIPLE");
+		writePartGraph(m6, designKBPath, "NTRIPLE");
 		//infer type
 		Model m7 = ModelFactory.createDefaultModel().read(designKBPath);
 		Model m8 = partGraph.runRule_inferFeatureType(m7);
 		Model m9 = partGraph.runRule_inferMeasurementTypeDiameter(m8);
 		Model m10 = partGraph.runRule_inferMeasurementTypeDepth(m9);
 		Model m11 = partGraph.runRule_inferToleranceType(m10);
-		writePartGraph(m11, designKBPath, "TURTLE");
+		
+		//load feature precedence
+		Model m12 = partGraph.runRule_FeaturePrecedence(m11);
+		
+		writePartGraph(m12, designKBPath, "TURTLE");
 	}	
 }
 

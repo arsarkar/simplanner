@@ -1,0 +1,24 @@
+PREFIX  rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+
+CONSTRUCT{
+	plan:hasSucceedingFeature  rdf:type	owl:ObjectProperty.
+	?r0	rdf:type	design:FeatureRepresentation.
+	?r0	plan:hasSucceedingFeature	?r.
+}
+WHERE{
+	?p		rdf:type					design:PartSpecification;
+			cco:inheres_in			?i0.
+	?i0  	rdf:type              		design:LabelBearingEntity;
+			cco:has_text_value	?pName.
+	?pf	rdf:type					design:PartFeatureMap;
+			design:describes_map_with	?p;
+			design:describes_map_with	?fs.
+	?fs  	rdf:type              		design:FeatureSpecification;
+			cco:represents			?r.
+	?r0	rdf:type 					design:RootFeatureRepresentation.		
+	FILTER NOT EXISTS{?r1	plan:hasSuceedingFeature	?r}
+}

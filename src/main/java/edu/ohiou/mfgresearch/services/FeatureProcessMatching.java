@@ -82,6 +82,14 @@ public class FeatureProcessMatching {
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-feature-specifications.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("f1", ResourceFactory.createResource(featureIRI.getURI()))) //bind the last intermediate feature (featureIRi) to filter out every dimension which are already matched
 		   .set(q->q.setLocal=true)
+		   .set(q->q.setSelectPostProcess(tab->{
+			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   return tab;
+		   }))
+		   .set(q->q.setServicePostProcess(tab->{
+			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
