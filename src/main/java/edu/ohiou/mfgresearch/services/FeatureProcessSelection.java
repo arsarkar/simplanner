@@ -3,9 +3,12 @@ package edu.ohiou.mfgresearch.services;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Function;
 
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.ResultSetFormatter;
@@ -37,6 +40,8 @@ public class FeatureProcessSelection {
 	String localPath;
 	static PropertyReader prop = PropertyReader.getProperty();
 	FeatureProcessMatching matchingService;
+	List<Node> processNodes = null;
+	String featureSpec = "";
 	
 	OntModel tBoxDesign = Uni.of(ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM))
 							.set(model->model.read(prop.getIRIPath(IMPM.design)))
@@ -95,6 +100,7 @@ public class FeatureProcessSelection {
 	 */
 	public static Node[] ask_to_plan_feature(Node featureSpecification, String featureType){
 		featureType = featureType.replaceAll("\"", "");
+
 		if(featureType.equals("Hole")){
 			return ask_to_select_holemaking_processes(featureSpecification);
 		}
@@ -113,7 +119,91 @@ public class FeatureProcessSelection {
 		else{
 			return new Node[0];
 		}
-	}	
+	}
+	
+	private void createStockFeature(Node featureSpecification) {
+		if(GlobalKnowledge.getPart()==null){
+			GlobalKnowledge.setPart();
+		}
+		processNodes = new LinkedList<Node>();
+		
+		System.out.println("\n## Create stock feature as dummy root process.");
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature2.rq"))
+		   .set(q->q.getPlan(0).addVarBinding("f", ResourceFactory.createResource(featureSpecification.getURI())))
+		   .set(q->q.setLocal=true)
+		   .set(q->q.setServicePostProcess(tab->{
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   }
+			   if(!tab.isEmpty()){
+				   log.info("Stock feature " + tab.rows().next().get(Var.alloc("f1")).getLocalName() + " is created.");
+			   }
+			   return tab;
+		   }))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .onSuccess(m->GlobalKnowledge.appendPartKB(m));
+		
+		//assert the stock feature is output of the root planned process
+		System.out.println("\n## Assert root feature as output of the root process.");
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addABox(GlobalKnowledge.getSpecification()))  
+		   .set(q->q.addABox(GlobalKnowledge.getPart())) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature1.rq"))
+		   .set(q->q.getPlan(0).addVarBinding("f", ResourceFactory.createResource(featureSpecification.getURI())))
+		   .set(q->q.setLocal=true)
+		   .set(q->q.setServicePostProcess(tab->{
+			   if(!tab.isEmpty()){
+				   log.info("Stock feature " + tab.rows().next().get(Var.alloc("f1")).getLocalName() + " is assigned as output of root process "+ tab.rows().next().get(Var.alloc("p")).getLocalName());
+				   tab.rows().forEachRemaining(b->{
+					   processNodes.add(b.get(Var.alloc("p")));
+				   });
+			   }			   
+			   return tab;
+		   }))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out))
+		   .onSuccess(m->localKB.add(m));
+	}
+	
+	private Node[] getRootProcesses(){
+		
+		Uni.of(GlobalKnowledge.getPlan())
+		   .set(m->m.add(localKB))
+		   .set(m->m.write(new FileOutputStream(new File("C:/Users/sarkara1/git/SIMPOM/plan/initial_plan_after_process-planning-1.rdf")), "RDF/XML"));
+		
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addABox(GlobalKnowledge.getPlan()))
+		   .set(q->q.addABox(localKB))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/select-root-processes.q"))
+		   .set(q->q.setLocal=true)
+		   .set(q->q.getPlan(0).addVarBinding("p0", ResourceFactory.createResource(processNodes.get(0).getURI())))
+		   .set(q->q.setSelectPostProcess(t->{
+			   t.rows().forEachRemaining(b->{
+				   processNodes.add(b.get(Var.alloc("pNext")));
+			   });
+			   return t;
+		   }))
+		   .map(q->q.execute())
+		   .map(q->q.getBelief())
+		   .map(b->b.getLocalABox())
+		   .onFailure(e->e.printStackTrace(System.out));
+		if(processNodes.size()>1){
+			return processNodes.subList(1, processNodes.size()).toArray(new Node[0]);
+		}
+		else{
+			return null;
+		}
+	}
 	
 	/**
 	 * Service to plan holemaking
@@ -122,9 +212,14 @@ public class FeatureProcessSelection {
 	public static Node[] ask_to_select_holemaking_processes(Node featureSpecification){
 		
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
-	
+		fpSel.featureSpec = featureSpecification.getLocalName();
+		//create stock feature and link it to the dummy root process of the feature, which is then removed 
+		//and only the children of the root process is supplied
+		//this needs to be done in the local knowledge base
+		fpSel.createStockFeature(featureSpecification);
+		
 		//load process precedence for the particular service 
-		log.info("loading process precedence by rule process-precedence-drilling.q");
+		log.info("\n##loading process precedence by rule process-precedence-drilling.q");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
@@ -139,9 +234,9 @@ public class FeatureProcessSelection {
 		
 		fpSel.execute();
 		
-		return null;
+		return fpSel.getRootProcesses();
 	}
-	
+
 	/**
 	 * service to plan slotmaking
 	 * @param featureName
@@ -149,9 +244,14 @@ public class FeatureProcessSelection {
 	public static Node[] ask_to_select_open_slotmaking_processes(Node featureSpecification){
 		
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
+		fpSel.featureSpec = featureSpecification.getLocalName();
+		//create stock feature and link it to the dummy root process of the feature, which is then removed 
+		//and only the children of the root process is supplied
+		//this needs to be done in the local knowledge base
+		fpSel.createStockFeature(featureSpecification);
 		
 		//load process precedence for the particular service 
-		log.info("loading slot making process precedence by rule process-precedence-openslot.q");
+		log.info("\n##loading slot making process precedence by rule process-precedence-openslot.q");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
@@ -166,7 +266,7 @@ public class FeatureProcessSelection {
 		
 		fpSel.execute();
 		
-		return null;
+		return fpSel.getRootProcesses();
 	}
 	
 	
@@ -177,9 +277,14 @@ public class FeatureProcessSelection {
 	public static Node[] ask_to_select_open_pocketmaking_processes(Node featureSpecification){
 		
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
+		fpSel.featureSpec = featureSpecification.getLocalName();
+		//create stock feature and link it to the dummy root process of the feature, which is then removed 
+		//and only the children of the root process is supplied
+		//this needs to be done in the local knowledge base
+		fpSel.createStockFeature(featureSpecification);
 		
 		//load process precedence for the particular service 
-		log.info("loading process precedence by rule process-precedence-milling.q");
+		log.info("\n##loading process precedence by rule process-precedence-milling.q");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
@@ -198,7 +303,7 @@ public class FeatureProcessSelection {
 		
 		fpSel.execute();
 		
-		return null;
+		return fpSel.getRootProcesses();
 	}
 
 	/**
@@ -208,9 +313,14 @@ public class FeatureProcessSelection {
 	public static Node[] ask_to_select_slabmaking_processes(Node featureSpecification){
 		
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
+		fpSel.featureSpec = featureSpecification.getLocalName();
+		//create stock feature and link it to the dummy root process of the feature, which is then removed 
+		//and only the children of the root process is supplied
+		//this needs to be done in the local knowledge base
+		fpSel.createStockFeature(featureSpecification);
 		
 		//load process precedence for the particular service 
-		log.info("loading process precedence by rule process-precedence-milling.q");
+		log.info("\n##loading process precedence by rule process-precedence-milling.q");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
@@ -229,7 +339,7 @@ public class FeatureProcessSelection {
 		
 		fpSel.execute();
 		
-		return null;
+		return fpSel.getRootProcesses();
 	}
 	
 	public void execute(){		
@@ -326,6 +436,14 @@ public class FeatureProcessSelection {
 			return tab;
 		};
 		
+		Uni.of(GlobalKnowledge.getPlan())
+		   .set(m->m.add(localKB))
+		   .set(m->m.write(new FileOutputStream(new File("C:/Users/sarkara1/git/SIMPOM/plan/initial_plan_before_process-planning-1.rdf")), "RDF/XML"));
+		
+		if(GlobalKnowledge.getPlan()==null){
+			GlobalKnowledge.setPlan();
+		}
+		
 		int counter = 0;
 		while(!stopIteration){
 			counter += 1;
@@ -338,12 +456,32 @@ public class FeatureProcessSelection {
 					   .set(q->q.addABox(GlobalKnowledge.getPart()))
 					   .set(q->q.addABox(GlobalKnowledge.getPlan()))
 					   .set(q->q.addPlan("resources/META-INF/rules/core/process-planning-1.rq"))
+//					   .set(q->q.getPlan(0).addVarBinding("p0", ResourceFactory.createResource(processNodes.get(0).getURI())))
 					   .set(q->q.setLocal=true)
-					   .set(q->q.setServicePostProcess(plotProcessSelectionTree))
+//					   .set(q->q.setServicePostProcess(plotProcessSelectionTree))
 					   .set(q->q.setSelectPostProcess(tab->{
-						   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+						   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
+							   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+						   }
+						   if(!tab.isEmpty()){
+							   tab.rows().forEachRemaining(r->{
+								   log.info("Process type " + r.get(Var.alloc("pType")).getLocalName() + " can be applied after current occurrence " + r.get(Var.alloc("pCurrent")).getLocalName() + "(" + r.get(Var.alloc("pt")).getLocalName() + ")");
+							   });
+						   }
 						   return tab;
 					   }))
+					   .set(q->q.setServicePostProcess(plotProcessSelectionTree.andThen(tab->{
+						   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+							   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+						   }
+						   if(!tab.isEmpty()){
+							   tab.rows().forEachRemaining(r->{
+								   log.info("\nOccurrence " + r.get(Var.alloc("pNext1")).getLocalName() + "(" + r.get(Var.alloc("pType")).getLocalName() + ")" +
+										   		" is applied after " + r.get(Var.alloc("pCurrent")).getLocalName() + " generating output feature " + r.get(Var.alloc("f2")).getLocalName());
+							   });
+						   }
+						   return tab;
+					   })))
 					   .map(q->q.execute())
 					   .set(q->GlobalKnowledge.appendPlanKB(q.getBelief().getLocalABox()))
 					   .map(q->q.isQuerySuccess())

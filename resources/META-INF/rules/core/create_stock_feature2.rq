@@ -18,8 +18,6 @@ WHERE{
  ?f   rdf:type              design:FeatureSpecification;
       cco:inheres_in       ?i1;
 	  cco:inheres_in       ?i2.
- ?i1  rdf:type              design:LabelBearingEntity;
-      cco:has_text_value   ?fName.
- ?i2  rdf:type            design:TypeBearingEntity;    
-	  cco:has_URI_value    ?ft.
+ ?i1  rdf:type              design:LabelBearingEntity.
+ ?i2  rdf:type              design:TypeBearingEntity.
 }	

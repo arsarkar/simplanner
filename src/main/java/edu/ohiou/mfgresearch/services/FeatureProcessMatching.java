@@ -10,6 +10,7 @@ import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.algebra.TableFactory;
 import org.apache.jena.sparql.core.Var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ public class FeatureProcessMatching {
 	Model localKB;
 	String localPath;
 	PropertyReader prop = PropertyReader.getProperty();
+	String featureSpec = "", processInd = "";
 	
 	public Model getLocalKB() {
 		return localKB;
@@ -71,7 +73,7 @@ public class FeatureProcessMatching {
 	 * event to update local belief
 	 */
 	public void loadSpecifications(Node featureIRI){
-		log.info("load specifications for feature "+ featureIRI.getLocalName());
+		log.info("\n ##load specifications for feature "+ featureIRI.getLocalName());
 
 		//load specifications for the given feature
 		Uni.of(FunQL::new)
@@ -83,17 +85,25 @@ public class FeatureProcessMatching {
 		   .set(q->q.getPlan(0).addVarBinding("f1", ResourceFactory.createResource(featureIRI.getURI()))) //bind the last intermediate feature (featureIRi) to filter out every dimension which are already matched
 		   .set(q->q.setLocal=true)
 		   .set(q->q.setSelectPostProcess(tab->{
-			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
-			   return tab;
-		   }))
-		   .set(q->q.setServicePostProcess(tab->{
-			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   }
+			   if(tab.isEmpty()){
+				  log.info("No specification is avalable for the feature " + featureSpec); 
+			   }
+			   else{
+				   log.info("Trying to satisfy feature specification " + tab.rows().next().get(Var.alloc("fs")).getLocalName() +
+						   "(" + tab.rows().next().get(Var.alloc("fName")).getLiteral().getValue() + ") with the following specifications." );
+				   tab.rows().forEachRemaining(r->{
+					   log.info(r.get(Var.alloc("d")).getLocalName() + " of type " + r.get(Var.alloc("dimType")).getLocalName() + " having value " + r.get(Var.alloc("dim")).getLiteral().getValue());
+				   });
+			   }
 			   return tab;
 		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
+		   .onFailure(e->log.error(e.getMessage()))
 		   .onSuccess(m->localKB.add(m))
 		   ;
 		reloadKB("FPM-local-transfer-feature-specification.rdf");
@@ -104,9 +114,9 @@ public class FeatureProcessMatching {
 	 */
 	public void loadCapability(Node processIRI){
 
-		log.info("load capability for process "+ processIRI.getLocalName());
+		log.info("\n ##loading capability for process "+ processIRI.getLocalName());
 		//load capability with both max and min as equation
-		log.info("running rule transfer-capability-measure.rq... ");
+		log.info("\n ##running rule transfer-capability-measure.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(prop.getIRIPath(IMPM.capability_IMPM))) //capability repository 
@@ -114,21 +124,19 @@ public class FeatureProcessMatching {
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.setLocal=true)		   
 		   .set(q->q.setSelectPostProcess(tab->{
-			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
-			   return tab;
-		   }))
-		   .set(q->q.setServicePostProcess(tab->{
-			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   }
 			   return tab;
 		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
+		   .onFailure(e->log.error(e.getMessage()))
 		   .onSuccess(m->localKB.add(m));
 		
 		//load capability with max as measurement and min as equation
-		log.info("running rule transfer-capability-measure-equation.rq... ");
+		log.info("\n ##running rule transfer-capability-measure-equation.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(prop.getIRIPath(IMPM.capability_IMPM))) //capability repository 
@@ -136,21 +144,19 @@ public class FeatureProcessMatching {
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.setLocal=true)
 		   .set(q->q.setSelectPostProcess(tab->{
-			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
-			   return tab;
-		   }))
-		   .set(q->q.setServicePostProcess(tab->{
-			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   }
 			   return tab;
 		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
+		   .onFailure(e->log.error(e.getMessage()))
 		   .onSuccess(m->localKB.add(m));
 		
 		//load capability with max as equation and min as measurement
-		log.info("running rule transfer-capability-equation-measure.rq... ");
+		log.info("\n ##running rule transfer-capability-equation-measure.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(prop.getIRIPath(IMPM.capability_IMPM))) //capability repository 
@@ -158,17 +164,15 @@ public class FeatureProcessMatching {
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.setLocal=true)
 		   .set(q->q.setSelectPostProcess(tab->{
-			   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
-			   return tab;
-		   }))
-		   .set(q->q.setServicePostProcess(tab->{
-			   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   }
 			   return tab;
 		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
+		   .onFailure(e->log.error(e.getMessage()))
 		   .onSuccess(m->localKB.add(m));
 		
 		reloadKB("FPM-local-transfer-capability.rdf");
@@ -182,10 +186,13 @@ public class FeatureProcessMatching {
 	 * @return process IRIs generated for each function (capability profile) matched 
 	 */
 	public static Node ask_to_match(Node featureIRI, Node processIRI){
-		
-		log.info("Testing whether feature " + featureIRI.getLocalName() + " matches process " + processIRI.getLocalName() + "|\n");
+		log.info("\n---------------------------------------------------------------------------------------------------------------------");
+		//log.info("##Testing whether feature " + featureIRI.getLocalName() + " matches process " + processIRI.getLocalName() + "|\n");		
 		
 		FeatureProcessMatching matching = new FeatureProcessMatching(new String[]{});
+
+		matching.featureSpec = featureIRI.getLocalName();
+		matching.processInd = processIRI.getLocalName();
 		
 		//load localKB 
 		matching.loadSpecifications(featureIRI);
@@ -202,7 +209,8 @@ public class FeatureProcessMatching {
 	} 
 
 	private Node selectResult(Node featureIRI) {
-		log.info("select intermediate feature to return.");
+		
+		log.info("\n ##select intermediate feature to return.");
 		
 		List<Node> intermFeatures = new LinkedList<Node>();
 		Uni.of(FunQL::new)
@@ -210,11 +218,20 @@ public class FeatureProcessMatching {
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
 		   .set(q->q.addABox(localKB))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/select_interim_feature.rq"))
-		   .set(q->q.setSelectPostProcess(t->{
-			   t.rows().forEachRemaining(b->{
+		   .set(q->q.setSelectPostProcess(tab->{
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());				   
+			   }
+			   if(tab.isEmpty()){
+				   log.info("Nothing to return as either all or no specification is satisfied by " + processInd);
+			   }
+			   else{
+				   log.info("Intermediate feature " +  tab.rows().next().get(Var.alloc("f1")).getLocalName() + " is returned as output of process " + processInd);
+			   }
+			   tab.rows().forEachRemaining(b->{
 				   intermFeatures.add(b.get(Var.alloc("f1")));
 			   });
-			   return t;
+			   return tab;
 		   }))
 		   .map(q->q.execute());
 		
@@ -225,126 +242,249 @@ public class FeatureProcessMatching {
 		
 		//first rule: assign ibe of specifications to corresponding argument ICE by matching argument type with specification type
 		//localKB.write(System.out, "NTRIPLE");
-		log.info("running rule transform-capability-equation1... ");
+		log.info("\n ##running rule transform-capability-equation1... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transform-capability-equation1.rq"))
 		   .set(q->q.setLocal=true)
+		   .set(q->q.setSelectPostProcess(tab->{
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   }
+			   return tab;
+		   }))
+		   .set(q->q.setServicePostProcess(tab->{
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());				   
+			   }
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
+		   .onFailure(e->log.error(e.getMessage()))
 		   .onSuccess(m->localKB.add(m));
 		
 		//second rule: assign concatenated argument sepcifications to equations ICE with is_tokenized_by
 		//localKB.write(System.out, "NTRIPLE");
-		log.info("running rule transform-capability-equation2... ");
+		log.info("\n ##running rule transform-capability-equation2... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transform-capability-equation2.rq"))
 		   .set(q->q.setLocal=true)
+		   .set(q->q.setSelectPostProcess(tab->{
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   }
+			   return tab;
+		   }))
+		   .set(q->q.setServicePostProcess(tab->{
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());				   
+			   }
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
+		   .onFailure(e->log.error(e.getMessage()))
 		   .onSuccess(m->localKB.add(m));
 		
 		//second rule: assign concatenated argument sepcifications to equations ICE with is_tokenized_by
 		//localKB.write(System.out, "NTRIPLE");
-		log.info("running rule transform-capability-equation3... ");
+		log.info("\n ##running rule transform-capability-equation3... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transform-capability-equation3.rq", this))
 		   .set(q->q.setLocal=true)
+		   .set(q->q.setSelectPostProcess(tab->{
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   }
+			   return tab;
+		   }))
+		   .set(q->q.setServicePostProcess(tab->{
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());				   
+			   }
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
+		   .onFailure(e->log.error(e.getMessage()))
 		   .onSuccess(m->localKB.add(m));
 		
 		reloadKB("before-match1.rdf");
 		
+		//this query is just to report all abailable cpability
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addABox(localKB)) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/select-combined-capability.q"))
+		   .set(q->q.setSelectPostProcess(tab->{
+			   if(tab.isEmpty()){
+				   log.info("No capability is found for process "+ processInd);
+				   return tab;
+			   }
+			   tab.rows().forEachRemaining(r->{
+				   log.info("Capability " + r.get(Var.alloc("capa")).getLocalName() + " (" + r.get(Var.alloc("capaType")).getLocalName() + ")" + "\t" +
+						   			" max = " + r.get(Var.alloc("max")).getLiteral().getValue() + "\t" + " min = " + r.get(Var.alloc("min")).getLiteral().getValue() + "\t" +
+						   			 " matches " + r.get(Var.alloc("refType")).getLocalName());
+			   });
+			   return tab;
+		   }))
+		   .map(q->q.execute())
+		   .onFailure(e->log.error(e.getMessage()));	
+		
+		
 		//third rule: specification-capability matching for max and min both measurement type
-		log.info("running rule specification-capability-matching-limit.rq... ");
+		log.info("\n ##running rule specification-capability-matching-limit.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/specification-capability-matching-limit.rq"))
 		   .set(q->q.setLocal=true)
 		   .set(q->q.setSelectPostProcess(tab->{
-			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   }
 			   return tab;
 		   }))
 		   .set(q->q.setServicePostProcess(tab->{
-			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());				   
+			   }
+			   if(tab.isEmpty()){
+				   log.info("No dimension is satisfied by any capability of " + processInd);
+			   }
+			   else{
+				   log.info("The following specifications of " + featureSpec + " are satisfied by " + processInd);
+				   tab.rows().forEachRemaining(r->{
+					   log.info("Dimension " +  r.get(Var.alloc("d")).getLocalName() + "(" +  r.get(Var.alloc("dimType")).getLocalName() + ")" + "\t" +
+							   				" is satisfied by " +  r.get(Var.alloc("capa")).getLocalName() + "(" +  r.get(Var.alloc("capaType")).getLocalName() + ")");
+				   });
+			   }
 			   return tab;
 		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
+		   .onFailure(e->log.error(e.getMessage()))
 		   .set(m->localKB.add(m));		
 		
-		log.info("running rule specification-capability-not-matching-limit.rq... ");
+		log.info("\n ##running rule specification-capability-not-matching-limit.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/specification-capability-not-matching-limit.rq"))
 		   .set(q->q.setLocal=true)
+		   .set(q->q.setServicePostProcess(tab->{
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());				   
+			   }
+			   if(tab.isEmpty()){
+				   log.info("every dimension is satisfied by some capability of " + processInd);
+			   }
+			   else{
+				   log.info("The following specifications of " + featureSpec + " are not satisfied by " + processInd);
+				   tab.rows().forEachRemaining(r->{
+					   log.info("Dimension " +  r.get(Var.alloc("d")).getLocalName() + "(" +  r.get(Var.alloc("dimType")).getLocalName() + ")" + "\t" +
+							   				" is not satisfied by " +  r.get(Var.alloc("capa")).getLocalName() + "(" +  r.get(Var.alloc("capaType")).getLocalName() + ")");
+				   });
+			   }
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
+		   .onFailure(e->log.error(e.getMessage()))
 		   .set(m->localKB.add(m));	
 
 	}	
 	
 	private void postProcessing() {
 		//create an intermediate feature (only when at least one dimension spec is concretized)
-		log.info("running rule create-interm-feature.rq... ");
+		log.info("\n ##running rule create-interm-feature.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create-interm-feature.rq"))
 		   .set(q->q.setLocal=true)
+		   .set(q->q.setServicePostProcess(tab->{
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());				   
+			   }
+			   if(tab.isEmpty()){
+				   log.info("No intermediate feature is created because all specifications are satisfied by " + processInd);
+			   }
+			   else{
+				   log.info("Intermediate feature " +  tab.rows().next().get(Var.alloc("f1")).getLocalName() + " is created as some specifications are satisfied by " + processInd);
+			   }
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
+		   .onFailure(e->log.error(e.getMessage()))
 		   .set(m->localKB.add(m))
 		   .set(m->GlobalKnowledge.appendPartKB(m));
 		
-		log.info("running rule create-final-feature.rq... ");
+		log.info("\n ##running rule create-final-feature.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create-final-feature.rq"))
 		   .set(q->q.setLocal=true)
+		   .set(q->q.setServicePostProcess(tab->{
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());				   
+			   }
+			   if(tab.isEmpty()){
+				   log.info("No final feature is created as some specifications are not satisfied by " + processInd);
+			   }
+			   else{
+				   log.info("Final feature " +  tab.rows().next().get(Var.alloc("f1")).getLocalName() + " is created as all specifications are satisfied by "+ processInd);
+			   }
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
+		   .onFailure(e->log.error(e.getMessage()))
 		   .set(m->localKB.add(m))
 		   .set(m->GlobalKnowledge.appendPartKB(m));
 		
-		log.info("running rule create-unsatisfied-feature.rq... ");
+		log.info("\n ##running rule create-unsatisfied-feature.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create-unsatisfied-feature.rq"))
 		   .set(q->q.setLocal=true)
+		   .set(q->q.setServicePostProcess(tab->{
+			   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());				   
+			   }
+			   if(tab.isEmpty()){
+				   log.info("No unsatisfied feature is created as either all or some specifications are satisfied by " + processInd);
+			   }
+			   else{
+				   log.info("Unsatisfied feature " +  tab.rows().next().get(Var.alloc("f1")).getLocalName() + " is created as no specification is satisfied by " + processInd);
+			   }
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
+		   .onFailure(e->log.error(e.getMessage()))
 		   .set(m->localKB.add(m))
 		   .set(m->GlobalKnowledge.appendPartKB(m));
 		
 		//assert dimensions to intermediate feature 
-		log.info("running rule create-interm-feature-dimensions.rq... ");
+		log.info("\n ##running rule create-interm-feature-dimensions.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
 		   .set(q->q.addABox(localKB)) 
@@ -353,7 +493,7 @@ public class FeatureProcessMatching {
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
+		   .onFailure(e->log.error(e.getMessage()))
 		   .set(m->localKB.add(m))
 		   .set(m->GlobalKnowledge.appendPartKB(m));
 	}

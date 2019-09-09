@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.util.Iterator;
 import java.util.function.Function;
 
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
@@ -22,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.ohiou.mfgresearch.io.FunQL;
+import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.plan.IPlanner;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
@@ -295,11 +297,16 @@ public class ProcessSelection {
 	public void processSelectionHole(){
 		GlobalKnowledge.loadSpecification(PropertyReader.getProperty().getProperty("DESIGN_PART_ABOX"));
 		//GlobalKnowledge.loadInitialPlan();
-		GlobalKnowledge.loadStockFeature("SIMPLE HOLE(4)");
+//		GlobalKnowledge.loadStockFeature("SIMPLE HOLE(4)");
 		
 		FeatureProcessSelection selection = new FeatureProcessSelection(new String[]{});
 		
-		FeatureProcessSelection.ask_to_select_holemaking_processes(NodeFactory.createBlankNode());
+		Node[] roots = FeatureProcessSelection.ask_to_select_holemaking_processes(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/9/6/756210#FeatureSpecification_I8756").asNode());
+		
+		System.out.println("First process of alternative routes are...");
+		for(Node n:roots){
+			System.out.println(n.toString());
+		}
 		
 		try {
 			selection.getLocalKB().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-int-1.rdf")), "RDF/XML");
@@ -313,10 +320,15 @@ public class ProcessSelection {
 		GlobalKnowledge.loadSpecification(PropertyReader.getProperty().getProperty("DESIGN_PART_ABOX"));
 		
 		//GlobalKnowledge.loadInitialPlan();
-		GlobalKnowledge.loadStockFeature("RECTANGULAR_SLOT(7)");
+//		GlobalKnowledge.loadStockFeature("RECTANGULAR_SLOT(7)");
 		
 		FeatureProcessSelection selection = new FeatureProcessSelection(new String[]{});
-		FeatureProcessSelection.ask_to_select_open_slotmaking_processes(NodeFactory.createBlankNode());
+		Node[] roots = FeatureProcessSelection.ask_to_select_open_slotmaking_processes(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/9/6/137495#FeatureSpecification_I9302").asNode());
+		
+		System.out.println("First process of alternative routes are...");
+		for(Node n:roots){
+			System.out.println(n.toString());
+		}		
 		
 		try {
 			selection.getLocalKB().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-int-rectangular_slot7.rdf")), "RDF/XML");
@@ -330,10 +342,15 @@ public class ProcessSelection {
 		GlobalKnowledge.loadSpecification(PropertyReader.getProperty().getProperty("DESIGN_PART_ABOX"));
 		
 		//GlobalKnowledge.loadInitialPlan();
-		GlobalKnowledge.loadStockFeature("RECTANGULAR_POCKET(3)");
+//		GlobalKnowledge.loadStockFeature("RECTANGULAR_POCKET(3)");
 		
 		FeatureProcessSelection selection = new FeatureProcessSelection(new String[]{});
-		FeatureProcessSelection.ask_to_select_open_pocketmaking_processes(NodeFactory.createBlankNode());
+		Node[] roots = FeatureProcessSelection.ask_to_select_open_pocketmaking_processes(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/9/6/137495#FeatureSpecification_I3169").asNode());
+		
+		System.out.println("First process of alternative routes are...");
+		for(Node n:roots){
+			System.out.println(n.toString());
+		}		
 		
 		try {
 			selection.getLocalKB().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-int-rectangular_slot7.rdf")), "RDF/XML");
@@ -347,10 +364,15 @@ public class ProcessSelection {
 		GlobalKnowledge.loadSpecification(PropertyReader.getProperty().getProperty("DESIGN_PART_ABOX"));
 		
 		//GlobalKnowledge.loadInitialPlan();
-		GlobalKnowledge.loadStockFeature("RECTANGULAR_POCKET(2)");
+//		GlobalKnowledge.loadStockFeature("RECTANGULAR_POCKET(2)");
 		
 		FeatureProcessSelection selection = new FeatureProcessSelection(new String[]{});
-		FeatureProcessSelection.ask_to_select_slabmaking_processes(NodeFactory.createBlankNode());
+		Node[] roots = FeatureProcessSelection.ask_to_select_slabmaking_processes(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/9/6/756210#FeatureSpecification_I8927").asNode());
+		
+		System.out.println("First process of alternative routes are...");
+		for(Node n:roots){
+			System.out.println(n.toString());
+		}	
 		
 		try {
 			selection.getLocalKB().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-int-rectangular_slot7.rdf")), "RDF/XML");

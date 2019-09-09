@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.apache.jena.graph.Node;
+import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -48,53 +49,53 @@ public class PartProcessSelection {
 		localPath = IMPM.createSessionFolder("");
 	}
 	
-	public static Node createStockFeature(String featureName){
-		
-		if(GlobalKnowledge.getPart() == null){
-			GlobalKnowledge.setPart();
-		}
-		List<Node> ff = new LinkedList<Node>();
-		Function<Table, Table> storeFormFeatureURI = tab->{
-			ff.add(tab.rows().next().get(Var.alloc("f")));
-			return tab;
-		};
-		//two queries are required to insert the assertions in different KB
-		//create the stock feature and save to the specification KB		
-		log.info("Create stock for feature " + featureName + " ----------------------------------------------------->");
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
-		   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
-		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature2.rq"))
-		   .set(q->q.getPlan(0).addVarBinding("fName", ResourceFactory.createPlainLiteral(featureName)))
-		   .set(q->q.setLocal=true)
-		   .set(q->q.setServicePostProcess(storeFormFeatureURI))
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->GlobalKnowledge.appendPartKB(m));
-		
-		if(GlobalKnowledge.getPlan() == null){
-			GlobalKnowledge.setPlan();
-		}
-		
-		//assert the stock feature is output of the root planned process (required because two unknown is not supported in FunQL yet)
-		log.info("Assert the stock as output of root process ----------------------------------------------------->");
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
-		   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
-//		   .set(q->q.addABox(KB.planKB))  
-		   .set(q->q.addABox(GlobalKnowledge.getPart())) 
-		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature1.rq"))
-		   .set(q->q.getPlan(0).addVarBinding("fName", ResourceFactory.createPlainLiteral(featureName)))
-		   .set(q->q.setLocal=true)
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->GlobalKnowledge.appendPlanKB(m));		
-		return ff.get(0);
-	}
+//	public static Node createStockFeature(String featureName){
+//		
+//		if(GlobalKnowledge.getPart() == null){
+//			GlobalKnowledge.setPart();
+//		}
+//		List<Node> ff = new LinkedList<Node>();
+//		Function<Table, Table> storeFormFeatureURI = tab->{
+//			ff.add(tab.rows().next().get(Var.alloc("f")));
+//			return tab;
+//		};
+//		//two queries are required to insert the assertions in different KB
+//		//create the stock feature and save to the specification KB		
+//		log.info("Create stock for feature " + featureName + " ----------------------------------------------------->");
+//		Uni.of(FunQL::new)
+//		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+//		   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
+//		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature2.rq"))
+//		   .set(q->q.getPlan(0).addVarBinding("fName", ResourceFactory.createPlainLiteral(featureName)))
+//		   .set(q->q.setLocal=true)
+//		   .set(q->q.setServicePostProcess(storeFormFeatureURI))
+//		   .map(q->q.execute())
+//		   .map(q->q.getBelief())
+//		   .map(b->b.getLocalABox())
+//		   .onFailure(e->e.printStackTrace(System.out))
+//		   .onSuccess(m->GlobalKnowledge.appendPartKB(m));
+//		
+//		if(GlobalKnowledge.getPlan() == null){
+//			GlobalKnowledge.setPlan();
+//		}
+//		
+//		//assert the stock feature is output of the root planned process (required because two unknown is not supported in FunQL yet)
+//		log.info("Assert the stock as output of root process ----------------------------------------------------->");
+//		Uni.of(FunQL::new)
+//		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+//		   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
+////		   .set(q->q.addABox(KB.planKB))  
+//		   .set(q->q.addABox(GlobalKnowledge.getPart())) 
+//		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature1.rq"))
+//		   .set(q->q.getPlan(0).addVarBinding("fName", ResourceFactory.createPlainLiteral(featureName)))
+//		   .set(q->q.setLocal=true)
+//		   .map(q->q.execute())
+//		   .map(q->q.getBelief())
+//		   .map(b->b.getLocalABox())
+//		   .onFailure(e->e.printStackTrace(System.out))
+//		   .onSuccess(m->GlobalKnowledge.appendPlanKB(m));		
+//		return ff.get(0);
+//	}
 	
 	
 	public Node ask_to_plan(String partName){
@@ -114,7 +115,7 @@ public class PartProcessSelection {
 //		   .onSuccess(m->localKB.add(m));
 
 		//Initial plan
-		log.info("load initial plan");
+		log.info("load initial root for the part-planning occurrence tree");
 		GlobalKnowledge.loadInitialPlan();
 		
 		//Root Feature
@@ -126,6 +127,7 @@ public class PartProcessSelection {
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
+		   .set(q->q.addABox(GlobalKnowledge.getPart()))
 		   .set(q->q.addABox(GlobalKnowledge.getPlan())) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transform_feature_precedence.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("pName", ResourceFactory.createPlainLiteral(partName)))
@@ -136,27 +138,58 @@ public class PartProcessSelection {
 		   .onFailure(e->e.printStackTrace(System.out))
 		   .onSuccess(m->GlobalKnowledge.appendSpecificationKB(m));
 		
-		//download to test
-		Uni.of(GlobalKnowledge.getSpecification())
-		   .set(m->m.add(GlobalKnowledge.getPlan()))
-		   .set(m->m.write(new FileOutputStream(new File("C:/Users/sarkara1/git/SIMPOM/plan/initial_plan.rdf")), "RDF/XML"));
-		
 		//plan every feature
 		log.info("Create occurrence tree for each feature----------------------------------------------------->");
 		boolean stopIteration = false;
+		int counter = 0;
 		while(!stopIteration){
+			log.info("Part process planning at iteration " + counter);
+			
+			String fileName = "C:/Users/sarkara1/git/SIMPOM/plan/plan_after_" + counter + ".rdf";
+			Uni.of(GlobalKnowledge.getSpecification())
+			   .set(m->m.add(GlobalKnowledge.getPlan()))
+			   .set(m->m.add(GlobalKnowledge.getPart()))
+			   .set(m->m.write(new FileOutputStream(new File(fileName)), "RDF/XML"));
+			
 			boolean	isSuccessful =
 				Uni.of(FunQL::new)
 				   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 				   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
+				   .set(q->q.addABox(GlobalKnowledge.getPart()))
 				   .set(q->q.addABox(GlobalKnowledge.getPlan())) 
 				   .set(q->q.addPlan("resources/META-INF/rules/core/feature-precedence-1.rq"))
 //				   .set(q->q.getPlan(0).addVarBinding("pName", ResourceFactory.createPlainLiteral(partName)))
 				   .set(q->q.setLocal=true)
+				   .set(q->q.setSelectPostProcess(tab->{
+					   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
+						   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+					   }
+					   if(!tab.isEmpty()){
+						   log.info("-----------------------------------------------------------------------------------------------------------------------");
+						   tab.rows().forEachRemaining(r->{
+							   log.info("After occurrent occurrences for " + r.get(Var.alloc("pCurrent")).getLocalName() + " occurrence sub tree for feature specification "+
+									   r.get(Var.alloc("fs")).getLocalName() + "(" + r.get(Var.alloc("ft")).getLiteralValue() + ") can be planned");
+						   });
+					   }
+					   return tab;
+				   }))
+				   .set(q->q.setServicePostProcess(tab->{
+					   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+						   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+					   }
+					   if(!tab.isEmpty()){
+						   tab.rows().forEachRemaining(r->{
+							   log.info("\n root of sub-occurrence-tree "+ r.get(Var.alloc("pNext")).getLocalName() + " is added as succeeding occurrence of "+ r.get(Var.alloc("pCurrent")).getLocalName());
+						   });
+						   log.info("-----------------------------------------------------------------------------------------------------------------------");
+					   }
+					   return tab;
+				   }))
 				   .map(q->q.execute())
 				   .set(q->GlobalKnowledge.appendPlanKB(q.getBelief().getLocalABox()))
 				   .map(q->q.isQuerySuccess())
 				   .get();	
+			counter++;
 			stopIteration = !isSuccessful;
 		}
 		execute();
