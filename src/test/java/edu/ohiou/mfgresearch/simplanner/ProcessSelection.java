@@ -301,7 +301,7 @@ public class ProcessSelection {
 		
 		FeatureProcessSelection selection = new FeatureProcessSelection(new String[]{});
 		
-		Node[] roots = FeatureProcessSelection.ask_to_select_holemaking_processes(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/9/6/756210#FeatureSpecification_I8756").asNode());
+		Node[] roots = FeatureProcessSelection.ask_to_select_holemaking_processes(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/9/9/488500#FeatureSpecification_I7732").asNode());
 		
 		System.out.println("First process of alternative routes are...");
 		for(Node n:roots){
@@ -309,7 +309,7 @@ public class ProcessSelection {
 		}
 		
 		try {
-			selection.getLocalKB().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-int-1.rdf")), "RDF/XML");
+			GlobalKnowledge.getPlan().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-int-3.rdf")), "RDF/XML");
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}

@@ -129,7 +129,7 @@ public class FeatureProcessSelection {
 		
 		System.out.println("\n## Create stock feature as dummy root process.");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 		   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature2.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("f", ResourceFactory.createResource(featureSpecification.getURI())))
@@ -152,7 +152,8 @@ public class FeatureProcessSelection {
 		//assert the stock feature is output of the root planned process
 		System.out.println("\n## Assert root feature as output of the root process.");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
 		   .set(q->q.addABox(GlobalKnowledge.getSpecification()))  
 		   .set(q->q.addABox(GlobalKnowledge.getPart())) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature1.rq"))
@@ -181,7 +182,7 @@ public class FeatureProcessSelection {
 		   .set(m->m.write(new FileOutputStream(new File("C:/Users/sarkara1/git/SIMPOM/plan/initial_plan_after_process-planning-1.rdf")), "RDF/XML"));
 		
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
 		   .set(q->q.addABox(GlobalKnowledge.getPlan()))
 		   .set(q->q.addABox(localKB))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/select-root-processes.q"))
@@ -221,8 +222,8 @@ public class FeatureProcessSelection {
 		//load process precedence for the particular service 
 		log.info("\n##loading process precedence by rule process-precedence-drilling.q");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
 		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-drilling-wo-holestarting.q"))
 		   .set(q->q.setLocal=true)
@@ -253,8 +254,8 @@ public class FeatureProcessSelection {
 		//load process precedence for the particular service 
 		log.info("\n##loading slot making process precedence by rule process-precedence-openslot.q");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
 		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-openslot.q"))
 		   .set(q->q.setLocal=true)
@@ -286,8 +287,8 @@ public class FeatureProcessSelection {
 		//load process precedence for the particular service 
 		log.info("\n##loading process precedence by rule process-precedence-milling.q");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
 		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-openpocket.q"))	
 		   .set(q->q.setLocal=true)
@@ -322,8 +323,8 @@ public class FeatureProcessSelection {
 		//load process precedence for the particular service 
 		log.info("\n##loading process precedence by rule process-precedence-milling.q");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
 		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-slab.q"))	
 		   .set(q->q.setLocal=true)
@@ -450,8 +451,8 @@ public class FeatureProcessSelection {
 			log.info("match feature by process-planning-1.rq. iteration ---> " + counter);
 			boolean	isSuccessful = 	
 					Uni.of(FunQL::new)
-					   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
-					   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+					   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+					   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
 					   .set(q->q.addABox(localKB))
 					   .set(q->q.addABox(GlobalKnowledge.getPart()))
 					   .set(q->q.addABox(GlobalKnowledge.getPlan()))

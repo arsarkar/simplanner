@@ -125,7 +125,7 @@ public class PartProcessSelection {
 		//transform feature precedence (add root representation)
 		log.info("transform feature precedence");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 		   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
 		   .set(q->q.addABox(GlobalKnowledge.getPart()))
 		   .set(q->q.addABox(GlobalKnowledge.getPlan())) 
@@ -153,7 +153,8 @@ public class PartProcessSelection {
 			
 			boolean	isSuccessful =
 				Uni.of(FunQL::new)
-				   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+				   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+				   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 				   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
 				   .set(q->q.addABox(GlobalKnowledge.getPart()))
 				   .set(q->q.addABox(GlobalKnowledge.getPlan())) 
@@ -199,7 +200,7 @@ public class PartProcessSelection {
 	public void createFeaturePrecedenceNetwork(String partName){
 		//feature precedence network (add a start node)
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 		   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/feature-precedence-0.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("pName", ResourceFactory.createPlainLiteral(partName)))

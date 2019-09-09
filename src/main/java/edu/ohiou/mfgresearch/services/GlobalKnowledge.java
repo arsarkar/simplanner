@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.ontology.OntModel;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -37,11 +38,38 @@ public class GlobalKnowledge {
 	private Model specificationKB;
 	private Model partKB;
 	private Model planKB;
+	private static OntModel designTBox = null;
+	private static OntModel resourceTBox = null;
+	private static OntModel planTBox = null;
 	private static PropertyReader prop = PropertyReader.getProperty();
 	
 	private GlobalKnowledge() {
 	}
 
+	public static OntModel getDesignTBox(){
+		if(designTBox == null){
+			designTBox = ModelFactory.createOntologyModel();
+			designTBox.read(prop.getIRIPath(IMPM.design));
+		}
+		return designTBox;
+	}
+	
+	public static OntModel getResourceTBox(){
+		if(resourceTBox == null){
+			resourceTBox = ModelFactory.createOntologyModel();
+			resourceTBox.read(prop.getIRIPath(IMPM.capability));
+		}
+		return resourceTBox;
+	}
+	
+	public static OntModel getPlanTBox(){
+		if(planTBox == null){
+			planTBox = ModelFactory.createOntologyModel();
+			planTBox.read(prop.getIRIPath(IMPM.mfg_plan));
+		}
+		return planTBox;
+	}
+	
 	public static Model getSpecification(){
 		load();
 		return KB.specificationKB;
@@ -124,7 +152,7 @@ public class GlobalKnowledge {
 			KB.partKB = ModelFactory.createDefaultModel();
 		}
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 		   .set(q->q.addABox(KB.specificationKB)) 
 		   .set(q->q.addABox(KB.planKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create-root-feature.rq"))
@@ -157,7 +185,7 @@ public class GlobalKnowledge {
 		//two queries are required to insert the assertions in different KB
 		//create the stock feature and save to the specification KB
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 		   .set(q->q.addABox(KB.specificationKB)) 
 //		   .set(q->q.addABox(KB.planKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature2.rq"))
@@ -174,7 +202,7 @@ public class GlobalKnowledge {
 		}
 		//assert the stock feature is output of the root planned process
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 		   .set(q->q.addABox(KB.specificationKB)) 
 //		   .set(q->q.addABox(KB.planKB))  
 		   .set(q->q.addABox(KB.partKB)) 

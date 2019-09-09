@@ -77,7 +77,7 @@ public class FeatureProcessMatching {
 
 		//load specifications for the given feature
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 		   .set(q->q.addABox(GlobalKnowledge.getSpecification()))
 		   .set(q->q.addABox(GlobalKnowledge.getPart()))
 		   //.set(q->saveKB("FPM-local-transfer-feature-specification-before.rdf", q.getBelief().getaBox()))
@@ -118,7 +118,7 @@ public class FeatureProcessMatching {
 		//load capability with both max and min as equation
 		log.info("\n ##running rule transfer-capability-measure.rq... ");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(prop.getIRIPath(IMPM.capability_IMPM))) //capability repository 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-measure.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
@@ -138,7 +138,7 @@ public class FeatureProcessMatching {
 		//load capability with max as measurement and min as equation
 		log.info("\n ##running rule transfer-capability-measure-equation.rq... ");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(prop.getIRIPath(IMPM.capability_IMPM))) //capability repository 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-measure-equation.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
@@ -158,7 +158,7 @@ public class FeatureProcessMatching {
 		//load capability with max as equation and min as measurement
 		log.info("\n ##running rule transfer-capability-equation-measure.rq... ");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(prop.getIRIPath(IMPM.capability_IMPM))) //capability repository 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-equation-measure.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
@@ -214,8 +214,8 @@ public class FeatureProcessMatching {
 		
 		List<Node> intermFeatures = new LinkedList<Node>();
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
 		   .set(q->q.addABox(localKB))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/select_interim_feature.rq"))
 		   .set(q->q.setSelectPostProcess(tab->{
@@ -244,7 +244,7 @@ public class FeatureProcessMatching {
 		//localKB.write(System.out, "NTRIPLE");
 		log.info("\n ##running rule transform-capability-equation1... ");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transform-capability-equation1.rq"))
 		   .set(q->q.setLocal=true)
@@ -270,7 +270,7 @@ public class FeatureProcessMatching {
 		//localKB.write(System.out, "NTRIPLE");
 		log.info("\n ##running rule transform-capability-equation2... ");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transform-capability-equation2.rq"))
 		   .set(q->q.setLocal=true)
@@ -296,7 +296,7 @@ public class FeatureProcessMatching {
 		//localKB.write(System.out, "NTRIPLE");
 		log.info("\n ##running rule transform-capability-equation3... ");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transform-capability-equation3.rq", this))
 		   .set(q->q.setLocal=true)
@@ -322,7 +322,7 @@ public class FeatureProcessMatching {
 		
 		//this query is just to report all abailable cpability
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/select-combined-capability.q"))
 		   .set(q->q.setSelectPostProcess(tab->{
@@ -344,7 +344,7 @@ public class FeatureProcessMatching {
 		//third rule: specification-capability matching for max and min both measurement type
 		log.info("\n ##running rule specification-capability-matching-limit.rq... ");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/specification-capability-matching-limit.rq"))
 		   .set(q->q.setLocal=true)
@@ -378,7 +378,7 @@ public class FeatureProcessMatching {
 		
 		log.info("\n ##running rule specification-capability-not-matching-limit.rq... ");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/specification-capability-not-matching-limit.rq"))
 		   .set(q->q.setLocal=true)
@@ -410,7 +410,7 @@ public class FeatureProcessMatching {
 		//create an intermediate feature (only when at least one dimension spec is concretized)
 		log.info("\n ##running rule create-interm-feature.rq... ");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create-interm-feature.rq"))
 		   .set(q->q.setLocal=true)
@@ -435,7 +435,7 @@ public class FeatureProcessMatching {
 		
 		log.info("\n ##running rule create-final-feature.rq... ");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create-final-feature.rq"))
 		   .set(q->q.setLocal=true)
@@ -460,7 +460,7 @@ public class FeatureProcessMatching {
 		
 		log.info("\n ##running rule create-unsatisfied-feature.rq... ");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create-unsatisfied-feature.rq"))
 		   .set(q->q.setLocal=true)
@@ -486,7 +486,7 @@ public class FeatureProcessMatching {
 		//assert dimensions to intermediate feature 
 		log.info("\n ##running rule create-interm-feature-dimensions.rq... ");
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.capability)))
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create-interm-feature-dimensions.rq"))
 		   .set(q->q.setLocal=true)
