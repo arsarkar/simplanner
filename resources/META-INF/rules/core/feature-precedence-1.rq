@@ -9,12 +9,15 @@ CONSTRUCT{
 	?pCurrent  	plan:precedes 		?pNext.
 }
 WHERE{
-	?fs				cco:represents			?rNext;    
-						cco:inheres_in       	?i2.
+	?fs				cco:represents			?rNext;
+						cco:inheres_in			?i1;
+						cco:inheres_in       	?i2.    
+	?i1 				rdf:type 					design:LabelBearingEntity;
+						cco:has_text_value 	?fn .
 	?i2  				rdf:type            		design:TypeBearingEntity;
 						cco:has_URI_value   ?ft.
 	{
-		SELECT ?pCurrent ?rNext (count (distinct ?rp) as ?fpcount) ?frcount
+		SELECT ?pCurrent ?rc ?rNext (count (distinct ?rp) as ?fpcount) ?frcount
 			WHERE{
 				?pCurrent 	^plan:precedes*	?p4.
 				?p4				cco:has_output	?f4.
@@ -42,7 +45,7 @@ WHERE{
 						GROUP BY ?pCurrent ?rc
 				}
 			}
-			GROUP BY ?pCurrent ?rNext ?frcount
+			GROUP BY ?pCurrent ?rc ?rNext ?frcount
 	}
 	FILTER (?frcount >= ?fpcount)
 }

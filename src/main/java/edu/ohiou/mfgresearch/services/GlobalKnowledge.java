@@ -1,8 +1,11 @@
 package edu.ohiou.mfgresearch.services;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Function;
 
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.rdf.model.Model;
@@ -133,7 +136,7 @@ public class GlobalKnowledge {
 			   .get();
 	}
 	
-	public static void loadInitialPlan(){
+	public static Node loadInitialPlan(){
 		load();
 		if(KB.planKB == null){
 			KB.planKB = ModelFactory.createDefaultModel();
@@ -141,16 +144,20 @@ public class GlobalKnowledge {
 		Function<Table, BasicPattern> expander = IPlanner.createPatternExpander(createPatternInitialPlan());
 		Function<BasicPattern, BasicPattern> updater = IPlanner.createUpdateExecutor(KB.planKB);
 		String iProessString =  IMPM.plan_ins + "IProcess" + IMPM.newHash(4);
-		Binding b = BindingFactory.binding(Var.alloc("p"), NodeFactory.createURI(iProessString));
+		Node iProcess = NodeFactory.createURI(iProessString);
+		Binding b = BindingFactory.binding(Var.alloc("p"), iProcess);
 		expander.andThen(updater).apply(Uni.of(TableFactory.create()).set(t->t.addBinding(b)).get());
 		log.info("Initial plan is loaded onto global knowledge base with root occurrence " + iProessString);
+		return iProcess;
 	}
 
-	public static void loadRootFeature() {
+	public static Node loadRootFeature(){
 		load();
 		if(KB.partKB == null){
 			KB.partKB = ModelFactory.createDefaultModel();
 		}
+		List<Node> rootFeature = new LinkedList<Node>();
+		
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 		   .set(q->q.addABox(KB.specificationKB)) 
@@ -162,6 +169,7 @@ public class GlobalKnowledge {
 				   log.info("Root feature " + tab.rows().next().get(Var.alloc("f0")).getLocalName() + " specifying representation " + 
 						   		tab.rows().next().get(Var.alloc("r0")).getLocalName() + " is created as output of root process " + 
 						   		tab.rows().next().get(Var.alloc("p0")).getLocalName());
+				   rootFeature.add(tab.rows().next().get(Var.alloc("f0")));
 			   }
 			   return tab;
 		   }))
@@ -170,6 +178,7 @@ public class GlobalKnowledge {
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
 		   .onSuccess(m->KB.partKB.add(m));
+		return rootFeature.get(0);
 	}
 	
 	/**

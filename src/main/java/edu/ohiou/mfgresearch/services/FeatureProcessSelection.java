@@ -354,7 +354,7 @@ public class FeatureProcessSelection {
 		boolean stopIteration = false;
 
 		Graph g = new Graph();
-		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 10.0, 3, 5, 1.3);
+		FeatureProcessLayouter fpl =  new FeatureProcessLayouter(g, 10.0, 3, 5, 1.3, true);
 		
 		GraphViewer v = new GraphViewer(g,fpl, GraphViewer.VIEW_2D);
 		if(Boolean.parseBoolean(prop.getProperty("SHOW_PROCESS_GRAPH").trim())) 

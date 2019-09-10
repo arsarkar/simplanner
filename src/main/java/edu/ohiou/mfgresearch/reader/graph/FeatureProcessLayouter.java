@@ -32,7 +32,7 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	Map<ColoredNode, double[]> orbitRanges = new HashMap<ColoredNode, double[]>();
 	Map<ColoredNode, Integer> numChildren = new HashMap<ColoredNode, Integer>();
 	List<Arc> currentArcs = new LinkedList<Arc>();
-	
+	boolean satellite = true;
 
 	/**
 	 * Create a FeatureProcessLayouter
@@ -42,12 +42,13 @@ public class FeatureProcessLayouter extends GraphLayouter {
 	 * @param endAngle	  End limit of the radial span of the tree expansion  		
 	 * @param expansionFactor	increment of the expansion for every orbit
 	 */
-	public FeatureProcessLayouter(Graph graph, double deltaRadius, double beginAngle, double endAngle, double expansionFactor) {
+	public FeatureProcessLayouter(Graph graph, double deltaRadius, double beginAngle, double endAngle, double expansionFactor, boolean satellite) {
 		super(graph, new Point2D.Double(0,0));
 		this.deltaRadius = deltaRadius;
 		this.beginAngle = beginAngle;
 		this.endAngle = endAngle;
 		this.expansionFactor = expansionFactor;
+		this.satellite = satellite;
 	}
 	
 	/**
@@ -123,12 +124,13 @@ public class FeatureProcessLayouter extends GraphLayouter {
 //				System.out.println("DNS + ARKO> " + "P>" + child + ", angle>" + angle );
 			
 				//add the satellite node
-				Arc2d satOrb = Uni.of(deltaRadius*0.7).map(r->new Arc2d(new Point2d(center.getX(), center.getY()), r)).get();
-				Point2d p1 = satOrb.getPoint(angle+.2);
-				Node sat = findChildByParentPlanet((ColoredNode) child.getUserObject(), new ColoredArc("has_output", Color.MAGENTA));
-				//draw the satellite node
-				getVertexByObject((ColoredNode) sat.getUserObject()).settPosition(new Point2D.Double(p1.x, p1.y));
-
+				if(satellite){
+					Arc2d satOrb = Uni.of(deltaRadius*0.7).map(r->new Arc2d(new Point2d(center.getX(), center.getY()), r)).get();
+					Point2d p1 = satOrb.getPoint(angle+.2);
+					Node sat = findChildByParentPlanet((ColoredNode) child.getUserObject(), new ColoredArc("has_output", Color.MAGENTA));
+					//draw the satellite node
+					getVertexByObject((ColoredNode) sat.getUserObject()).settPosition(new Point2D.Double(p1.x, p1.y));
+				}
 				//increment the angle
 				angle = angle + spacing;
 			}
