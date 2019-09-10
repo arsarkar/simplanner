@@ -146,7 +146,8 @@ public class PartProcessSelection {
 			log.info("Part process planning at iteration " + counter);
 			
 			String fileName = "C:/Users/sarkara1/git/SIMPOM/plan/plan_after_" + counter + ".rdf";
-			Uni.of(GlobalKnowledge.getSpecification())
+			Uni.of(ModelFactory.createDefaultModel())
+			   .set(m->m.add(GlobalKnowledge.getSpecification()))
 			   .set(m->m.add(GlobalKnowledge.getPlan()))
 			   .set(m->m.add(GlobalKnowledge.getPart()))
 			   .set(m->m.write(new FileOutputStream(new File(fileName)), "RDF/XML"));

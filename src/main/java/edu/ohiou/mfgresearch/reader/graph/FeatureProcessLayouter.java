@@ -202,7 +202,12 @@ public class FeatureProcessLayouter extends GraphLayouter {
 			for(int i=0;i<s;i++){
 				if(i==0){
 					bAngle = beginAngle;
-					eAngle = positions.get(i).getAngle() + (Math.abs(positions.get(i+1).getAngle() - positions.get(i).getAngle()) / 2);
+					if(i+1>=s){
+						eAngle = endAngle;
+					}
+					else{
+						eAngle = positions.get(i).getAngle() + (Math.abs(positions.get(i+1).getAngle() - positions.get(i).getAngle()) / 2);
+					}
 				}
 				else if(i==s-1){
 					bAngle = positions.get(i-1).getAngle() + (Math.abs(positions.get(i).getAngle() - positions.get(i-1).getAngle()) / 2);

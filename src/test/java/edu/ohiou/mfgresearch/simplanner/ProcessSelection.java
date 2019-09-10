@@ -323,7 +323,7 @@ public class ProcessSelection {
 //		GlobalKnowledge.loadStockFeature("RECTANGULAR_SLOT(7)");
 		
 		FeatureProcessSelection selection = new FeatureProcessSelection(new String[]{});
-		Node[] roots = FeatureProcessSelection.ask_to_select_open_slotmaking_processes(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/9/6/137495#FeatureSpecification_I9302").asNode());
+		Node[] roots = FeatureProcessSelection.ask_to_select_open_slotmaking_processes(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/9/9/488500#FeatureSpecification_I5849").asNode());
 		
 		System.out.println("First process of alternative routes are...");
 		for(Node n:roots){
@@ -345,7 +345,7 @@ public class ProcessSelection {
 //		GlobalKnowledge.loadStockFeature("RECTANGULAR_POCKET(3)");
 		
 		FeatureProcessSelection selection = new FeatureProcessSelection(new String[]{});
-		Node[] roots = FeatureProcessSelection.ask_to_select_open_pocketmaking_processes(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/9/6/137495#FeatureSpecification_I3169").asNode());
+		Node[] roots = FeatureProcessSelection.ask_to_select_open_pocketmaking_processes(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/9/9/488500#FeatureSpecification_I1676").asNode());
 		
 		System.out.println("First process of alternative routes are...");
 		for(Node n:roots){
@@ -367,7 +367,7 @@ public class ProcessSelection {
 //		GlobalKnowledge.loadStockFeature("RECTANGULAR_POCKET(2)");
 		
 		FeatureProcessSelection selection = new FeatureProcessSelection(new String[]{});
-		Node[] roots = FeatureProcessSelection.ask_to_select_slabmaking_processes(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/9/6/756210#FeatureSpecification_I8927").asNode());
+		Node[] roots = FeatureProcessSelection.ask_to_select_slabmaking_processes(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/9/9/488500#FeatureSpecification_I3940").asNode());
 		
 		System.out.println("First process of alternative routes are...");
 		for(Node n:roots){

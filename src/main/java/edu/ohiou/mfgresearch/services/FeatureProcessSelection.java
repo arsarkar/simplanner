@@ -3,8 +3,10 @@ package edu.ohiou.mfgresearch.services;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.apache.jena.graph.Node;
@@ -28,6 +30,7 @@ import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
 import edu.ohiou.mfgresearch.reader.graph.FeatureProcessLayouter;
+import edu.ohiou.mfgresearch.reader.graph.AnonGraph;
 import edu.ohiou.mfgresearch.reader.graph.ColoredArc;
 import edu.ohiou.mfgresearch.reader.graph.ColoredNode;
 import edu.ohiou.mfgresearch.simplanner.IMPM;
@@ -43,9 +46,7 @@ public class FeatureProcessSelection {
 	List<Node> processNodes = null;
 	String featureSpec = "";
 	
-	OntModel tBoxDesign = Uni.of(ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM))
-							.set(model->model.read(prop.getIRIPath(IMPM.design)))
-							.get();
+	static Map<String, AnonGraph> featurePlans = new HashMap<String, AnonGraph>();
 	
 	public Model getLocalKB() {
 		return localKB;
@@ -99,6 +100,11 @@ public class FeatureProcessSelection {
 	 * @return 
 	 */
 	public static Node[] ask_to_plan_feature(Node featureSpecification, String featureType){
+		
+//		if(!featurePlans.containsKey(featureSpecification.getURI())){
+//			featurePlans.put(featureSpecification.getURI(), new AnonGraph(featureSpecification));
+//		}
+		
 		featureType = featureType.replaceAll("\"", "");
 
 		if(featureType.equals("Hole")){
@@ -173,13 +179,10 @@ public class FeatureProcessSelection {
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
 		   .onSuccess(m->localKB.add(m));
+		
 	}
 	
 	private Node[] getRootProcesses(){
-		
-		Uni.of(GlobalKnowledge.getPlan())
-		   .set(m->m.add(localKB))
-		   .set(m->m.write(new FileOutputStream(new File("C:/Users/sarkara1/git/SIMPOM/plan/initial_plan_after_process-planning-1.rdf")), "RDF/XML"));
 		
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
@@ -282,6 +285,7 @@ public class FeatureProcessSelection {
 		//create stock feature and link it to the dummy root process of the feature, which is then removed 
 		//and only the children of the root process is supplied
 		//this needs to be done in the local knowledge base
+	
 		fpSel.createStockFeature(featureSpecification);
 		
 		//load process precedence for the particular service 
@@ -301,9 +305,9 @@ public class FeatureProcessSelection {
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
 		   .onSuccess(m->fpSel.localKB.add(m));
-		
+
 		fpSel.execute();
-		
+
 		return fpSel.getRootProcesses();
 	}
 
@@ -318,6 +322,7 @@ public class FeatureProcessSelection {
 		//create stock feature and link it to the dummy root process of the feature, which is then removed 
 		//and only the children of the root process is supplied
 		//this needs to be done in the local knowledge base
+		
 		fpSel.createStockFeature(featureSpecification);
 		
 		//load process precedence for the particular service 
@@ -337,7 +342,7 @@ public class FeatureProcessSelection {
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
 		   .onSuccess(m->fpSel.localKB.add(m));
-		
+
 		fpSel.execute();
 		
 		return fpSel.getRootProcesses();
@@ -382,7 +387,7 @@ public class FeatureProcessSelection {
 					Node iFeature = b.get(Var.alloc("f2"));
 					
 					Uni.of(FunQL::new)
-					   .set(q->q.addTBox(tBoxDesign))
+					   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 					   .set(q->q.addABox(GlobalKnowledge.getPart()))
 					   .set(q->q.addPlan("resources/META-INF/rules/reader/read-interm-feature.q"))
 					   .set(q->q.getPlan(0).addVarBinding("f1", ResourceFactory.createResource(iFeature.getURI())))
@@ -436,11 +441,7 @@ public class FeatureProcessSelection {
 			fpl.repositionEdges();
 			return tab;
 		};
-		
-		Uni.of(GlobalKnowledge.getPlan())
-		   .set(m->m.add(localKB))
-		   .set(m->m.write(new FileOutputStream(new File("C:/Users/sarkara1/git/SIMPOM/plan/initial_plan_before_process-planning-1.rdf")), "RDF/XML"));
-		
+	
 		if(GlobalKnowledge.getPlan()==null){
 			GlobalKnowledge.setPlan();
 		}
@@ -479,12 +480,15 @@ public class FeatureProcessSelection {
 							   tab.rows().forEachRemaining(r->{
 								   log.info("\nOccurrence " + r.get(Var.alloc("pNext1")).getLocalName() + "(" + r.get(Var.alloc("pType")).getLocalName() + ")" +
 										   		" is applied after " + r.get(Var.alloc("pCurrent")).getLocalName() + " generating output feature " + r.get(Var.alloc("f2")).getLocalName());
+							   
 							   });
 						   }
 						   return tab;
 					   })))
 					   .map(q->q.execute())
-					   .set(q->GlobalKnowledge.appendPlanKB(q.getBelief().getLocalABox()))
+					   .set(q->{
+						   GlobalKnowledge.appendPlanKB(q.getBelief().getLocalABox());   
+					   })
 					   .map(q->q.isQuerySuccess())
 					   .get();			
 			
