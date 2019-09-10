@@ -21,7 +21,11 @@ WHERE{
 				?r4				cco:specified_by	?f4.						
 				?r4				plan:hasSucceedingFeature	?rNext.
 				?rNext			^plan:hasSucceedingFeature+	?rp	
-				FILTER(?rNext != ?rc)
+				FILTER NOT EXISTS{
+					?pCurrent 	^plan:precedes*	?p5.
+					?p5				cco:has_output	?f5.
+					?rNext			cco:specified_by	?f5.
+				}
 				{
 					SELECT ?pCurrent ?rc (count (distinct ?r3) as ?frcount)
 						WHERE{
