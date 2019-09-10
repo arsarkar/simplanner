@@ -7,8 +7,8 @@ PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
 
 CONSTRUCT 
   { 
-	plan:hasSuceedingFeature rdf:type owl:ObjectProperty .
-	?r 		plan:hasSuceedingFeature    ?rNext.
+	plan:hasSucceedingFeature rdf:type owl:ObjectProperty .
+	?r 		plan:hasSucceedingFeature    ?rNext.
   }
 WHERE
   { 

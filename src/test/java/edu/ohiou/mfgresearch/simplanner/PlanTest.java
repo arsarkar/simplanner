@@ -228,4 +228,31 @@ public class PlanTest {
 		TestPlanCreator planCreator = new TestPlanCreator(fpCreator.getFeature("IFeature"));
 		planCreator.savePlanWithPart("C:/Users/sarkara1/git/SIMPOM/plan/plan4.rdf", fpCreator.partKB);
 	}
+	
+	@Test
+	public void testPlan6(){		
+		
+		TestFeaturePrecedenceCreator fpCreator = new TestFeaturePrecedenceCreator();
+		fpCreator.addFeatureToPrecedence("IFeature", "f1");
+		fpCreator.addFeatureToPrecedence("f1", "f2");
+		fpCreator.savePart("C:/Users/sarkara1/git/SIMPOM/plan/fpn1.rdf");		
+		TestPlanCreator planCreator = new TestPlanCreator(fpCreator.getFeature("IFeature"));
+		planCreator.addProcessToPlan("IProcess", "p11", fpCreator.getFeature("f1"));
+		planCreator.addProcessToPlan("p11", "p21", fpCreator.getFeature("f2"));
+		planCreator.savePlanWithPart("C:/Users/sarkara1/git/SIMPOM/plan/plan5.rdf", fpCreator.partKB);
+	}
+	
+	@Test
+	public void testPlan7(){		
+		
+		TestFeaturePrecedenceCreator fpCreator = new TestFeaturePrecedenceCreator();
+		fpCreator.addFeatureToPrecedence("IFeature", "f1");
+		fpCreator.addFeatureToPrecedence("f1", "f2");
+		fpCreator.addFeatureToPrecedence("f2", "f3");
+		fpCreator.savePart("C:/Users/sarkara1/git/SIMPOM/plan/fpn2.rdf");		
+		TestPlanCreator planCreator = new TestPlanCreator(fpCreator.getFeature("IFeature"));
+		planCreator.addProcessToPlan("IProcess", "p11", fpCreator.getFeature("f1"));
+		planCreator.addProcessToPlan("p11", "p21", fpCreator.getFeature("f2"));
+		planCreator.savePlanWithPart("C:/Users/sarkara1/git/SIMPOM/plan/plan6.rdf", fpCreator.partKB);
+	}
 }

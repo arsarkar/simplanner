@@ -1,22 +1,24 @@
 package edu.ohiou.mfgresearch.services;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Function;
 
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.ontology.Individual;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Table;
 import org.apache.jena.sparql.algebra.TableFactory;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.lambda.Uni;
@@ -33,15 +35,44 @@ import edu.ohiou.mfgresearch.simplanner.IMPM;
  */
 public class GlobalKnowledge {
 
+	static Logger log = LoggerFactory.getLogger(GlobalKnowledge.class);
+	
 	private static GlobalKnowledge KB;
 	private Model specificationKB;
 	private Model partKB;
 	private Model planKB;
+	private static OntModel designTBox = null;
+	private static OntModel resourceTBox = null;
+	private static OntModel planTBox = null;
 	private static PropertyReader prop = PropertyReader.getProperty();
 	
 	private GlobalKnowledge() {
 	}
 
+	public static OntModel getDesignTBox(){
+		if(designTBox == null){
+			designTBox = ModelFactory.createOntologyModel();
+			designTBox.read(prop.getIRIPath(IMPM.design));
+		}
+		return designTBox;
+	}
+	
+	public static OntModel getResourceTBox(){
+		if(resourceTBox == null){
+			resourceTBox = ModelFactory.createOntologyModel();
+			resourceTBox.read(prop.getIRIPath(IMPM.capability));
+		}
+		return resourceTBox;
+	}
+	
+	public static OntModel getPlanTBox(){
+		if(planTBox == null){
+			planTBox = ModelFactory.createOntologyModel();
+			planTBox.read(prop.getIRIPath(IMPM.mfg_plan));
+		}
+		return planTBox;
+	}
+	
 	public static Model getSpecification(){
 		load();
 		return KB.specificationKB;
@@ -78,7 +109,7 @@ public class GlobalKnowledge {
 	public static void loadSpecification(String url){
 		load();
 		KB.specificationKB = ModelFactory.createDefaultModel().read(url);
-		System.out.println("Specification is loaded onto global knowledge base.");
+		System.out.println("Specification is loaded onto global knowledge base from "+url.toString());
 	}
 	
 	public static void loadSpecification(Model m){
@@ -105,7 +136,7 @@ public class GlobalKnowledge {
 			   .get();
 	}
 	
-	public static void loadInitialPlan(){
+	public static Node loadInitialPlan(){
 		load();
 		if(KB.planKB == null){
 			KB.planKB = ModelFactory.createDefaultModel();
@@ -113,24 +144,41 @@ public class GlobalKnowledge {
 		Function<Table, BasicPattern> expander = IPlanner.createPatternExpander(createPatternInitialPlan());
 		Function<BasicPattern, BasicPattern> updater = IPlanner.createUpdateExecutor(KB.planKB);
 		String iProessString =  IMPM.plan_ins + "IProcess" + IMPM.newHash(4);
-		Binding b = BindingFactory.binding(Var.alloc("p"), NodeFactory.createURI(iProessString));
+		Node iProcess = NodeFactory.createURI(iProessString);
+		Binding b = BindingFactory.binding(Var.alloc("p"), iProcess);
 		expander.andThen(updater).apply(Uni.of(TableFactory.create()).set(t->t.addBinding(b)).get());
-		System.out.println("Initial plan is loaded onto global knowledge base.");
+		log.info("Initial plan is loaded onto global knowledge base with root occurrence " + iProessString);
+		return iProcess;
 	}
 
-	public static void loadRootFeature() {
+	public static Node loadRootFeature(){
 		load();
+		if(KB.partKB == null){
+			KB.partKB = ModelFactory.createDefaultModel();
+		}
+		List<Node> rootFeature = new LinkedList<Node>();
+		
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 		   .set(q->q.addABox(KB.specificationKB)) 
 		   .set(q->q.addABox(KB.planKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create-root-feature.rq"))
 		   .set(q->q.setLocal=true)
+		   .set(q->q.setServicePostProcess(tab->{
+			   if(!tab.isEmpty()){
+				   log.info("Root feature " + tab.rows().next().get(Var.alloc("f0")).getLocalName() + " specifying representation " + 
+						   		tab.rows().next().get(Var.alloc("r0")).getLocalName() + " is created as output of root process " + 
+						   		tab.rows().next().get(Var.alloc("p0")).getLocalName());
+				   rootFeature.add(tab.rows().next().get(Var.alloc("f0")));
+			   }
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->KB.specificationKB.add(m));
+		   .onSuccess(m->KB.partKB.add(m));
+		return rootFeature.get(0);
 	}
 	
 	/**
@@ -146,7 +194,7 @@ public class GlobalKnowledge {
 		//two queries are required to insert the assertions in different KB
 		//create the stock feature and save to the specification KB
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 		   .set(q->q.addABox(KB.specificationKB)) 
 //		   .set(q->q.addABox(KB.planKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature2.rq"))
@@ -163,7 +211,7 @@ public class GlobalKnowledge {
 		}
 		//assert the stock feature is output of the root planned process
 		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 		   .set(q->q.addABox(KB.specificationKB)) 
 //		   .set(q->q.addABox(KB.planKB))  
 		   .set(q->q.addABox(KB.partKB)) 

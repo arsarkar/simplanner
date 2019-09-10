@@ -20,5 +20,5 @@ WHERE{
 	?fs  	rdf:type              		design:FeatureSpecification;
 			cco:represents			?r.
 	?r0	rdf:type 					design:RootFeatureRepresentation.		
-	FILTER NOT EXISTS{?r1	plan:hasSuceedingFeature	?r}
+	FILTER NOT EXISTS{?r1	plan:hasSucceedingFeature	?r}
 }

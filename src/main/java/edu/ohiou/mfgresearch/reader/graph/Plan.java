@@ -17,6 +17,7 @@ import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
 import edu.ohiou.mfgresearch.services.FeatureProcessSelection;
 import edu.ohiou.mfgresearch.services.GlobalKnowledge;
+import edu.ohiou.mfgresearch.services.PartProcessSelection;
 import edu.ohiou.mfgresearch.simplanner.IMPM;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
@@ -83,16 +84,19 @@ public class Plan implements Runnable{
 					   String fName = r.get(Var.alloc("FeatureName")).toString();
 					   String fType = r.get(Var.alloc("FeatureType")).toString();
 					   System.out.println("Starting to plan for "+ fName + " of type " + fType);
-					   FeatureProcessSelection.ask_to_plan_feature(null, fType);
+					   FeatureProcessSelection.ask_to_plan_feature(r.get(Var.alloc("FeatureSpecification")), fType);
 				   });
 				   return tab;
 			   }))
 			   .set(q->q.execute())
 			   .onFailure(e->e.printStackTrace(System.out))
-			   ;
-//			FeatureProcessSelection.ask_to_select_holemaking_processes(NodeFactory.createBlankNode());
+			   ;			
 			readPlan();
 			feature = "";
+		}
+		if(part.length()>0){
+			PartProcessSelection selection = new PartProcessSelection(new String[]{});
+			selection.ask_to_plan(part.trim());
 		}
 		
 	}
