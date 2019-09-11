@@ -79,7 +79,7 @@ public class FeatureProcessMatching {
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 		   .set(q->q.addABox(GlobalKnowledge.getSpecification()))
-		   .set(q->q.addABox(GlobalKnowledge.getPart()))
+		   .set(q->q.addABox(GlobalKnowledge.getCurrentPart()))
 		   //.set(q->saveKB("FPM-local-transfer-feature-specification-before.rdf", q.getBelief().getaBox()))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-feature-specifications.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("f1", ResourceFactory.createResource(featureIRI.getURI()))) //bind the last intermediate feature (featureIRi) to filter out every dimension which are already matched
@@ -431,7 +431,7 @@ public class FeatureProcessMatching {
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->log.error(e.getMessage()))
 		   .set(m->localKB.add(m))
-		   .set(m->GlobalKnowledge.appendPartKB(m));
+		   .set(m->GlobalKnowledge.getCurrentPart().add(m));
 		
 		log.info("\n ##running rule create-final-feature.rq... ");
 		Uni.of(FunQL::new)
@@ -456,7 +456,7 @@ public class FeatureProcessMatching {
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->log.error(e.getMessage()))
 		   .set(m->localKB.add(m))
-		   .set(m->GlobalKnowledge.appendPartKB(m));
+		   .set(m->GlobalKnowledge.getCurrentPart().add(m));
 		
 		log.info("\n ##running rule create-unsatisfied-feature.rq... ");
 		Uni.of(FunQL::new)
@@ -481,7 +481,7 @@ public class FeatureProcessMatching {
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->log.error(e.getMessage()))
 		   .set(m->localKB.add(m))
-		   .set(m->GlobalKnowledge.appendPartKB(m));
+		   .set(m->GlobalKnowledge.getCurrentPart().add(m));
 		
 		//assert dimensions to intermediate feature 
 		log.info("\n ##running rule create-interm-feature-dimensions.rq... ");
@@ -495,7 +495,7 @@ public class FeatureProcessMatching {
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->log.error(e.getMessage()))
 		   .set(m->localKB.add(m))
-		   .set(m->GlobalKnowledge.appendPartKB(m));
+		   .set(m->GlobalKnowledge.getCurrentPart().add(m));
 	}
 	
 	public Double matchSpecCapMeasure(Double dim, Double max, Double min) throws Exception{

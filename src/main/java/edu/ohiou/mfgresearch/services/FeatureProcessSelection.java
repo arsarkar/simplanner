@@ -128,9 +128,9 @@ public class FeatureProcessSelection {
 	}
 	
 	private void createStockFeature(Node featureSpecification) {
-		if(GlobalKnowledge.getPart()==null){
-			GlobalKnowledge.setPart();
-		}
+//		if(GlobalKnowledge.getPart()==null){
+//			GlobalKnowledge.setPart();
+//		}
 		processNodes = new LinkedList<Node>();
 		
 		System.out.println("\n## Create stock feature as dummy root process.");
@@ -153,7 +153,7 @@ public class FeatureProcessSelection {
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->GlobalKnowledge.appendPartKB(m));
+		   .onSuccess(m->GlobalKnowledge.getCurrentPart().add(m));
 		
 		//assert the stock feature is output of the root planned process
 		System.out.println("\n## Assert root feature as output of the root process.");
@@ -161,7 +161,7 @@ public class FeatureProcessSelection {
 		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
 		   .set(q->q.addABox(GlobalKnowledge.getSpecification()))  
-		   .set(q->q.addABox(GlobalKnowledge.getPart())) 
+		   .set(q->q.addABox(GlobalKnowledge.getCurrentPart())) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/create_stock_feature1.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("f", ResourceFactory.createResource(featureSpecification.getURI())))
 		   .set(q->q.setLocal=true)
@@ -201,6 +201,9 @@ public class FeatureProcessSelection {
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out));
+		
+		GlobalKnowledge.refreshCurrentPart();
+		
 		if(processNodes.size()>1){
 			return processNodes.subList(1, processNodes.size()).toArray(new Node[0]);
 		}
@@ -388,7 +391,7 @@ public class FeatureProcessSelection {
 					
 					Uni.of(FunQL::new)
 					   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
-					   .set(q->q.addABox(GlobalKnowledge.getPart()))
+					   .set(q->q.addABox(GlobalKnowledge.getCurrentPart()))
 					   .set(q->q.addPlan("resources/META-INF/rules/reader/read-interm-feature.q"))
 					   .set(q->q.getPlan(0).addVarBinding("f1", ResourceFactory.createResource(iFeature.getURI())))
 					   .set(q->q.setSelectPostProcess(tab1->{
@@ -455,7 +458,7 @@ public class FeatureProcessSelection {
 					   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 					   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
 					   .set(q->q.addABox(localKB))
-					   .set(q->q.addABox(GlobalKnowledge.getPart()))
+					   .set(q->q.addABox(GlobalKnowledge.getCurrentPart()))
 					   .set(q->q.addABox(GlobalKnowledge.getPlan()))
 					   .set(q->q.addPlan("resources/META-INF/rules/core/process-planning-1.rq"))
 //					   .set(q->q.getPlan(0).addVarBinding("p0", ResourceFactory.createResource(processNodes.get(0).getURI())))

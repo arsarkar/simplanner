@@ -159,8 +159,6 @@ public class PartProcessSelection {
 		if(Boolean.parseBoolean(prop.getProperty("SHOW_FEATURE_GRAPH").trim())) 
 			v.display();
 		
-
-		
 		Function<Table, Table> plotProcessSelectionTree = tab->{
 			if(!Boolean.parseBoolean(prop.getProperty("SHOW_FEATURE_GRAPH").trim())) return tab;
 
@@ -194,7 +192,7 @@ public class PartProcessSelection {
 			
 			children.forEach(b->{
 				String featureNodelabel = b.get(Var.alloc("fs")).getLocalName() + "(" + b.get(Var.alloc("fn")).getLiteralValue().toString() + "|" + 
-											b.get(Var.alloc("ft")).getLiteralValue().toString() + ")";
+											b.get(Var.alloc("ft")).getLiteralValue().toString() + ")-" + b.get(Var.alloc("rc")).getLocalName() ;
 				edu.ohiou.mfgresearch.labimp.graph.Node featureNode = new edu.ohiou.mfgresearch.labimp.graph.Node (new ColoredNode(featureNodelabel, Color.ORANGE));
 
 				g.addNode(featureNode);

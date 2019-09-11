@@ -40,6 +40,7 @@ public class GlobalKnowledge {
 	private static GlobalKnowledge KB;
 	private Model specificationKB;
 	private Model partKB;
+	private Model currentPartKB;
 	private Model planKB;
 	private static OntModel designTBox = null;
 	private static OntModel resourceTBox = null;
@@ -83,6 +84,23 @@ public class GlobalKnowledge {
 		return KB.partKB;
 	}
 	
+	public static Model getCurrentPart(){
+		load();
+		if(KB.currentPartKB==null){
+			KB.currentPartKB = ModelFactory.createDefaultModel();
+		}
+		return KB.currentPartKB;
+	}
+	
+	public static void refreshCurrentPart(){
+		load();
+		if(KB.partKB==null){
+			setPart();
+		}
+		KB.partKB.add(KB.currentPartKB);
+		KB.currentPartKB = null;
+	}
+	
 	public static void setPart(){
 		load();
 		KB.partKB = ModelFactory.createDefaultModel();
@@ -97,7 +115,7 @@ public class GlobalKnowledge {
 		load();
 		KB.planKB = ModelFactory.createDefaultModel();
 	}
-
+	
 	public static void appendPartKB(Model m){
 		KB.partKB.add(m);
 	}
