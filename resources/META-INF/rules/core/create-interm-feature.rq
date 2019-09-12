@@ -5,6 +5,7 @@ PREFIX  design: <http://www.ohio.edu/ontologies/design#>
 PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
 
 CONSTRUCT{
+cco:designated_by	rdf:type owl:ObjectProperty .
  ?f1	   rdf:type						design:FormFeature;
            rdf:type						design:IntermediateFormFeature;
 		   cco:designated_by 	?ice1.
@@ -16,11 +17,12 @@ WHERE{
 			cco:inheres_in     ?i1.
  ?i1  		rdf:type 			design:LabelBearingEntity.
  FILTER EXISTS {?fq1  	rdf:type	design:FeatureQualityMap;
-								design:describes_map_with ?f;
-								design:describes_map_with ?dm1.
-					   ?d1	cco:concretizes				 ?dm1.
-					   ?fq2  	rdf:type	design:FeatureQualityMap;
-								design:describes_map_with ?f;
-								design:describes_map_with ?dm2.
-					   ?d2	cco:not_concretizes			 ?dm2.}						   
+									design:describes_map_with 			?f;
+									design:describes_map_with 			?dm1.
+						  ?d1		rdf:type 	cco:InformationQualityEntity;
+									cco:concretizes				 			?dm1.
+						  ?fq2  	rdf:type	design:FeatureQualityMap;
+									design:describes_map_with 			?f;
+									design:describes_map_with 			?dm2.
+						  ?d2		cco:not_concretizes			 			?dm2.}						   
 }

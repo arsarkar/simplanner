@@ -1,0 +1,13 @@
+PREFIX  rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
+
+SELECT ?p1	?p2	?pt 	?i1	?o1
+WHERE{
+	?p1	rdf:type				?pt;
+			cco:has_input		?i1;
+			cco:has_output	?o1.
+	OPTIONAL { ?p1	plan:precedes		?p2}
+	FILTER (?pt NOT IN (owl:NamedIndividual)) 
+}

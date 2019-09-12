@@ -1,7 +1,9 @@
 package edu.ohiou.mfgresearch.services;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
@@ -21,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.ohiou.mfgresearch.io.FunQL;
+import edu.ohiou.mfgresearch.labimp.graphmodel.gui.PlanarLevelLayouter;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.plan.IPlanner;
 import edu.ohiou.mfgresearch.plan.PlanUtil;
@@ -41,7 +44,10 @@ public class GlobalKnowledge {
 	private Model specificationKB;
 	private Model partKB;
 	private Model currentPartKB;
+	private Model currentPlanKB;
 	private Model planKB;
+	private Map<Node, Model> planArchive = new HashMap<Node, Model>();
+	private Map<Node, Model> partArchive = new HashMap<Node, Model>();
 	private static OntModel designTBox = null;
 	private static OntModel resourceTBox = null;
 	private static OntModel planTBox = null;
@@ -99,6 +105,45 @@ public class GlobalKnowledge {
 		}
 		KB.partKB.add(KB.currentPartKB);
 		KB.currentPartKB = null;
+	}
+	
+	public static void memoizeCurrentPart(Node featureSpec){
+		load();
+		KB.partArchive.put(featureSpec, KB.currentPartKB);
+	}
+	
+	public static Model retrieveCurrentPart(Node featureSpec){
+		load();
+		if(KB.partArchive.containsKey(featureSpec)) return KB.partArchive.get(featureSpec);
+		else return null;
+	}
+	
+	public static Model getCurrentPlan(){
+		load();
+		if(KB.currentPlanKB==null){
+			KB.currentPlanKB = ModelFactory.createDefaultModel();
+		}
+		return KB.currentPlanKB;
+	}
+	
+	public static void refreshCurrentPlan(){
+		load();
+		if(KB.planKB==null){
+			setPlan();
+		}
+		KB.planKB.add(KB.currentPlanKB);
+		KB.currentPlanKB = null;
+	}
+	
+	public static void memoizeCurrentPlan(Node featureSpec){
+		load();
+		KB.planArchive.put(featureSpec, KB.currentPlanKB);
+	}
+	
+	public static Model retrieveCurrentPlan(Node featureSpec){
+		load();
+		if(KB.planArchive.containsKey(featureSpec)) return KB.planArchive.get(featureSpec);
+		else return null;
 	}
 	
 	public static void setPart(){

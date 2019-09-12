@@ -2,6 +2,7 @@ package edu.ohiou.mfgresearch.services;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.apache.jena.graph.GraphUtil;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.ontology.OntModel;
@@ -20,6 +22,8 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.algebra.Table;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.util.graph.GraphUtils;
+import org.apache.jena.util.ResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,7 +190,7 @@ public class FeatureProcessSelection {
 		
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
-		   .set(q->q.addABox(GlobalKnowledge.getPlan()))
+		   .set(q->q.addABox(GlobalKnowledge.getCurrentPlan()))
 		   .set(q->q.addABox(localKB))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/select-root-processes.q"))
 		   .set(q->q.setLocal=true)
@@ -203,6 +207,7 @@ public class FeatureProcessSelection {
 		   .onFailure(e->e.printStackTrace(System.out));
 		
 		GlobalKnowledge.refreshCurrentPart();
+		GlobalKnowledge.refreshCurrentPlan();
 		
 		if(processNodes.size()>1){
 			return processNodes.subList(1, processNodes.size()).toArray(new Node[0]);
@@ -220,6 +225,9 @@ public class FeatureProcessSelection {
 		
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 		fpSel.featureSpec = featureSpecification.getLocalName();
+		
+
+
 		//create stock feature and link it to the dummy root process of the feature, which is then removed 
 		//and only the children of the root process is supplied
 		//this needs to be done in the local knowledge base
@@ -252,6 +260,18 @@ public class FeatureProcessSelection {
 		
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 		fpSel.featureSpec = featureSpecification.getLocalName();
+		
+		if(Boolean.parseBoolean(prop.getProperty("MEMOIZE_FEATURE_PLAN").trim())){
+			Model archivedPlan = GlobalKnowledge.retrieveCurrentPlan(featureSpecification);
+			if(archivedPlan!=null){				  
+				Uni.of(archivedPlan).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//plan_"+featureSpecification.getLocalName()+".rdf"))));		  
+			}
+			Model archivedPart = GlobalKnowledge.retrieveCurrentPart(featureSpecification);
+			if(archivedPart!=null){				  
+				Uni.of(archivedPart).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//part_"+featureSpecification.getLocalName()+".rdf"))));		  
+			}
+		}		
+		
 		//create stock feature and link it to the dummy root process of the feature, which is then removed 
 		//and only the children of the root process is supplied
 		//this needs to be done in the local knowledge base
@@ -272,6 +292,9 @@ public class FeatureProcessSelection {
 		   .onSuccess(m->fpSel.localKB.add(m));
 		
 		fpSel.execute();
+		
+		GlobalKnowledge.memoizeCurrentPlan(featureSpecification);
+		GlobalKnowledge.memoizeCurrentPart(featureSpecification);
 		
 		return fpSel.getRootProcesses();
 	}
@@ -453,13 +476,22 @@ public class FeatureProcessSelection {
 		while(!stopIteration){
 			counter += 1;
 			log.info("match feature by process-planning-1.rq. iteration ---> " + counter);
+			
+			//save the intermediate RDF for bug fixing
+			try {
+				GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-feature-"+counter+".rdf")), "RDF/XML");
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			boolean	isSuccessful = 	
 					Uni.of(FunQL::new)
 					   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 					   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
 					   .set(q->q.addABox(localKB))
 					   .set(q->q.addABox(GlobalKnowledge.getCurrentPart()))
-					   .set(q->q.addABox(GlobalKnowledge.getPlan()))
+					   .set(q->q.addABox(GlobalKnowledge.getCurrentPlan()))
 					   .set(q->q.addPlan("resources/META-INF/rules/core/process-planning-1.rq"))
 //					   .set(q->q.getPlan(0).addVarBinding("p0", ResourceFactory.createResource(processNodes.get(0).getURI())))
 					   .set(q->q.setLocal=true)
@@ -485,12 +517,12 @@ public class FeatureProcessSelection {
 										   		" is applied after " + r.get(Var.alloc("pCurrent")).getLocalName() + " generating output feature " + r.get(Var.alloc("f2")).getLocalName());
 							   
 							   });
-						   }
+						   }						   
 						   return tab;
 					   })))
 					   .map(q->q.execute())
 					   .set(q->{
-						   GlobalKnowledge.appendPlanKB(q.getBelief().getLocalABox());   
+						   GlobalKnowledge.getCurrentPlan().add(q.getBelief().getLocalABox());   
 					   })
 					   .map(q->q.isQuerySuccess())
 					   .get();			
