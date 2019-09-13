@@ -2,6 +2,7 @@ package edu.ohiou.mfgresearch.services;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.algebra.Table;
 import org.apache.jena.sparql.core.Var;
@@ -48,7 +50,9 @@ public class FeatureProcessSelection {
 	static PropertyReader prop = PropertyReader.getProperty();
 	FeatureProcessMatching matchingService;
 	List<Node> processNodes = null;
-	String featureSpec = "";
+	String featureSpec = "";	
+	CloneModel cm;
+	boolean execute = true;
 	
 	static Map<String, AnonGraph> featurePlans = new HashMap<String, AnonGraph>();
 	
@@ -188,13 +192,21 @@ public class FeatureProcessSelection {
 	
 	private Node[] getRootProcesses(){
 		
+		Resource rootNode;
+		if(execute){
+			rootNode = ResourceFactory.createResource(processNodes.get(0).getURI());
+		}
+		else{
+			rootNode = ResourceFactory.createResource(cm.getRootProcess().getURI());
+		}
+		
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
 		   .set(q->q.addABox(GlobalKnowledge.getCurrentPlan()))
 		   .set(q->q.addABox(localKB))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/select-root-processes.q"))
 		   .set(q->q.setLocal=true)
-		   .set(q->q.getPlan(0).addVarBinding("p0", ResourceFactory.createResource(processNodes.get(0).getURI())))
+		   .set(q->q.getPlan(0).addVarBinding("p0", rootNode))
 		   .set(q->q.setSelectPostProcess(t->{
 			   t.rows().forEachRemaining(b->{
 				   processNodes.add(b.get(Var.alloc("pNext")));
@@ -260,41 +272,46 @@ public class FeatureProcessSelection {
 		
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 		fpSel.featureSpec = featureSpecification.getLocalName();
-		
+
 		if(Boolean.parseBoolean(prop.getProperty("MEMOIZE_FEATURE_PLAN").trim())){
 			Model archivedPlan = GlobalKnowledge.retrieveCurrentPlan(featureSpecification);
-			if(archivedPlan!=null){				  
-				Uni.of(archivedPlan).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//plan_"+featureSpecification.getLocalName()+".rdf"))));		  
-			}
 			Model archivedPart = GlobalKnowledge.retrieveCurrentPart(featureSpecification);
-			if(archivedPart!=null){				  
-				Uni.of(archivedPart).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//part_"+featureSpecification.getLocalName()+".rdf"))));		  
+			//Uni.of(archivedPlan).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//plan_"+featureSpecification.getLocalName()+".rdf"))));		  
+			//Uni.of(archivedPart).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//part_"+featureSpecification.getLocalName()+".rdf"))));		  
+			if(archivedPlan!=null && archivedPart!=null){
+				fpSel.cm = new CloneModel(archivedPlan, archivedPart);
+				fpSel.cm.perform();
+				GlobalKnowledge.getCurrentPlan().add(fpSel.cm.getClonedPlan());
+				GlobalKnowledge.getCurrentPart().add(fpSel.cm.getClonedPart());
+				fpSel.execute = false;
 			}
-		}		
+		}	
 		
-		//create stock feature and link it to the dummy root process of the feature, which is then removed 
-		//and only the children of the root process is supplied
-		//this needs to be done in the local knowledge base
-		fpSel.createStockFeature(featureSpecification);
-		
-		//load process precedence for the particular service 
-		log.info("\n##loading slot making process precedence by rule process-precedence-openslot.q");
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
-		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
-		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-openslot.q"))
-		   .set(q->q.setLocal=true)
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->fpSel.localKB.add(m));
-		
-		fpSel.execute();
-		
-		GlobalKnowledge.memoizeCurrentPlan(featureSpecification);
-		GlobalKnowledge.memoizeCurrentPart(featureSpecification);
+		if(fpSel.execute){
+			//create stock feature and link it to the dummy root process of the feature, which is then removed 
+			//and only the children of the root process is supplied
+			//this needs to be done in the local knowledge base
+			fpSel.createStockFeature(featureSpecification);
+			
+			//load process precedence for the particular service 
+			log.info("\n##loading slot making process precedence by rule process-precedence-openslot.q");
+			Uni.of(FunQL::new)
+			   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+			   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
+			   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
+			   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-openslot.q"))
+			   .set(q->q.setLocal=true)
+			   .map(q->q.execute())
+			   .map(q->q.getBelief())
+			   .map(b->b.getLocalABox())
+			   .onFailure(e->e.printStackTrace(System.out))
+			   .onSuccess(m->fpSel.localKB.add(m));
+			
+			fpSel.execute();
+			
+			GlobalKnowledge.memoizeCurrentPlan(featureSpecification);
+			GlobalKnowledge.memoizeCurrentPart(featureSpecification);
+		}
 		
 		return fpSel.getRootProcesses();
 	}
@@ -375,6 +392,9 @@ public class FeatureProcessSelection {
 	}
 	
 	public void execute(){		
+		
+		
+		
 		
 		//get the latest process planned 
 		boolean stopIteration = false;
@@ -478,12 +498,12 @@ public class FeatureProcessSelection {
 			log.info("match feature by process-planning-1.rq. iteration ---> " + counter);
 			
 			//save the intermediate RDF for bug fixing
-			try {
-				GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-feature-"+counter+".rdf")), "RDF/XML");
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			try {
+//				GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-feature-"+counter+".rdf")), "RDF/XML");
+//			} catch (FileNotFoundException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			
 			boolean	isSuccessful = 	
 					Uni.of(FunQL::new)
@@ -532,7 +552,251 @@ public class FeatureProcessSelection {
 		
 		}
 	}
+}
+
+class CloneModel{
 	
+	Model planModel	= ModelFactory.createDefaultModel();
+	Model partModel = ModelFactory.createDefaultModel();
+	Model clonedPlan = ModelFactory.createDefaultModel();
+	Model clonedPart = ModelFactory.createDefaultModel();
+
+	List<Node> rootprocess = new LinkedList<Node>();
 	
+	public CloneModel(){
+		
+	}
+	
+	public CloneModel(Model plan, Model part){
+		this();
+		this.planModel = plan;
+		this.partModel = part;
+	}		
+	
+	public Model getClonedPlan() {
+		return clonedPlan;
+	}
+	
+	public Model getClonedPart() {
+		return clonedPart;
+	}
+	
+	public Node getRootProcess() {
+		return rootprocess.get(0);
+	}
+	
+	public void perform(){
+		Map<Node, Resource> processMap = new HashMap<Node, Resource>();
+		Map<Node, Resource> featureMap = new HashMap<Node, Resource>();
+		Function<Node, String> renameNode = n->{
+			String ns = n.getNameSpace();
+			String name = n.getLocalName();
+			String newName = name.replaceFirst("I[0-9]*(?!.*I[0-9]*)", "I"+IMPM.newHash(4));
+			return ns+newName;
+		};
+
+	   clonedPlan.add(ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/has_input"), 
+		   		  		ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+		   		  		ResourceFactory.createProperty("http://www.w3.org/2002/07/owl#ObjectProperty"));
+	   clonedPlan.add(ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/has_output"), 
+		  		  		ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+		  		  		ResourceFactory.createProperty("http://www.w3.org/2002/07/owl#ObjectProperty"));
+	   clonedPlan.add(ResourceFactory.createProperty("http://www.ohio.edu/ontologies/manufacturing-plan#precedes"), 
+		  		  		ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+		  		  		ResourceFactory.createProperty("http://www.w3.org/2002/07/owl#ObjectProperty"));
+	   
+	   //run query to extract all processes, their input and output and precedence
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
+		   .set(q->q.addABox(planModel))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/clone-process-individual.rq"))
+		   .set(q->q.setSelectPostProcess(t->{
+			   ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+			   t.rows().forEachRemaining(r->{
+				   //?p1 rdf:type ?pt
+				   Resource p1 = ResourceFactory.createResource(renameNode.apply(r.get(Var.alloc("p1"))));
+				   processMap.put(r.get(Var.alloc("p1")), p1);
+				   clonedPlan.add(p1, 
+						   		  ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+						   		  ResourceFactory.createResource(r.get(Var.alloc("pt")).getURI()));
+				   //?p0 cco:has_input ?i1
+				   Resource i1 = ResourceFactory.createResource(renameNode.apply(r.get(Var.alloc("i1"))));
+				   if(!featureMap.containsKey(r.get(Var.alloc("i1")))){
+					   featureMap.put(r.get(Var.alloc("i1")), i1);
+					   clonedPlan.add(i1, 
+						   		  ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+						   		  ResourceFactory.createResource("http://www.ohio.edu/ontologies/design#FormFeature"));
+				   }
+				   else{
+					   i1 = featureMap.get(r.get(Var.alloc("i1")));
+				   }
+				   clonedPlan.add(p1, 
+					   		  ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/has_input"),
+					   		  i1);
+				   //?p0 cco:has_output ?o1
+				   Resource o1 = ResourceFactory.createResource(renameNode.apply(r.get(Var.alloc("o1"))));
+				   if(!featureMap.containsKey(r.get(Var.alloc("o1")))){
+					   featureMap.put(r.get(Var.alloc("o1")), o1);
+					   clonedPlan.add(o1, 
+						   		  ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+						   		  ResourceFactory.createResource("http://www.ohio.edu/ontologies/design#FormFeature"));					   
+				   }
+				   else{
+					   o1 = featureMap.get(r.get(Var.alloc("o1")));
+				   }
+				   clonedPlan.add(p1, 
+					   		  ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/has_output"),
+					   		  o1);
+			   });
+			   t.rows().forEachRemaining(r->{
+				   // ?p1	plan:precedes		?p2
+				   if(r.get(Var.alloc("p2"))!=null){
+					   clonedPlan.add(processMap.get(r.get(Var.alloc("p1"))), 
+						   		  		ResourceFactory.createProperty("http://www.ohio.edu/ontologies/manufacturing-plan#precedes"),
+						   		  		processMap.get(r.get(Var.alloc("p2"))));
+				   }
+			   });
+			   return t;
+		   }))
+		   .map(q->q.execute())
+		   .onFailure(e->e.printStackTrace(System.out));
+		
+		//create root process
+		Uni.of(FunQL::new)
+		.set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+		.set(q->q.addABox(planModel))
+		.set(q->q.addPlan("resources/META-INF/rules/core/clone-root-process.rq"))
+		.set(q->q.setSelectPostProcess(t->{
+			ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+			t.rows().forEachRemaining(r->{
+				if(!processMap.containsKey(r.get(Var.alloc("p1")))){
+					Resource p1 = ResourceFactory.createResource(renameNode.apply(r.get(Var.alloc("p1"))));
+					processMap.put(r.get(Var.alloc("p1")), p1);
+					rootprocess.add(p1.asNode());
+					   clonedPlan.add(p1, 
+				   		  		ResourceFactory.createProperty("http://www.ohio.edu/ontologies/manufacturing-plan#precedes"),
+				   		  		processMap.get(r.get(Var.alloc("p2"))));
+				}
+				else{
+					   clonedPlan.add(processMap.get(r.get(Var.alloc("p1"))), 
+				   		  		ResourceFactory.createProperty("http://www.ohio.edu/ontologies/manufacturing-plan#precedes"),
+				   		  		processMap.get(r.get(Var.alloc("p2"))));
+				}
+			});
+			return t;
+		}))
+		.map(q->q.execute())
+		.onFailure(e->e.printStackTrace(System.out));
+
+		//load all features and assign concretization
+		Uni.of(FunQL::new)
+			.set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+			.set(q->q.addABox(partModel))
+			.set(q->q.addPlan("resources/META-INF/rules/core/clone-formfeature-concretization.rq"))
+			.set(q->q.setSelectPostProcess(t->{
+				ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+				t.rows().forEachRemaining(r->{
+					if(featureMap.containsKey(r.get(Var.alloc("f")))){
+						Resource f = featureMap.get(r.get(Var.alloc("f")));
+						clonedPart.add(f, 
+								ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+								ResourceFactory.createResource("http://www.ohio.edu/ontologies/design#FormFeature"));
+						if(r.get(Var.alloc("fs"))!=null){
+							clonedPart.add(f, 
+									ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/concretizes"),
+									ResourceFactory.createResource(r.get(Var.alloc("fs")).getURI()));
+						}
+					}
+				});
+				return t;
+			}))
+			.map(q->q.execute())
+			.onFailure(e->e.printStackTrace(System.out));
+		
+		//for each formfeature specify unsatisfied or intermediate
+		Uni.of(FunQL::new)
+			.set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+			.set(q->q.addABox(partModel))
+			.set(q->q.addPlan("resources/META-INF/rules/core/clone-formfeature-individual.rq"))
+			.set(q->q.setSelectPostProcess(t->{
+				ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+				t.rows().forEachRemaining(r->{
+					if(featureMap.containsKey(r.get(Var.alloc("f")))){
+						Resource f = featureMap.get(r.get(Var.alloc("f")));
+						clonedPart.add(f, 
+								ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+								ResourceFactory.createResource(r.get(Var.alloc("ft")).getURI()));
+					}
+				});
+				return t;
+			}))
+			.map(q->q.execute())
+			.onFailure(e->e.printStackTrace(System.out));
+
+		clonedPart.add(ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/designated_by"), 
+				ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+				ResourceFactory.createProperty("http://www.w3.org/2002/07/owl#ObjectProperty"));	
+		clonedPart.add(ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/inheres_in"), 
+				ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+				ResourceFactory.createProperty("http://www.w3.org/2002/07/owl#ObjectProperty"));
+		
+		//form feature identifier
+		Uni.of(FunQL::new)
+			.set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+			.set(q->q.addABox(partModel))
+			.set(q->q.addPlan("resources/META-INF/rules/core/clone-formfeature-identifier.rq"))
+			.set(q->q.setSelectPostProcess(t->{
+				ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+				t.rows().forEachRemaining(r->{
+					if(featureMap.containsKey(r.get(Var.alloc("f")))){
+						Resource f = featureMap.get(r.get(Var.alloc("f")));
+						Resource fi = ResourceFactory.createResource(renameNode.apply(r.get(Var.alloc("fi"))));
+						clonedPart.add(fi, 
+								ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+								ResourceFactory.createResource("http://www.ontologyrepository.com/CommonCoreOntologies/FormFeatureIdentifier"));
+						clonedPart.add(f, 
+									ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/designated_by"),
+									fi);
+						clonedPart.add(fi, 
+								ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/inheres_in"),
+								ResourceFactory.createResource(r.get(Var.alloc("ibe")).getURI()));
+					}
+				});
+				return t;
+			}))
+			.map(q->q.execute())
+			.onFailure(e->e.printStackTrace(System.out));
+
+		clonedPart.add(ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/concretizes"), 
+				ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+				ResourceFactory.createProperty("http://www.w3.org/2002/07/owl#ObjectProperty"));	
+		
+		//information quality entity
+		Uni.of(FunQL::new)
+			.set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+			.set(q->q.addABox(partModel))
+			.set(q->q.addPlan("resources/META-INF/rules/core/clone-information-quality-entity.rq"))
+			.set(q->q.setSelectPostProcess(t->{
+				ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+				t.rows().forEachRemaining(r->{
+					if(featureMap.containsKey(r.get(Var.alloc("f")))){
+						Resource f = featureMap.get(r.get(Var.alloc("f")));
+						Resource iq = ResourceFactory.createResource(renameNode.apply(r.get(Var.alloc("iq"))));
+						clonedPart.add(iq, 
+								ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+								ResourceFactory.createResource("http://www.ontologyrepository.com/CommonCoreOntologies/InformationQualityEntity"));
+						clonedPart.add(iq, 
+									ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/inheres_in"),
+									f);
+						clonedPart.add(iq, 
+								ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/concretizes"),
+								ResourceFactory.createResource(r.get(Var.alloc("s")).getURI()));
+					}
+				});
+				return t;
+			}))
+			.map(q->q.execute())
+			.onFailure(e->e.printStackTrace(System.out));
+	}
 	
 }

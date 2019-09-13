@@ -1,11 +1,10 @@
 PREFIX  rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
 PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
-PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
 
-SELECT ?f	?ft
+SELECT ?p1	?p2
 WHERE{
-	?f	rdf:type	design:FormFeature;
-		rdf:type	?ft.
-	FILTER (?ft NOT IN (owl:NamedIndividual, design:FormFeature))
+	?p1	plan:precedes		?p2 .
+	FILTER NOT EXISTS {?p3		plan:precedes	?p1}
 }

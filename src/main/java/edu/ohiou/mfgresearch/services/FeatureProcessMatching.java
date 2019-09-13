@@ -434,12 +434,12 @@ public class FeatureProcessMatching {
 		   .set(m->GlobalKnowledge.getCurrentPart().add(m));
 
 		//save the intermediate RDF for bug fixing
-		try {
-			GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-match-interm.rdf")), "RDF/XML");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-match-interm.rdf")), "RDF/XML");
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 		log.info("\n ##running rule create-final-feature.rq... ");
 		Uni.of(FunQL::new)
@@ -467,12 +467,12 @@ public class FeatureProcessMatching {
 		   .set(m->GlobalKnowledge.getCurrentPart().add(m));
 		
 		//save the intermediate RDF for bug fixing
-		try {
-			GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-match-final.rdf")), "RDF/XML");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-match-final.rdf")), "RDF/XML");
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 		log.info("\n ##running rule create-unsatisfied-feature.rq... ");
 		Uni.of(FunQL::new)
@@ -500,12 +500,12 @@ public class FeatureProcessMatching {
 		   .set(m->GlobalKnowledge.getCurrentPart().add(m));
 		
 		//save the intermediate RDF for bug fixing
-		try {
-			GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-match-unsat.rdf")), "RDF/XML");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-match-unsat.rdf")), "RDF/XML");
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 		//assert dimensions to intermediate feature 
 		log.info("\n ##running rule create-interm-feature-dimensions.rq... ");
@@ -522,12 +522,12 @@ public class FeatureProcessMatching {
 		   .set(m->GlobalKnowledge.getCurrentPart().add(m));
 		
 		//save the intermediate RDF for bug fixing
-		try {
-			GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-match-dim.rdf")), "RDF/XML");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-match-dim.rdf")), "RDF/XML");
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 	
 	public Double matchSpecCapMeasure(Double dim, Double max, Double min) throws Exception{

@@ -3,9 +3,8 @@ PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
 PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
 PREFIX  design: <http://www.ohio.edu/ontologies/design#>
 
-SELECT ?f	?ft
+SELECT ?f	?fs
 WHERE{
-	?f	rdf:type	design:FormFeature;
-		rdf:type	?ft.
-	FILTER (?ft NOT IN (owl:NamedIndividual, design:FormFeature))
+	?f	rdf:type	design:FormFeature.
+	OPTIONAL {?f	cco:concretizes	?fs}.
 }
