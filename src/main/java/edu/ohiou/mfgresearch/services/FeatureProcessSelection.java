@@ -358,7 +358,7 @@ public class FeatureProcessSelection {
 		
 		GraphViewer v = new GraphViewer(g,fpl, GraphViewer.VIEW_2D);
 		if(Boolean.parseBoolean(prop.getProperty("SHOW_PROCESS_GRAPH").trim())) 
-			v.display();
+			v.display("Plan for" + featureSpec);
 		
 		//function to select result of process-plan-1 rule and plot in FeatureProcessLayouter
 		Function<Table, Table> plotProcessSelectionTree = tab->{
