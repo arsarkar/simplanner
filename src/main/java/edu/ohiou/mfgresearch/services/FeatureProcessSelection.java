@@ -2,8 +2,6 @@ package edu.ohiou.mfgresearch.services;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -11,11 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.apache.jena.graph.GraphUtil;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.ontology.OntModel;
-import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -23,9 +17,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.algebra.Table;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.util.graph.GraphUtils;
-import org.apache.jena.util.ResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +27,6 @@ import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
 import edu.ohiou.mfgresearch.reader.graph.FeatureProcessLayouter;
-import edu.ohiou.mfgresearch.reader.graph.AnonGraph;
 import edu.ohiou.mfgresearch.reader.graph.ColoredArc;
 import edu.ohiou.mfgresearch.reader.graph.ColoredNode;
 import edu.ohiou.mfgresearch.simplanner.IMPM;
@@ -53,8 +43,6 @@ public class FeatureProcessSelection {
 	String featureSpec = "";	
 	CloneModel cm;
 	boolean execute = true;
-	
-	static Map<String, AnonGraph> featurePlans = new HashMap<String, AnonGraph>();
 	
 	public Model getLocalKB() {
 		return localKB;
