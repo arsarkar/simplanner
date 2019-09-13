@@ -8,16 +8,13 @@ CONSTRUCT{
 cco:designated_by	rdf:type owl:ObjectProperty .
 cco:inheres_in			rdf:type owl:ObjectProperty .
  ?ice1   rdf:type            cco:FormFeatureIdentifier; 
-			cco:inheres_in       ?i1;
-			cco:inheres_in       ?i2.
+			cco:inheres_in       ?i1.
  ?f1   rdf:type              design:FormFeature;
 		rdf:type				 design:IntermediateFormFeature;
 		cco:designated_by ?ice1.
 }
 WHERE{
  ?f   rdf:type              design:FeatureSpecification;
-      cco:inheres_in       ?i1;
-	  cco:inheres_in       ?i2.
+      cco:inheres_in       ?i1.
  ?i1  rdf:type              design:LabelBearingEntity.
- ?i2  rdf:type              design:TypeBearingEntity.
 }	

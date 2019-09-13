@@ -1,14 +1,18 @@
 package edu.ohiou.mfgresearch.reader.graph;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.jena.atlas.logging.Log;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.ResultSetFormatter;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.core.Var;
 
@@ -35,6 +39,9 @@ public class Plan implements Runnable{
 	
 	@Option(names={"-g", "--graph"}, paramLabel="PATH", description="file path or URL of the part specification RDF")
 	private File path;	
+	
+	@Option(names={"-save"}, paramLabel="", description = "file to save the plan")
+	private File planPath;
 	
 	public static void main(String[] args) {
 		plan = new Plan();
@@ -97,19 +104,47 @@ public class Plan implements Runnable{
 		if(part.length()>0){
 			PartProcessSelection selection = new PartProcessSelection(new String[]{});
 			selection.ask_to_plan(part.trim());
+			readPlan();
+			part = "";
 		}
-		
+		if(planPath!=null){
+			Uni.of(ModelFactory.createDefaultModel())
+				.set(m->m.add(GlobalKnowledge.getPlan()))
+				.set(m->GlobalKnowledge.getPart())
+				.set(m->m.write(new FileOutputStream(planPath)))
+				.onFailure(e->e.printStackTrace(System.out));
+			planPath = null;			
+		}
 	}
 	
+	/**
+	 * read plan graph into nice format
+	 */
 	public void readPlan(){
+		
+		if(planPath!=null){
+			Uni.of(ModelFactory.createDefaultModel())
+				.set(m->m.add(GlobalKnowledge.getPlan()))
+				.set(m->m.add(GlobalKnowledge.getPart()))
+				.set(m->m.add(GlobalKnowledge.getSpecification()))
+				.set(m->m.write(new FileOutputStream(planPath)))
+				.onFailure(e->e.printStackTrace(System.out));
+			planPath = null;
+		}
+		
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
 		   .set(q->q.addABox(GlobalKnowledge.getPlan()))
+		   .set(q->q.addABox(GlobalKnowledge.getPart()))
+		   .set(q->q.addABox(GlobalKnowledge.getSpecification()))
 		   .set(q->q.addPlan("resources/META-INF/rules/reader/read-plan1.q"))
 		   .set(q->q.setSelectPostProcess(tab->{
 			   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping()); 
 			   else System.out.println("No feature is completely processed ");
+			   if(!tab.isEmpty()){
+				   
+			   }
 			   return tab;
 		   }))
 		   .set(q->q.execute())

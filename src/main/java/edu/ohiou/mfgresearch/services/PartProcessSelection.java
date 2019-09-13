@@ -159,8 +159,6 @@ public class PartProcessSelection {
 		if(Boolean.parseBoolean(prop.getProperty("SHOW_FEATURE_GRAPH").trim())) 
 			v.display();
 		
-
-		
 		Function<Table, Table> plotProcessSelectionTree = tab->{
 			if(!Boolean.parseBoolean(prop.getProperty("SHOW_FEATURE_GRAPH").trim())) return tab;
 
@@ -169,7 +167,7 @@ public class PartProcessSelection {
 			if(fpl.getRank()==0) {
 				//add root feature
 				edu.ohiou.mfgresearch.labimp.graph.Node rootNode = new edu.ohiou.mfgresearch.labimp.graph.Node (new ColoredNode(rootFeature.getLocalName(), Color.BLACK));
-				nodeMap.put(tab.rows().next().get(Var.alloc("pCurrent")), rootNode);
+				nodeMap.put(tab.rows().next().get(Var.alloc("rc")), rootNode);
 				g.addNode(rootNode);
 				fpl.nextOrbit();
 			}			
@@ -182,54 +180,55 @@ public class PartProcessSelection {
 				row.put(Var.alloc("ft"), b.get(Var.alloc("ft")));
 				row.put(Var.alloc("rNext"), b.get(Var.alloc("rNext")));
 				row.put(Var.alloc("rc"), b.get(Var.alloc("rc")));
-				row.put(Var.alloc("pCurrent"), b.get(Var.alloc("pCurrent")));
+//				row.put(Var.alloc("pCurrent"), b.get(Var.alloc("pCurrent")));
 				if (!children.contains(row)){
 					children.add(row);
 				}
 			});			
-			int numChildren = tab.size();
+			int numChildren = children.size();
 			fpl.setNumPlanets(numChildren);
 			
 			Map<Node, edu.ohiou.mfgresearch.labimp.graph.Node> nodeMap1 = new HashMap<Node, edu.ohiou.mfgresearch.labimp.graph.Node>();
 			
 			children.forEach(b->{
 				String featureNodelabel = b.get(Var.alloc("fs")).getLocalName() + "(" + b.get(Var.alloc("fn")).getLiteralValue().toString() + "|" + 
-											b.get(Var.alloc("ft")).getLiteralValue().toString() + ")";
+											b.get(Var.alloc("ft")).getLiteralValue().toString() + ")-" + b.get(Var.alloc("rc")).getLocalName() ;
 				edu.ohiou.mfgresearch.labimp.graph.Node featureNode = new edu.ohiou.mfgresearch.labimp.graph.Node (new ColoredNode(featureNodelabel, Color.ORANGE));
 
 				g.addNode(featureNode);
 				
 				//find the parent node
-				edu.ohiou.mfgresearch.labimp.graph.Node parentNode = null;
-				if(fpl.getRank()==1){
-					parentNode = nodeMap.get(nodeMap.keySet().iterator().next());
-				}
-				else{
-					for(Node n: nodeMap.keySet()){
-						boolean isSuccess =
-						Uni.of(FunQL::new)
-						   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
-						   .set(q->q.addABox(GlobalKnowledge.getPlan()))
-						   .set(q->q.addPlan("resources/META-INF/rules/core/feature-precedence-1.rq"))
-						   .set(q->q.getPlan(0).addVarBinding("pAncestor", ResourceFactory.createResource(n.getURI())))
-						   .set(q->q.getPlan(0).addVarBinding("pCurrent", ResourceFactory.createResource(b.get(Var.alloc("pCurrent")).getURI())))
-						   .set(q->q.setLocal=true)
-						   .map(q->q.execute())
-						   .map(q->q.isQuerySuccess())
-						   .get();	
-						if(isSuccess){
-							parentNode = nodeMap.get(n);
-							break;
-						}					
-					}
-				}
+				edu.ohiou.mfgresearch.labimp.graph.Node parentNode = nodeMap.get(b.get(Var.alloc("rc")));
+//				edu.ohiou.mfgresearch.labimp.graph.Node parentNode = null;
+//				if(fpl.getRank()==1){
+//					parentNode = nodeMap.get(nodeMap.keySet().iterator().next());
+//				}
+//				else{
+//					for(Node n: nodeMap.keySet()){
+//						boolean isSuccess =
+//						Uni.of(FunQL::new)
+//						   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
+//						   .set(q->q.addABox(GlobalKnowledge.getPlan()))
+//						   .set(q->q.addPlan("resources/META-INF/rules/core/feature-precedence-1.rq"))
+//						   .set(q->q.getPlan(0).addVarBinding("pAncestor", ResourceFactory.createResource(n.getURI())))
+//						   .set(q->q.getPlan(0).addVarBinding("pCurrent", ResourceFactory.createResource(b.get(Var.alloc("pCurrent")).getURI())))
+//						   .set(q->q.setLocal=true)
+//						   .map(q->q.execute())
+//						   .map(q->q.isQuerySuccess())
+//						   .get();	
+//						if(isSuccess){
+//							parentNode = nodeMap.get(n);
+//							break;
+//						}					
+//					}
+//				}
 				//add arc from parent node
 				try {
 					g.addDirectedArc(parentNode.getUserObject(), featureNode.getUserObject(), new ColoredArc("precedes", Color.GREEN));
 				} catch (AlreadyMemberException | NotMemberException e1) {
 					e1.printStackTrace();
 				}				
-				nodeMap1.put(b.get(Var.alloc("pCurrent")), featureNode);
+				nodeMap1.put(b.get(Var.alloc("rNext")), featureNode);
  			});
 			nodeMap.clear();
 			nodeMap.putAll(nodeMap1);
