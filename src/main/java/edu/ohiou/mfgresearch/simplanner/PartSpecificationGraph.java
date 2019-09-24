@@ -1,26 +1,21 @@
 package edu.ohiou.mfgresearch.simplanner;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
-import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.ontology.Individual;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
-import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.ohiou.mfgresearch.io.FunQL;
-import edu.ohiou.mfgresearch.labimp.basis.ViewObject;
 import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.lambda.functions.Func;
-import edu.ohiou.mfgresearch.lambda.functions.Suppl;
 import edu.ohiou.mfgresearch.reader.IMPlanXMLLoader;
 import edu.ohiou.mfgresearch.reader.PartFeatureLoader;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
@@ -36,7 +31,7 @@ public class PartSpecificationGraph {
 	Logger log;
 	PropertyReader prop;
 	{
-		log = LogManager.getLogManager().getLogger(PartSpecificationGraph.class.getSimpleName());		
+		log = LoggerFactory.getLogger(PartSpecificationGraph.class);	
 		prop = PropertyReader.getProperty();
 	}
 	
@@ -373,25 +368,34 @@ public class PartSpecificationGraph {
 		   .onFailure(e->e.printStackTrace(System.out))
 		   .onSuccess(s->{
 			 if(lang.length()>0) kb.write(System.out, lang);
+			 s.flush();
+			 s.close();
 		   })
 		   ;		
 	}
 	
 	public String loadPart(String path){
 		//load all features for the part
+		log.info("loading feature specifications...");
 		Model m1 = runRule_FeatureSpecification(m);
 		//load all features for the part
+		log.info("loading feature types...");
 		Model m2 = runRule_FeatureType(m1);
 		//load all dimensions of the features
+		log.info("loading feature dimensions...");
 		Model m3 = runRule_FeatureDimension(m2);
 		//load all dimensions of the features
+		log.info("loading dimension measurements...");
 		Model m4 = runRule_FeatureDimensionMeasurement(m3);
 		//load all dimensions of the features
+		log.info("loading feature tolerances...");
 		Model m5 = runRule_FeatureTolerance(m4);
 		//load all dimensions of the features
+		log.info("loading tolerance measurements...");
 		Model m6 = runRule_FeatureToleranceMeasure(m5);
 		writePartGraph(m6, path, "");
 		//infer type
+		log.info("Running inferences...");
 		Model m7 = ModelFactory.createDefaultModel().read(path);
 		Model m8 = runRule_inferFeatureType(m7);
 		Model m9 = runRule_inferMeasurementTypeDiameter(m8);
@@ -399,8 +403,10 @@ public class PartSpecificationGraph {
 		Model m11 = runRule_inferToleranceType(m10);
 		
 		//load feature precedence
+		log.info("loading feature precedences...");
 		Model m12 = runRule_FeaturePrecedence(m11);
 		
+		log.info("Writing the part graph at " +path);
 		writePartGraph(m12, path, "");
 		return partLabel;
 	}

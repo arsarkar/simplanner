@@ -101,8 +101,8 @@ public class FeatureProcessSelection {
 //			featurePlans.put(featureSpecification.getURI(), new AnonGraph(featureSpecification));
 //		}
 		
-		featureType = featureType.replaceAll("\"", "");
-
+		featureType = featureType.replaceAll("\"", ""); 
+		
 		if(featureType.equals("Hole")){
 			return ask_to_select_holemaking_processes(featureSpecification);
 		}
@@ -225,14 +225,27 @@ public class FeatureProcessSelection {
 		
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 		fpSel.featureSpec = featureSpecification.getLocalName();
-		
-
 
 		//create stock feature and link it to the dummy root process of the feature, which is then removed 
 		//and only the children of the root process is supplied
 		//this needs to be done in the local knowledge base
 		fpSel.createStockFeature(featureSpecification);
-		
+
+		//if there is no feature specifcation, then assert a default specification.
+		if(!anySpecificationOfFeature(featureSpecification)){
+			Uni.of(FunQL::new)
+			   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+			   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
+			   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-hole.rq"))
+			   .set(q->q.setLocal=true)
+			   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
+			   .map(q->q.execute())
+			   .map(q->q.getBelief())
+			   .map(b->b.getLocalABox())
+			   .onFailure(e->e.printStackTrace(System.out))
+			   .onSuccess(m->GlobalKnowledge.getSpecification().add(m));		
+		}
+			
 		//load process precedence for the particular service 
 		log.info("\n##loading process precedence by rule process-precedence-drilling.q");
 		Uni.of(FunQL::new)
@@ -250,6 +263,22 @@ public class FeatureProcessSelection {
 		fpSel.execute();
 		
 		return fpSel.getRootProcesses();
+	}
+
+	private static boolean anySpecificationOfFeature(Node featureSpecification) {
+		boolean isAvailable = 
+				Uni.of(FunQL::new)
+				   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+				   .set(q->q.addABox(GlobalKnowledge.getSpecification()))
+				   .set(q->q.addPlan("resources/META-INF/rules/core/select_any_specification.q"))
+				   .set(q->q.setLocal=true)
+				   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
+				   .map(q->q.execute())
+				   .map(q->q.isQuerySuccess())
+				   .onFailure(e->e.printStackTrace(System.out))
+				   .get();	
+		log.info("Is there any specification for the given feature? "+ String.valueOf(isAvailable));
+		return isAvailable;
 	}
 
 	/**
@@ -276,6 +305,22 @@ public class FeatureProcessSelection {
 		}	
 		
 		if(fpSel.execute){
+			
+			//if there is no feature specifcation, then assert a default specification.
+			if(!anySpecificationOfFeature(featureSpecification)){
+				Uni.of(FunQL::new)
+				   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+				   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
+				   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot.rq"))
+				   .set(q->q.setLocal=true)
+				   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
+				   .map(q->q.execute())
+				   .map(q->q.getBelief())
+				   .map(b->b.getLocalABox())
+				   .onFailure(e->e.printStackTrace(System.out))
+				   .onSuccess(m->GlobalKnowledge.getSpecification().add(m));		
+			}
+			
 			//create stock feature and link it to the dummy root process of the feature, which is then removed 
 			//and only the children of the root process is supplied
 			//this needs to be done in the local knowledge base
@@ -313,6 +358,23 @@ public class FeatureProcessSelection {
 		
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 		fpSel.featureSpec = featureSpecification.getLocalName();
+		
+		
+		//if there is no feature specifcation, then assert a default specification.
+		if(!anySpecificationOfFeature(featureSpecification)){
+			Uni.of(FunQL::new)
+			   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+			   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
+			   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot.rq")) //same wwith slot
+			   .set(q->q.setLocal=true)
+			   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
+			   .map(q->q.execute())
+			   .map(q->q.getBelief())
+			   .map(b->b.getLocalABox())
+			   .onFailure(e->e.printStackTrace(System.out))
+			   .onSuccess(m->GlobalKnowledge.getSpecification().add(m));		
+		}
+		
 		//create stock feature and link it to the dummy root process of the feature, which is then removed 
 		//and only the children of the root process is supplied
 		//this needs to be done in the local knowledge base
@@ -350,6 +412,23 @@ public class FeatureProcessSelection {
 		
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 		fpSel.featureSpec = featureSpecification.getLocalName();
+		
+		
+		//if there is no feature specifcation, then assert a default specification.
+		if(!anySpecificationOfFeature(featureSpecification)){
+			Uni.of(FunQL::new)
+			   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+			   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
+			   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slab.rq")) //same wwith slot
+			   .set(q->q.setLocal=true)
+			   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
+			   .map(q->q.execute())
+			   .map(q->q.getBelief())
+			   .map(b->b.getLocalABox())
+			   .onFailure(e->e.printStackTrace(System.out))
+			   .onSuccess(m->GlobalKnowledge.getSpecification().add(m));		
+		}
+		
 		//create stock feature and link it to the dummy root process of the feature, which is then removed 
 		//and only the children of the root process is supplied
 		//this needs to be done in the local knowledge base
@@ -380,9 +459,6 @@ public class FeatureProcessSelection {
 	}
 	
 	public void execute(){		
-		
-		
-		
 		
 		//get the latest process planned 
 		boolean stopIteration = false;

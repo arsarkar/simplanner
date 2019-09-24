@@ -3,18 +3,24 @@ package edu.ohiou.mfgresearch.reader.graph;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.apache.jena.atlas.logging.Log;
-import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Node;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.binding.Binding;
 
 import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.lambda.Uni;
@@ -108,29 +114,26 @@ public class Plan implements Runnable{
 			part = "";
 		}
 		if(planPath!=null){
-			Uni.of(ModelFactory.createDefaultModel())
-				.set(m->m.add(GlobalKnowledge.getPlan()))
-				.set(m->GlobalKnowledge.getPart())
-				.set(m->m.write(new FileOutputStream(planPath)))
-				.onFailure(e->e.printStackTrace(System.out));
-			planPath = null;			
+			savePlan();
 		}
+	}
+	
+	public void savePlan(){
+		Uni.of(ModelFactory.createDefaultModel())
+			.set(m->m.add(GlobalKnowledge.getPlan()))
+			.set(m->m.add(GlobalKnowledge.getPart()))
+			.set(m->m.add(GlobalKnowledge.getSpecification()))
+			.set(m->m.write(new FileOutputStream(planPath)))
+			.onFailure(e->e.printStackTrace(System.out));
+			planPath = null;
 	}
 	
 	/**
 	 * read plan graph into nice format
 	 */
-	public void readPlan(){
+	public void readPlan(){		
 		
-		if(planPath!=null){
-			Uni.of(ModelFactory.createDefaultModel())
-				.set(m->m.add(GlobalKnowledge.getPlan()))
-				.set(m->m.add(GlobalKnowledge.getPart()))
-				.set(m->m.add(GlobalKnowledge.getSpecification()))
-				.set(m->m.write(new FileOutputStream(planPath)))
-				.onFailure(e->e.printStackTrace(System.out));
-			planPath = null;
-		}
+		List<String[]> precedings = new LinkedList<String[]>();
 		
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
@@ -143,11 +146,35 @@ public class Plan implements Runnable{
 			   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping()); 
 			   else System.out.println("No feature is completely processed ");
 			   if(!tab.isEmpty()){
-				   
+				   			   
+				   Iterator<Binding> tabIter = tab.rows();
+				   while(tabIter.hasNext()){
+					   Binding b = tabIter.next();
+					   if(b.get(Var.alloc("pBefore")).getLocalName().contains("RootProcess")){
+						   tabIter.remove();
+					   }
+					   else{
+						   precedings.add(new String[]{b.get(Var.alloc("pBefore")).getLocalName(), b.get(Var.alloc("p1")).getLocalName()});
+					   }
+				   }
+
 			   }
 			   return tab;
 		   }))
 		   .set(q->q.execute())
 		   .onFailure(e->e.printStackTrace(System.out));	
+
+		if(planPath!=null){
+			try (PrintWriter pw = new PrintWriter(new File(planPath.getPath().replace(".rdf", ".csv")))) {
+				precedings.stream().map(r->{
+					return Stream.of(r).collect(Collectors.joining(","));
+				})
+				.forEach(pw::println);
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			planPath.renameTo(new File(planPath.getPath().replace(".csv", ".rdf")));
+		}
 	}
 }
