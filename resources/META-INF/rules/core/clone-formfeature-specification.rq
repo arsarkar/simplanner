@@ -1,9 +1,10 @@
 PREFIX  rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
 PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
-PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
 
-SELECT ?p0 ?pNext
+SELECT ?f	?r
 WHERE{
-?p0	plan:precedes 	?pNext.
+	?f	rdf:type	design:FormFeature.
+	?r 	cco:specified_by 	?f.
 }

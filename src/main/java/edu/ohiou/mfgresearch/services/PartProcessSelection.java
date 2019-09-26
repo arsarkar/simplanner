@@ -145,6 +145,18 @@ public class PartProcessSelection {
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transform_feature_precedence.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("pName", ResourceFactory.createPlainLiteral(partName)))
 		   .set(q->q.setLocal=true)
+		   .set(q->q.setSelectPostProcess(tab->{
+			   if(!tab.isEmpty()){
+				   log.info("Root feature is preceding initial features");
+			   }
+			   return tab;
+		   }))
+		   .set(q->q.setServicePostProcess(tab->{
+			   if(!tab.isEmpty()){
+				   
+			   }
+			   return tab;
+		   }))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())

@@ -7,24 +7,17 @@ CONSTRUCT{
 	pp:hasSucceedingProcess rdf:type owl:ObjectProperty.
 	
 	?root rdf:type pp:RootProcess.
-	?cd rdf:type capa:CenterDrilling.
 	?sp rdf:type capa:SpotDrilling.
 	?td rdf:type capa:TwistDrilling.
 	?sd rdf:type capa:SpadeDrilling.
 	?ed rdf:type capa:EndDrilling.
-	?gd rdf:type capa:GunDrilling.
 	?br rdf:type capa:Boring.
 	?pb rdf:type capa:PrecisionBoring.
 	?rm rdf:type capa:Reaming.
 	?hn rdf:type capa:Honing.
 	?hg rdf:type capa:HoleGrinding.
 	
-	?root pp:hasSucceedingProcess ?cd.
 	?root pp:hasSucceedingProcess ?sp.
-	
-	?cd pp:hasSucceedingProcess ?td.
-	?cd pp:hasSucceedingProcess ?ed.
-	?cd pp:hasSucceedingProcess ?sd.
 	
 	?sp pp:hasSucceedingProcess ?td.
 	?sp pp:hasSucceedingProcess ?ed.
@@ -54,12 +47,10 @@ CONSTRUCT{
 	?rm pp:hasSucceedingProcess ?hn   
 }
 WHERE{
-	?cd rdf:type capa:CenterDrilling.
 	?sp rdf:type capa:SpotDrilling.
 	?td rdf:type capa:TwistDrilling.
 	?sd rdf:type capa:SpadeDrilling.
 	?ed rdf:type capa:EndDrilling.
-	?gd rdf:type capa:GunDrilling.
 	?br rdf:type capa:Boring.
 	?pb rdf:type capa:PrecisionBoring.
 	?rm rdf:type capa:Reaming.

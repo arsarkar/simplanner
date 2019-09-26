@@ -2,6 +2,7 @@ package edu.ohiou.mfgresearch.services;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -186,6 +187,8 @@ public class FeatureProcessSelection {
 		}
 		else{
 			rootNode = ResourceFactory.createResource(cm.getRootProcess().getURI());
+			processNodes = new LinkedList<Node>();
+			processNodes.add(rootNode.asNode());
 		}
 		
 		Uni.of(FunQL::new)
@@ -206,6 +209,16 @@ public class FeatureProcessSelection {
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->e.printStackTrace(System.out));
 		
+		
+		//save the intermediate RDF for bug fixing
+//		Uni.of(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/pfeature-plan-begin-"+featureSpec+".rdf")
+//			.map(File::new)
+//			.map(FileOutputStream::new)
+//			.set(s->Uni.of(ModelFactory.createDefaultModel())
+//						.set(m->m.add(GlobalKnowledge.getCurrentPart()))
+//						.set(m->m.add(GlobalKnowledge.getCurrentPlan()))
+//						.set(m->m.write(s, "RDF/XML")));
+		
 		GlobalKnowledge.refreshCurrentPart();
 		GlobalKnowledge.refreshCurrentPlan();
 		
@@ -218,53 +231,10 @@ public class FeatureProcessSelection {
 	}
 	
 	/**
-	 * Service to plan holemaking
-	 * @param featureName
+	 * Checks if there is any specification asserted for the part specification
+	 * @param featureSpecification
+	 * @return true if there is at least one specification, false otherwise
 	 */
-	public static Node[] ask_to_select_holemaking_processes(Node featureSpecification){
-		
-		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
-		fpSel.featureSpec = featureSpecification.getLocalName();
-
-		//create stock feature and link it to the dummy root process of the feature, which is then removed 
-		//and only the children of the root process is supplied
-		//this needs to be done in the local knowledge base
-		fpSel.createStockFeature(featureSpecification);
-
-		//if there is no feature specifcation, then assert a default specification.
-		if(!anySpecificationOfFeature(featureSpecification)){
-			Uni.of(FunQL::new)
-			   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
-			   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
-			   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-hole.rq"))
-			   .set(q->q.setLocal=true)
-			   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
-			   .map(q->q.execute())
-			   .map(q->q.getBelief())
-			   .map(b->b.getLocalABox())
-			   .onFailure(e->e.printStackTrace(System.out))
-			   .onSuccess(m->GlobalKnowledge.getSpecification().add(m));		
-		}
-			
-		//load process precedence for the particular service 
-		log.info("\n##loading process precedence by rule process-precedence-drilling.q");
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
-		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
-		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-drilling-wo-holestarting.q"))
-		   .set(q->q.setLocal=true)
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->fpSel.localKB.add(m));
-		
-		fpSel.execute();
-		
-		return fpSel.getRootProcesses();
-	}
-
 	private static boolean anySpecificationOfFeature(Node featureSpecification) {
 		boolean isAvailable = 
 				Uni.of(FunQL::new)
@@ -279,6 +249,87 @@ public class FeatureProcessSelection {
 				   .get();	
 		log.info("Is there any specification for the given feature? "+ String.valueOf(isAvailable));
 		return isAvailable;
+	}
+	
+	/**
+	 * Service to plan holemaking
+	 * @param featureName
+	 */
+	public static Node[] ask_to_select_holemaking_processes(Node featureSpecification){
+		
+		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
+		fpSel.featureSpec = featureSpecification.getLocalName();
+
+		if(Boolean.parseBoolean(prop.getProperty("MEMOIZE_FEATURE_PLAN").trim())){
+			Model archivedPlan = GlobalKnowledge.retrieveCurrentPlan(featureSpecification);
+			Model archivedPart = GlobalKnowledge.retrieveCurrentPart(featureSpecification);
+			//Uni.of(archivedPlan).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//plan_"+featureSpecification.getLocalName()+".rdf"))));		  
+			//Uni.of(archivedPart).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//part_"+featureSpecification.getLocalName()+".rdf"))));		  
+			if(archivedPlan!=null && archivedPart!=null){
+				fpSel.cm = new CloneModel(archivedPlan, archivedPart);
+				fpSel.cm.perform();
+				GlobalKnowledge.getCurrentPlan().add(fpSel.cm.getClonedPlan());
+				GlobalKnowledge.getCurrentPart().add(fpSel.cm.getClonedPart());
+				
+//				//save the intermediate RDF for bug fixing
+//				Uni.of(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/pfeature-plan-cloned-"+featureSpecification.getLocalName()+".rdf")
+//					.map(File::new)
+//					.map(FileOutputStream::new)
+//					.set(s->Uni.of(ModelFactory.createDefaultModel())
+//								.set(m->m.add(GlobalKnowledge.getCurrentPart()))
+//								.set(m->m.add(GlobalKnowledge.getCurrentPlan()))
+//								.set(m->m.write(s, "RDF/XML")))
+//					.set(s->s.flush())
+//					.set(s->s.close());
+				
+				fpSel.execute = false;
+			}
+		}
+
+		if(fpSel.execute){
+
+			//if there is no feature specifcation, then assert a default specification.
+			if(!anySpecificationOfFeature(featureSpecification)){
+				Uni.of(FunQL::new)
+				.set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+				.set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
+				.set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-hole.rq"))
+				.set(q->q.setLocal=true)
+				.set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
+				.map(q->q.execute())
+				.map(q->q.getBelief())
+				.map(b->b.getLocalABox())
+				.onFailure(e->e.printStackTrace(System.out))
+				.onSuccess(m->GlobalKnowledge.getSpecification().add(m));		
+			}
+
+			//create stock feature and link it to the dummy root process of the feature, which is then removed 
+			//and only the children of the root process is supplied
+			//this needs to be done in the local knowledge base
+			fpSel.createStockFeature(featureSpecification);
+
+			//load process precedence for the particular service 
+			log.info("\n##loading process precedence by rule process-precedence-drilling.q");
+			Uni.of(FunQL::new)
+			.set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+			.set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
+			.set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
+			.set(q->q.addPlan(prop.getProperty("PROCESS_PRECEDENCE_RULE_HOLE")))
+			.set(q->q.setLocal=true)
+			.map(q->q.execute())
+			.map(q->q.getBelief())
+			.map(b->b.getLocalABox())
+			.onFailure(e->e.printStackTrace(System.out))
+			.onSuccess(m->fpSel.localKB.add(m));
+
+			fpSel.execute();
+			
+			GlobalKnowledge.memoizeCurrentPlan(featureSpecification);
+			GlobalKnowledge.memoizeCurrentPart(featureSpecification);
+
+		}
+		
+		return fpSel.getRootProcesses();
 	}
 
 	/**
@@ -300,6 +351,18 @@ public class FeatureProcessSelection {
 				fpSel.cm.perform();
 				GlobalKnowledge.getCurrentPlan().add(fpSel.cm.getClonedPlan());
 				GlobalKnowledge.getCurrentPart().add(fpSel.cm.getClonedPart());
+				
+//				//save the intermediate RDF for bug fixing
+//				Uni.of(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/pfeature-plan-cloned-"+featureSpecification.getLocalName()+".rdf")
+//					.map(File::new)
+//					.map(FileOutputStream::new)
+//					.set(s->Uni.of(ModelFactory.createDefaultModel())
+//								.set(m->m.add(GlobalKnowledge.getCurrentPart()))
+//								.set(m->m.add(GlobalKnowledge.getCurrentPlan()))
+//								.set(m->m.write(s, "RDF/XML")))
+//					.set(s->s.flush())
+//					.set(s->s.close());
+				
 				fpSel.execute = false;
 			}
 		}	
@@ -332,7 +395,7 @@ public class FeatureProcessSelection {
 			   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 			   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
 			   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
-			   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-openslot.q"))
+			   .set(q->q.addPlan(prop.getProperty("PROCESS_PRECEDENCE_RULE_OPENSLOT")))
 			   .set(q->q.setLocal=true)
 			   .map(q->q.execute())
 			   .map(q->q.getBelief())
@@ -359,47 +422,77 @@ public class FeatureProcessSelection {
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 		fpSel.featureSpec = featureSpecification.getLocalName();
 		
+		if(Boolean.parseBoolean(prop.getProperty("MEMOIZE_FEATURE_PLAN").trim())){
+			Model archivedPlan = GlobalKnowledge.retrieveCurrentPlan(featureSpecification);
+			Model archivedPart = GlobalKnowledge.retrieveCurrentPart(featureSpecification);
+			//Uni.of(archivedPlan).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//plan_"+featureSpecification.getLocalName()+".rdf"))));		  
+			//Uni.of(archivedPart).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//part_"+featureSpecification.getLocalName()+".rdf"))));		  
+			if(archivedPlan!=null && archivedPart!=null){
+				fpSel.cm = new CloneModel(archivedPlan, archivedPart);
+				fpSel.cm.perform();
+				GlobalKnowledge.getCurrentPlan().add(fpSel.cm.getClonedPlan());
+				GlobalKnowledge.getCurrentPart().add(fpSel.cm.getClonedPart());
+				
+//				//save the intermediate RDF for bug fixing
+//				Uni.of(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/pfeature-plan-cloned-"+featureSpecification.getLocalName()+".rdf")
+//					.map(File::new)
+//					.map(FileOutputStream::new)
+//					.set(s->Uni.of(ModelFactory.createDefaultModel())
+//								.set(m->m.add(GlobalKnowledge.getCurrentPart()))
+//								.set(m->m.add(GlobalKnowledge.getCurrentPlan()))
+//								.set(m->m.write(s, "RDF/XML")))
+//					.set(s->s.flush())
+//					.set(s->s.close());
+				
+				fpSel.execute = false;
+			}
+		}	
 		
-		//if there is no feature specifcation, then assert a default specification.
-		if(!anySpecificationOfFeature(featureSpecification)){
+		if(fpSel.execute){
+			//if there is no feature specifcation, then assert a default specification.
+			if(!anySpecificationOfFeature(featureSpecification)){
+				Uni.of(FunQL::new)
+				   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+				   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
+				   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot.rq")) //same wwith slot
+				   .set(q->q.setLocal=true)
+				   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
+				   .map(q->q.execute())
+				   .map(q->q.getBelief())
+				   .map(b->b.getLocalABox())
+				   .onFailure(e->e.printStackTrace(System.out))
+				   .onSuccess(m->GlobalKnowledge.getSpecification().add(m));		
+			}
+			
+			//create stock feature and link it to the dummy root process of the feature, which is then removed 
+			//and only the children of the root process is supplied
+			//this needs to be done in the local knowledge base
+		
+			fpSel.createStockFeature(featureSpecification);
+			
+			//load process precedence for the particular service 
+			log.info("\n##loading process precedence by rule process-precedence-milling.q");
 			Uni.of(FunQL::new)
-			   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
-			   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
-			   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot.rq")) //same wwith slot
+			   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+			   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
+			   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
+			   .set(q->q.addPlan(prop.getProperty("PROCESS_PRECEDENCE_RULE_OPENPOCKET")))	
 			   .set(q->q.setLocal=true)
-			   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
+			   .set(q->q.setSelectPostProcess(tab->{
+				   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+				   return tab;
+			   }))
 			   .map(q->q.execute())
 			   .map(q->q.getBelief())
 			   .map(b->b.getLocalABox())
 			   .onFailure(e->e.printStackTrace(System.out))
-			   .onSuccess(m->GlobalKnowledge.getSpecification().add(m));		
-		}
-		
-		//create stock feature and link it to the dummy root process of the feature, which is then removed 
-		//and only the children of the root process is supplied
-		//this needs to be done in the local knowledge base
-	
-		fpSel.createStockFeature(featureSpecification);
-		
-		//load process precedence for the particular service 
-		log.info("\n##loading process precedence by rule process-precedence-milling.q");
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
-		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
-		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-openpocket.q"))	
-		   .set(q->q.setLocal=true)
-		   .set(q->q.setSelectPostProcess(tab->{
-			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
-			   return tab;
-		   }))
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->fpSel.localKB.add(m));
+			   .onSuccess(m->fpSel.localKB.add(m));
 
-		fpSel.execute();
+			fpSel.execute();	
+			
+			GlobalKnowledge.memoizeCurrentPlan(featureSpecification);
+			GlobalKnowledge.memoizeCurrentPart(featureSpecification);
+		}
 
 		return fpSel.getRootProcesses();
 	}
@@ -413,47 +506,77 @@ public class FeatureProcessSelection {
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 		fpSel.featureSpec = featureSpecification.getLocalName();
 		
+		if(Boolean.parseBoolean(prop.getProperty("MEMOIZE_FEATURE_PLAN").trim())){
+			Model archivedPlan = GlobalKnowledge.retrieveCurrentPlan(featureSpecification);
+			Model archivedPart = GlobalKnowledge.retrieveCurrentPart(featureSpecification);
+			//Uni.of(archivedPlan).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//plan_"+featureSpecification.getLocalName()+".rdf"))));		  
+			//Uni.of(archivedPart).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//part_"+featureSpecification.getLocalName()+".rdf"))));		  
+			if(archivedPlan!=null && archivedPart!=null){
+				fpSel.cm = new CloneModel(archivedPlan, archivedPart);
+				fpSel.cm.perform();
+				GlobalKnowledge.getCurrentPlan().add(fpSel.cm.getClonedPlan());
+				GlobalKnowledge.getCurrentPart().add(fpSel.cm.getClonedPart());
+				
+//				//save the intermediate RDF for bug fixing
+//				Uni.of(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/pfeature-plan-cloned-"+featureSpecification.getLocalName()+".rdf")
+//					.map(File::new)
+//					.map(FileOutputStream::new)
+//					.set(s->Uni.of(ModelFactory.createDefaultModel())
+//								.set(m->m.add(GlobalKnowledge.getCurrentPart()))
+//								.set(m->m.add(GlobalKnowledge.getCurrentPlan()))
+//								.set(m->m.write(s, "RDF/XML")))
+//					.set(s->s.flush())
+//					.set(s->s.close());
+				
+				fpSel.execute = false;
+			}
+		}
 		
-		//if there is no feature specifcation, then assert a default specification.
-		if(!anySpecificationOfFeature(featureSpecification)){
+		if(fpSel.execute){
+			//if there is no feature specifcation, then assert a default specification.
+			if(!anySpecificationOfFeature(featureSpecification)){
+				Uni.of(FunQL::new)
+				   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+				   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
+				   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slab.rq")) //same wwith slot
+				   .set(q->q.setLocal=true)
+				   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
+				   .map(q->q.execute())
+				   .map(q->q.getBelief())
+				   .map(b->b.getLocalABox())
+				   .onFailure(e->e.printStackTrace(System.out))
+				   .onSuccess(m->GlobalKnowledge.getSpecification().add(m));		
+			}
+			
+			//create stock feature and link it to the dummy root process of the feature, which is then removed 
+			//and only the children of the root process is supplied
+			//this needs to be done in the local knowledge base
+			
+			fpSel.createStockFeature(featureSpecification);
+			
+			//load process precedence for the particular service 
+			log.info("\n##loading process precedence by rule process-precedence-milling.q");
 			Uni.of(FunQL::new)
-			   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
-			   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
-			   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slab.rq")) //same wwith slot
+			   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+			   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
+			   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
+			   .set(q->q.addPlan(prop.getProperty("PROCESS_PRECEDENCE_RULE_SLAB")))	
 			   .set(q->q.setLocal=true)
-			   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
+			   .set(q->q.setSelectPostProcess(tab->{
+				   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+				   return tab;
+			   }))
 			   .map(q->q.execute())
 			   .map(q->q.getBelief())
 			   .map(b->b.getLocalABox())
 			   .onFailure(e->e.printStackTrace(System.out))
-			   .onSuccess(m->GlobalKnowledge.getSpecification().add(m));		
-		}
-		
-		//create stock feature and link it to the dummy root process of the feature, which is then removed 
-		//and only the children of the root process is supplied
-		//this needs to be done in the local knowledge base
-		
-		fpSel.createStockFeature(featureSpecification);
-		
-		//load process precedence for the particular service 
-		log.info("\n##loading process precedence by rule process-precedence-milling.q");
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
-		   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
-		   .set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
-		   .set(q->q.addPlan("resources/META-INF/rules/core/process-precedence-slab.q"))	
-		   .set(q->q.setLocal=true)
-		   .set(q->q.setSelectPostProcess(tab->{
-			   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
-			   return tab;
-		   }))
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getLocalABox())
-		   .onFailure(e->e.printStackTrace(System.out))
-		   .onSuccess(m->fpSel.localKB.add(m));
+			   .onSuccess(m->fpSel.localKB.add(m));
 
-		fpSel.execute();
+			fpSel.execute();
+			
+			GlobalKnowledge.memoizeCurrentPlan(featureSpecification);
+			GlobalKnowledge.memoizeCurrentPart(featureSpecification);
+		}
 		
 		return fpSel.getRootProcesses();
 	}
@@ -790,6 +913,30 @@ class CloneModel{
 						clonedPart.add(f, 
 								ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
 								ResourceFactory.createResource(r.get(Var.alloc("ft")).getURI()));
+					}
+				});
+				return t;
+			}))
+			.map(q->q.execute())
+			.onFailure(e->e.printStackTrace(System.out));
+		
+		clonedPart.add(ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/specified_by"), 
+				ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+				ResourceFactory.createProperty("http://www.w3.org/2002/07/owl#ObjectProperty"));	
+		
+		//for each formfeature specify the specified in
+		Uni.of(FunQL::new)
+			.set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+			.set(q->q.addABox(partModel))
+			.set(q->q.addPlan("resources/META-INF/rules/core/clone-formfeature-specification.rq"))
+			.set(q->q.setSelectPostProcess(t->{
+				ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+				t.rows().forEachRemaining(r->{
+					if(featureMap.containsKey(r.get(Var.alloc("f")))){
+						Resource f = featureMap.get(r.get(Var.alloc("f")));
+						clonedPart.add(ResourceFactory.createResource(r.get(Var.alloc("r")).getURI()), 
+								ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/specified_by"),
+								f);
 					}
 				});
 				return t;
