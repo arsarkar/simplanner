@@ -40,7 +40,7 @@ public class PartProcessSelection {
 	String localPath;
 	static PropertyReader prop = PropertyReader.getProperty();
 	String partName = "";
-	Map<Node, edu.ohiou.mfgresearch.labimp.graph.Node> nodeMap = new HashMap<Node, edu.ohiou.mfgresearch.labimp.graph.Node>();
+	Map<String, edu.ohiou.mfgresearch.labimp.graph.Node> nodeMap = new HashMap<String, edu.ohiou.mfgresearch.labimp.graph.Node>();
 	
 	public PartProcessSelection() {
 		
@@ -171,15 +171,15 @@ public class PartProcessSelection {
 		if(Boolean.parseBoolean(prop.getProperty("SHOW_FEATURE_GRAPH").trim())) 
 			v.display();
 		
-		Function<Table, Table> plotProcessSelectionTree = tab->{
+		Function<Integer, Function<Table, Table>> plotProcessSelectionTree = counter->tab->{
 			if(!Boolean.parseBoolean(prop.getProperty("SHOW_FEATURE_GRAPH").trim())) return tab;
-
+			
 			if(fpl.getRank()>0) fpl.nextOrbit();
 			
 			if(fpl.getRank()==0) {
 				//add root feature
 				edu.ohiou.mfgresearch.labimp.graph.Node rootNode = new edu.ohiou.mfgresearch.labimp.graph.Node (new ColoredNode(rootFeature.getLocalName(), Color.BLACK));
-				nodeMap.put(tab.rows().next().get(Var.alloc("rc")), rootNode);
+				nodeMap.put((tab.rows().next().get(Var.alloc("rc")).getLocalName()+counter).toString(), rootNode);
 				g.addNode(rootNode);
 				fpl.nextOrbit();
 			}			
@@ -200,47 +200,26 @@ public class PartProcessSelection {
 			int numChildren = children.size();
 			fpl.setNumPlanets(numChildren);
 			
-			Map<Node, edu.ohiou.mfgresearch.labimp.graph.Node> nodeMap1 = new HashMap<Node, edu.ohiou.mfgresearch.labimp.graph.Node>();
+			Map<String, edu.ohiou.mfgresearch.labimp.graph.Node> nodeMap1 = new HashMap<String, edu.ohiou.mfgresearch.labimp.graph.Node>();
 			
 			children.forEach(b->{
 				String featureNodelabel = b.get(Var.alloc("fs")).getLocalName() + "(" + b.get(Var.alloc("fn")).getLiteralValue().toString() + "|" + 
-											b.get(Var.alloc("ft")).getLiteralValue().toString() + ")-" + b.get(Var.alloc("rc")).getLocalName() ;
+											b.get(Var.alloc("ft")).getLiteralValue().toString() + ")-" + b.get(Var.alloc("rNext")).getLocalName() + "|" +
+											(counter+1);
 				edu.ohiou.mfgresearch.labimp.graph.Node featureNode = new edu.ohiou.mfgresearch.labimp.graph.Node (new ColoredNode(featureNodelabel, Color.ORANGE));
 
 				g.addNode(featureNode);
 				
 				//find the parent node
-				edu.ohiou.mfgresearch.labimp.graph.Node parentNode = nodeMap.get(b.get(Var.alloc("rc")));
-//				edu.ohiou.mfgresearch.labimp.graph.Node parentNode = null;
-//				if(fpl.getRank()==1){
-//					parentNode = nodeMap.get(nodeMap.keySet().iterator().next());
-//				}
-//				else{
-//					for(Node n: nodeMap.keySet()){
-//						boolean isSuccess =
-//						Uni.of(FunQL::new)
-//						   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
-//						   .set(q->q.addABox(GlobalKnowledge.getPlan()))
-//						   .set(q->q.addPlan("resources/META-INF/rules/core/feature-precedence-1.rq"))
-//						   .set(q->q.getPlan(0).addVarBinding("pAncestor", ResourceFactory.createResource(n.getURI())))
-//						   .set(q->q.getPlan(0).addVarBinding("pCurrent", ResourceFactory.createResource(b.get(Var.alloc("pCurrent")).getURI())))
-//						   .set(q->q.setLocal=true)
-//						   .map(q->q.execute())
-//						   .map(q->q.isQuerySuccess())
-//						   .get();	
-//						if(isSuccess){
-//							parentNode = nodeMap.get(n);
-//							break;
-//						}					
-//					}
-//				}
+				edu.ohiou.mfgresearch.labimp.graph.Node parentNode = nodeMap.get((b.get(Var.alloc("rc")).getLocalName()+counter).toString());
+
 				//add arc from parent node
 				try {
 					g.addDirectedArc(parentNode.getUserObject(), featureNode.getUserObject(), new ColoredArc("precedes", Color.GREEN));
 				} catch (AlreadyMemberException | NotMemberException e1) {
 					e1.printStackTrace();
 				}				
-				nodeMap1.put(b.get(Var.alloc("rNext")), featureNode);
+				nodeMap1.put((b.get(Var.alloc("rNext")).getLocalName()+(counter+1)).toString(), featureNode);
  			});
 			nodeMap.clear();
 			nodeMap.putAll(nodeMap1);
@@ -250,6 +229,8 @@ public class PartProcessSelection {
 		};
 	
 		
+		
+		
 		//plan every feature
 		log.info("Create occurrence tree for each feature----------------------------------------------------->");
 		boolean stopIteration = false;
@@ -257,12 +238,14 @@ public class PartProcessSelection {
 		while(!stopIteration){
 			log.info("Part process planning at iteration " + counter);
 			
-			String fileName = "C:/Users/sarkara1/git/SIMPOM/plan/plan_after_" + counter + ".rdf";
-			Uni.of(ModelFactory.createDefaultModel())
-			   .set(m->m.add(GlobalKnowledge.getSpecification()))
-			   .set(m->m.add(GlobalKnowledge.getPlan()))
-			   .set(m->m.add(GlobalKnowledge.getPart()))
-			   .set(m->m.write(new FileOutputStream(new File(fileName)), "RDF/XML"));
+//			String fileName = "C:/Users/sarkara1/git/SIMPOM/plan/plan_after_" + counter + ".rdf";
+//			Uni.of(ModelFactory.createDefaultModel())
+//			   .set(m->m.add(GlobalKnowledge.getSpecification()))
+//			   .set(m->m.add(GlobalKnowledge.getPlan()))
+//			   .set(m->m.add(GlobalKnowledge.getPart()))
+//			   .set(m->m.write(new FileOutputStream(new File(fileName)), "RDF/XML"));
+			
+			Function<Table, Table> plotter = plotProcessSelectionTree.apply(counter);
 			
 			boolean	isSuccessful =
 				Uni.of(FunQL::new)
@@ -274,7 +257,7 @@ public class PartProcessSelection {
 				   .set(q->q.addPlan("resources/META-INF/rules/core/feature-precedence-1.rq"))
 //				   .set(q->q.getPlan(0).addVarBinding("pName", ResourceFactory.createPlainLiteral(partName)))
 				   .set(q->q.setLocal=true)
-				   .set(q->q.setSelectPostProcess(plotProcessSelectionTree.andThen(tab->{
+				   .set(q->q.setSelectPostProcess(plotter.andThen(tab->{
 					   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
 						   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
 					   }

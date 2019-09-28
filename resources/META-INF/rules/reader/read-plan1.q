@@ -4,7 +4,7 @@ PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
 PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
 PREFIX  design: <http://www.ohio.edu/ontologies/design#>
 
-SELECT ?pCurrent ?fName ?p1 ?pBefore
+SELECT DISTINCT ?p1 ?fName ?pBefore
 WHERE{
 ?p0	rdf:type 		plan:RootProcess.
 ?p0	rdf:type 		plan:PlannedProcess.

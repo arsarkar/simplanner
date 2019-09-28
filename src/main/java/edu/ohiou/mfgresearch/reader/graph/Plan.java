@@ -154,7 +154,7 @@ public class Plan implements Runnable{
 						   tabIter.remove();
 					   }
 					   else{
-						   precedings.add(new String[]{b.get(Var.alloc("pBefore")).getLocalName(), b.get(Var.alloc("p1")).getLocalName()});
+						   precedings.add(new String[]{b.get(Var.alloc("pBefore")).getLocalName(), b.get(Var.alloc("p1")).getLocalName(), b.get(Var.alloc("fName")).getLiteralValue().toString()});
 					   }
 				   }
 

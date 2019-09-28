@@ -311,16 +311,20 @@ public class FeatureProcessSelection {
 			//load process precedence for the particular service 
 			log.info("\n##loading process precedence by rule process-precedence-drilling.q");
 			Uni.of(FunQL::new)
-			.set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
-			.set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
-			.set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
-			.set(q->q.addPlan(prop.getProperty("PROCESS_PRECEDENCE_RULE_HOLE")))
-			.set(q->q.setLocal=true)
-			.map(q->q.execute())
-			.map(q->q.getBelief())
-			.map(b->b.getLocalABox())
-			.onFailure(e->e.printStackTrace(System.out))
-			.onSuccess(m->fpSel.localKB.add(m));
+				.set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+				.set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
+				.set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
+				.set(q->q.addPlan(prop.getProperty("PROCESS_PRECEDENCE_RULE_HOLE")))
+				.set(q->q.setLocal=true)
+				.map(q->q.execute())
+				.map(q->q.getBelief())
+				.map(b->b.getLocalABox())
+				.onFailure(e->e.printStackTrace(System.out))
+				.onSuccess(m->fpSel.localKB.add(m));
+			
+			//check to see if spot drilling is applicable 
+			
+			
 
 			fpSel.execute();
 			

@@ -31,5 +31,5 @@ FILTER NOT EXISTS {?pCurrent plan:precedes ?p2}.
 FILTER NOT EXISTS {?f1 cco:concretizes	?fs}.
 }
 FUNCTION{
-	?f2 <- fpmatch:ask_to_match(?f1,?pNext)
+	?f2 <- fpmatch:ask_to_match(?f1,?pNext,?pType)
 }

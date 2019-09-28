@@ -42,6 +42,7 @@ public class GlobalKnowledge {
 	
 	private static GlobalKnowledge KB;
 	private Model specificationKB;
+	private Model capabilityKB;
 	private Model partKB;
 	private Model currentPartKB;
 	private Model currentPlanKB;
@@ -71,6 +72,14 @@ public class GlobalKnowledge {
 		}
 		return resourceTBox;
 	}
+	
+	public static Model getCapabilityABox(){
+		load();
+		if(KB.capabilityKB==null){
+			KB.capabilityKB = ModelFactory.createDefaultModel().read(prop.getIRIPath(IMPM.capability_IMPM));
+		}
+		return KB.capabilityKB;
+	}	
 	
 	public static OntModel getPlanTBox(){
 		if(planTBox == null){

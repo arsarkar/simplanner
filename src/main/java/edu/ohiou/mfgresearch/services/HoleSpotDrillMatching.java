@@ -23,9 +23,9 @@ import edu.ohiou.mfgresearch.simplanner.ProcessPlanningKnowledge;
 import jess.Rete;
 import jess.Value;
 
-public class FeatureProcessMatching {
+public class HoleSpotDrillMatching {
 	
-	static Logger log = LoggerFactory.getLogger(FeatureProcessMatching.class);
+	static Logger log = LoggerFactory.getLogger(HoleSpotDrillMatching.class);
 	
 	Model localKB;
 	String localPath;
@@ -56,7 +56,7 @@ public class FeatureProcessMatching {
 //		localKB = ModelFactory.createDefaultModel().read(localPath+fileName);	
 	}
 	
-	public FeatureProcessMatching(String[] localIRI) {
+	public HoleSpotDrillMatching(String[] localIRI) {
 		if(localKB == null) {
 			localKB = ModelFactory.createDefaultModel();
 			localKB.setNsPrefix("", IMPM.plan_ins);
@@ -118,7 +118,7 @@ public class FeatureProcessMatching {
 		log.info("\n ##running rule transfer-capability-measure.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
-		   .set(q->q.addABox(GlobalKnowledge.getCapabilityABox())) //capability repository 
+		   .set(q->q.addABox(prop.getIRIPath(IMPM.capability_IMPM))) //capability repository 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-measure.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.setLocal=true)		   
@@ -138,7 +138,7 @@ public class FeatureProcessMatching {
 		log.info("\n ##running rule transfer-capability-measure-equation.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
-		   .set(q->q.addABox(GlobalKnowledge.getCapabilityABox())) //capability repository 
+		   .set(q->q.addABox(prop.getIRIPath(IMPM.capability_IMPM))) //capability repository 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-measure-equation.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.setLocal=true)
@@ -158,7 +158,7 @@ public class FeatureProcessMatching {
 		log.info("\n ##running rule transfer-capability-equation-measure.rq... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
-		   .set(q->q.addABox(GlobalKnowledge.getCapabilityABox())) //capability repository 
+		   .set(q->q.addABox(prop.getIRIPath(IMPM.capability_IMPM))) //capability repository 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-equation-measure.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.setLocal=true)
@@ -188,7 +188,7 @@ public class FeatureProcessMatching {
 		log.info("\n---------------------------------------------------------------------------------------------------------------------");
 		//log.info("##Testing whether feature " + featureIRI.getLocalName() + " matches process " + processIRI.getLocalName() + "|\n");		
 		
-		FeatureProcessMatching matching = new FeatureProcessMatching(new String[]{});
+		HoleSpotDrillMatching matching = new HoleSpotDrillMatching(new String[]{});
 
 		matching.featureSpec = featureIRI.getLocalName();
 		matching.processInd = processIRI.getLocalName();
@@ -435,30 +435,58 @@ public class FeatureProcessMatching {
 	
 	private void postProcessing() {
 		//create an intermediate feature (only when at least one dimension spec is concretized)
-		log.info("\n ##running rule create-interm-feature.rq... ");
-		Uni.of(FunQL::new)
-			.set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
-			.set(q->q.addABox(localKB)) 
-			.set(q->q.addPlan("resources/META-INF/rules/core/create-interm-feature.rq"))
-			.set(q->q.setLocal=true)
-			.set(q->q.setServicePostProcess(tab->{
-				if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
-					if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());				   
-				}
-				if(tab.isEmpty()){
-					log.info("No intermediate feature is created because all specifications are satisfied by " + processInd);
-				}
-				else{
-					log.info("Intermediate feature " +  tab.rows().next().get(Var.alloc("f1")).getLocalName() + " is created as some specifications are satisfied by " + processInd);
-				}
-				return tab;
-			}))
-			.map(q->q.execute())
-			.map(q->q.getBelief())
-			.map(b->b.getLocalABox())
-			.onFailure(e->log.error(e.getMessage()))
-			.set(m->localKB.add(m))
-			.set(m->GlobalKnowledge.getCurrentPart().add(m));
+		if(!processType.equals("SpotDrilling")){
+			log.info("\n ##running rule create-interm-feature.rq... ");
+			Uni.of(FunQL::new)
+			   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+			   .set(q->q.addABox(localKB)) 
+			   .set(q->q.addPlan("resources/META-INF/rules/core/create-interm-feature.rq"))
+			   .set(q->q.setLocal=true)
+			   .set(q->q.setServicePostProcess(tab->{
+				   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+					   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());				   
+				   }
+				   if(tab.isEmpty()){
+					   log.info("No intermediate feature is created because all specifications are satisfied by " + processInd);
+				   }
+				   else{
+					   log.info("Intermediate feature " +  tab.rows().next().get(Var.alloc("f1")).getLocalName() + " is created as some specifications are satisfied by " + processInd);
+				   }
+				   return tab;
+			   }))
+			   .map(q->q.execute())
+			   .map(q->q.getBelief())
+			   .map(b->b.getLocalABox())
+			   .onFailure(e->log.error(e.getMessage()))
+			   .set(m->localKB.add(m))
+			   .set(m->GlobalKnowledge.getCurrentPart().add(m));
+		}
+		else{
+			log.info("\n ##running rule create-interm-feature-spotdrill.rq... ");
+			Uni.of(FunQL::new)
+			   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+			   .set(q->q.addABox(localKB)) 
+			   .set(q->q.addPlan("resources/META-INF/rules/core/create-interm-feature-spotdrill.rq"))
+			   .set(q->q.setLocal=true)
+			   .set(q->q.setServicePostProcess(tab->{
+				   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+					   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());				   
+				   }
+				   if(tab.isEmpty()){
+					   log.info("No intermediate feature is created because all specifications are satisfied by " + processInd);
+				   }
+				   else{
+					   log.info("Intermediate feature " +  tab.rows().next().get(Var.alloc("f1")).getLocalName() + " is created as some specifications are satisfied by " + processInd);
+				   }
+				   return tab;
+			   }))
+			   .map(q->q.execute())
+			   .map(q->q.getBelief())
+			   .map(b->b.getLocalABox())
+			   .onFailure(e->log.error(e.getMessage()))
+			   .set(m->localKB.add(m))
+			   .set(m->GlobalKnowledge.getCurrentPart().add(m));
+		}
 
 		//save the intermediate RDF for bug fixing
 //		try {
@@ -500,8 +528,10 @@ public class FeatureProcessMatching {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-		log.info("\n ##running rule create-unsatisfied-feature.rq... ");
-		Uni.of(FunQL::new)
+		
+		if(!processType.equals("SpotDrilling")){
+			log.info("\n ##running rule create-unsatisfied-feature.rq... ");
+			Uni.of(FunQL::new)
 			   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 			   .set(q->q.addABox(localKB)) 
 			   .set(q->q.addPlan("resources/META-INF/rules/core/create-unsatisfied-feature.rq"))
@@ -523,7 +553,8 @@ public class FeatureProcessMatching {
 			   .map(b->b.getLocalABox())
 			   .onFailure(e->log.error(e.getMessage()))
 			   .set(m->localKB.add(m))
-			   .set(m->GlobalKnowledge.getCurrentPart().add(m));		
+			   .set(m->GlobalKnowledge.getCurrentPart().add(m));			
+		}
 
 		
 		//save the intermediate RDF for bug fixing

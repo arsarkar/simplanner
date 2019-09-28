@@ -1,0 +1,23 @@
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
+
+CONSTRUCT{
+cco:designated_by	rdf:type owl:ObjectProperty .
+ ?f1	   rdf:type						design:FormFeature;
+           rdf:type						design:IntermediateFormFeature;
+		   cco:designated_by 	?ice1.
+ ?ice1  rdf:type         			cco:FormFeatureIdentifier; 
+		   cco:inheres_in   		?i1.
+} 
+WHERE{
+ ?f		rdf:type				design:FeatureSpecification;
+			cco:inheres_in     ?i1.
+ ?i1  		rdf:type 			design:LabelBearingEntity.
+ FILTER EXISTS {?fq2  	rdf:type	design:FeatureQualityMap;
+									design:describes_map_with 			?f;
+									design:describes_map_with 			?dm2.
+						  ?d2		cco:not_concretizes			 			?dm2.}						   
+}

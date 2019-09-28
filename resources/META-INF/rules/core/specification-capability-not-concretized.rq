@@ -1,0 +1,22 @@
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
+
+CONSTRUCT{
+ ?d1	  rdf:type 				cco:InformationQualityEntity;
+		  cco:not_concretizes		?d.	
+} 
+WHERE{
+ ?f   rdf:type              design:FeatureSpecification.
+ ?fq  rdf:type              design:FeatureQualityMap;
+      design:describes_map_with ?f;
+	  design:describes_map_with ?d.
+ ?d	  rdf:type 			?dimType.	
+FILTER NOT EXISTS{?capa	rdf:type ?capaType;
+											cco:references	?ref.
+							   ?ref		rdf:type	?dimType.	}
+FILTER(?dimType IN (design:DiameterSpecification, design:DepthSpecification, design:RoundnessSpecification, design:SurfaceFinishSpecification, design:PositiveToleranceSpecification, design:TruePositionSpecification, design:Perpendicularity, design:Parallelism))	 
+}
+
