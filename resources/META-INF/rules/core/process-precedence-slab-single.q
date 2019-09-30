@@ -7,7 +7,9 @@ PREFIX cco:<http://www.ontologyrepository.com/CommonCoreOntologies/>
 CONSTRUCT{
 	pp:hasSucceedingProcess rdf:type owl:ObjectProperty.
 	?root rdf:type pp:RootProcess.
+	?ro2	rdf:type	 capa:SurfaceRoughing.
 	?fm1	rdf:type	 capa:FaceMilling.
+	?fm1 	cco:realizes ?ro2.
 	?root 	pp:hasSucceedingProcess ?fm1.
 }
 WHERE{

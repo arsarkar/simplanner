@@ -1,4 +1,4 @@
-package edu.ohiou.mfgresearch.reader.graph;
+package edu.ohiou.mfgresearch.simplanner;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,8 +21,6 @@ import org.apache.jena.sparql.core.Var;
 import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
-import edu.ohiou.mfgresearch.simplanner.IMPM;
-import edu.ohiou.mfgresearch.simplanner.ProcessCapabilityGraph;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -61,12 +59,6 @@ class Process implements Runnable {
 	
 //	@Option(names={"-prof", "--profile"}, paramLabel="profile", description="a particular capability profile represented by an individual of type processualFunction or its sub-type")
 //	private String profile="";	
-	
-	@Option(names={"-mach", "--machine"}, paramLabel="Machine", description="a particular machine represented by an individual of type machine or its sub-type")
-	private String machine="";
-	
-	@Option(names={"-tool"}, paramLabel="Tool", description="a particular tool represented by an individual of type Tool or its sub-type")
-	private String tool="";
 	
 	@Option(names={"-new", "--create"}, description="Add/modify capability for a process. the capability is added to new function if '-func' is provided")
 	private boolean create = false;

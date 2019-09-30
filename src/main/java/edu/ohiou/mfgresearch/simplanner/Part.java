@@ -1,4 +1,4 @@
-package edu.ohiou.mfgresearch.reader.graph;
+package edu.ohiou.mfgresearch.simplanner;
 
 import java.io.File;
 import java.util.LinkedList;
@@ -16,8 +16,6 @@ import org.apache.jena.sparql.core.Var;
 import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
-import edu.ohiou.mfgresearch.simplanner.IMPM;
-import edu.ohiou.mfgresearch.simplanner.PartSpecificationGraph;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

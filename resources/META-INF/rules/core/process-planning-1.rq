@@ -25,11 +25,14 @@ WHERE{
 ?pPrevious	plan:hasSucceedingProcess ?pNext.
 ?pNext		rdf:type	?pType.
 
+?func	rdf:type		?fType.
+?pNext  cco:realizes  ?func.
+
 ?pCurrent	cco:has_output		?f1.
 ?f1			rdf:type					design:IntermediateFormFeature.
 FILTER NOT EXISTS {?pCurrent plan:precedes ?p2}.
 FILTER NOT EXISTS {?f1 cco:concretizes	?fs}.
 }
 FUNCTION{
-	?f2 <- fpmatch:ask_to_match(?f1,?pNext,?pType)
+	?f2 <- fpmatch:ask_to_match(?f1,?pNext, ?func)
 }

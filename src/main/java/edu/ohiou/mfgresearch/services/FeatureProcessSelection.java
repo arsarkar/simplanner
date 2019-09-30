@@ -104,6 +104,9 @@ public class FeatureProcessSelection {
 		
 		featureType = featureType.replaceAll("\"", ""); 
 		
+		log.info("\n-----------------------------# Begin ask-to-plan-feature #-------------------------------");
+		log.info("# feature specification : " + featureSpecification.getLocalName() + " of type " + featureType+ "\n");
+		
 		if(featureType.equals("Hole")){
 			return ask_to_select_holemaking_processes(featureSpecification);
 		}
@@ -222,6 +225,8 @@ public class FeatureProcessSelection {
 		GlobalKnowledge.refreshCurrentPart();
 		GlobalKnowledge.refreshCurrentPlan();
 		
+		log.info("\n-----------------------------# End ask-to-plan-feature #-------------------------------\n");
+		
 		if(processNodes.size()>1){
 			return processNodes.subList(1, processNodes.size()).toArray(new Node[0]);
 		}
@@ -259,13 +264,14 @@ public class FeatureProcessSelection {
 		
 		FeatureProcessSelection fpSel = new FeatureProcessSelection(new String[]{});
 		fpSel.featureSpec = featureSpecification.getLocalName();
-
+		
 		if(Boolean.parseBoolean(prop.getProperty("MEMOIZE_FEATURE_PLAN").trim())){
 			Model archivedPlan = GlobalKnowledge.retrieveCurrentPlan(featureSpecification);
 			Model archivedPart = GlobalKnowledge.retrieveCurrentPart(featureSpecification);
 			//Uni.of(archivedPlan).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//plan_"+featureSpecification.getLocalName()+".rdf"))));		  
 			//Uni.of(archivedPart).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//part_"+featureSpecification.getLocalName()+".rdf"))));		  
 			if(archivedPlan!=null && archivedPart!=null){
+				log.info("\n Memoized plan is found for feature specification " + featureSpecification);
 				fpSel.cm = new CloneModel(archivedPlan, archivedPart);
 				fpSel.cm.perform();
 				GlobalKnowledge.getCurrentPlan().add(fpSel.cm.getClonedPlan());
@@ -351,6 +357,7 @@ public class FeatureProcessSelection {
 			//Uni.of(archivedPlan).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//plan_"+featureSpecification.getLocalName()+".rdf"))));		  
 			//Uni.of(archivedPart).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//part_"+featureSpecification.getLocalName()+".rdf"))));		  
 			if(archivedPlan!=null && archivedPart!=null){
+				log.info("\n Memoized plan is found for feature specification " + featureSpecification);
 				fpSel.cm = new CloneModel(archivedPlan, archivedPart);
 				fpSel.cm.perform();
 				GlobalKnowledge.getCurrentPlan().add(fpSel.cm.getClonedPlan());
@@ -432,6 +439,7 @@ public class FeatureProcessSelection {
 			//Uni.of(archivedPlan).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//plan_"+featureSpecification.getLocalName()+".rdf"))));		  
 			//Uni.of(archivedPart).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//part_"+featureSpecification.getLocalName()+".rdf"))));		  
 			if(archivedPlan!=null && archivedPart!=null){
+				log.info("\n Memoized plan is found for feature specification " + featureSpecification);
 				fpSel.cm = new CloneModel(archivedPlan, archivedPart);
 				fpSel.cm.perform();
 				GlobalKnowledge.getCurrentPlan().add(fpSel.cm.getClonedPlan());
@@ -516,6 +524,7 @@ public class FeatureProcessSelection {
 			//Uni.of(archivedPlan).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//plan_"+featureSpecification.getLocalName()+".rdf"))));		  
 			//Uni.of(archivedPart).set(m->m.write(new FileOutputStream(new File("C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//simple-slot//part_"+featureSpecification.getLocalName()+".rdf"))));		  
 			if(archivedPlan!=null && archivedPart!=null){
+				log.info("\n Memoized plan is found for feature specification " + featureSpecification);
 				fpSel.cm = new CloneModel(archivedPlan, archivedPart);
 				fpSel.cm.perform();
 				GlobalKnowledge.getCurrentPlan().add(fpSel.cm.getClonedPlan());
@@ -686,6 +695,7 @@ public class FeatureProcessSelection {
 		int counter = 0;
 		while(!stopIteration){
 			counter += 1;
+			log.info("\n---------------------------------------------------------------------------------------------------------");
 			log.info("match feature by process-planning-1.rq. iteration ---> " + counter);
 			
 			//save the intermediate RDF for bug fixing
@@ -802,7 +812,7 @@ class CloneModel{
 		   .set(q->q.addABox(planModel))
 		   .set(q->q.addPlan("resources/META-INF/rules/core/clone-process-individual.rq"))
 		   .set(q->q.setSelectPostProcess(t->{
-			   ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+			   //ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
 			   t.rows().forEachRemaining(r->{
 				   //?p1 rdf:type ?pt
 				   Resource p1 = ResourceFactory.createResource(renameNode.apply(r.get(Var.alloc("p1"))));
@@ -858,7 +868,7 @@ class CloneModel{
 		.set(q->q.addABox(planModel))
 		.set(q->q.addPlan("resources/META-INF/rules/core/clone-root-process.rq"))
 		.set(q->q.setSelectPostProcess(t->{
-			ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+			//ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
 			t.rows().forEachRemaining(r->{
 				if(!processMap.containsKey(r.get(Var.alloc("p1")))){
 					Resource p1 = ResourceFactory.createResource(renameNode.apply(r.get(Var.alloc("p1"))));
@@ -885,7 +895,7 @@ class CloneModel{
 			.set(q->q.addABox(partModel))
 			.set(q->q.addPlan("resources/META-INF/rules/core/clone-formfeature-concretization.rq"))
 			.set(q->q.setSelectPostProcess(t->{
-				ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+				//ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
 				t.rows().forEachRemaining(r->{
 					if(featureMap.containsKey(r.get(Var.alloc("f")))){
 						Resource f = featureMap.get(r.get(Var.alloc("f")));
@@ -910,7 +920,7 @@ class CloneModel{
 			.set(q->q.addABox(partModel))
 			.set(q->q.addPlan("resources/META-INF/rules/core/clone-formfeature-individual.rq"))
 			.set(q->q.setSelectPostProcess(t->{
-				ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+				//ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
 				t.rows().forEachRemaining(r->{
 					if(featureMap.containsKey(r.get(Var.alloc("f")))){
 						Resource f = featureMap.get(r.get(Var.alloc("f")));
@@ -934,7 +944,7 @@ class CloneModel{
 			.set(q->q.addABox(partModel))
 			.set(q->q.addPlan("resources/META-INF/rules/core/clone-formfeature-specification.rq"))
 			.set(q->q.setSelectPostProcess(t->{
-				ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+				//ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
 				t.rows().forEachRemaining(r->{
 					if(featureMap.containsKey(r.get(Var.alloc("f")))){
 						Resource f = featureMap.get(r.get(Var.alloc("f")));
@@ -961,7 +971,7 @@ class CloneModel{
 			.set(q->q.addABox(partModel))
 			.set(q->q.addPlan("resources/META-INF/rules/core/clone-formfeature-identifier.rq"))
 			.set(q->q.setSelectPostProcess(t->{
-				ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+				//ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
 				t.rows().forEachRemaining(r->{
 					if(featureMap.containsKey(r.get(Var.alloc("f")))){
 						Resource f = featureMap.get(r.get(Var.alloc("f")));
@@ -992,7 +1002,7 @@ class CloneModel{
 			.set(q->q.addABox(partModel))
 			.set(q->q.addPlan("resources/META-INF/rules/core/clone-information-quality-entity.rq"))
 			.set(q->q.setSelectPostProcess(t->{
-				ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
+				//ResultSetFormatter.out(System.out, t.toResultSet(), q.getAllPrefixMapping());
 				t.rows().forEachRemaining(r->{
 					if(featureMap.containsKey(r.get(Var.alloc("f")))){
 						Resource f = featureMap.get(r.get(Var.alloc("f")));

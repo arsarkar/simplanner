@@ -44,6 +44,7 @@ public final class IMPM {
 	public static final String design = makeDefaultIRI.apply("design#");
 	public static final String capability = makeDefaultIRI.apply("manufacturing-capability#");
 	public static final String capability_IMPM = makeDefaultIRI.apply("capability-implanner#");
+	public static final String resource_IMPM = makeDefaultIRI.apply("resource-implanner#");
 	public static final String mfg_plan	= makeDefaultIRI.apply("manufacturing-plan#");
 	public static final String graph	= makeDefaultIRI.apply("graph5#");
 	public static String design_ins = makeABoxIRI.apply("design"+createSessionPath()+createSessionHash()+"#");

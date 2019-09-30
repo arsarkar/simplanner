@@ -30,7 +30,7 @@ public class FeatureProcessMatching {
 	Model localKB;
 	String localPath;
 	PropertyReader prop = PropertyReader.getProperty();
-	String featureSpec = "", processInd = "", processType ="";
+	String featureSpec = "", processInd = "", function ="";
 	
 	public Model getLocalKB() {
 		return localKB;
@@ -111,9 +111,9 @@ public class FeatureProcessMatching {
 	/**
 	 * event to update capability
 	 */
-	public void loadCapability(Node processIRI){
+	public void loadCapability(Node processIRI, Node function){
 
-		log.info("\n ##loading capability for process "+ processIRI.getLocalName());
+		log.info("\n ##loading capability for process "+ processIRI.getLocalName() + " realizing " + function.getLocalName());
 		//load capability with both max and min as equation
 		log.info("\n ##running rule transfer-capability-measure.rq... ");
 		Uni.of(FunQL::new)
@@ -121,6 +121,7 @@ public class FeatureProcessMatching {
 		   .set(q->q.addABox(GlobalKnowledge.getCapabilityABox())) //capability repository 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-measure.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
+		   .set(q->q.getPlan(0).addVarBinding("func", ResourceFactory.createResource(function.getURI())))
 		   .set(q->q.setLocal=true)		   
 		   .set(q->q.setSelectPostProcess(tab->{
 			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
@@ -141,6 +142,7 @@ public class FeatureProcessMatching {
 		   .set(q->q.addABox(GlobalKnowledge.getCapabilityABox())) //capability repository 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-measure-equation.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
+		   .set(q->q.getPlan(0).addVarBinding("func", ResourceFactory.createResource(function.getURI())))
 		   .set(q->q.setLocal=true)
 		   .set(q->q.setSelectPostProcess(tab->{
 			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
@@ -161,6 +163,7 @@ public class FeatureProcessMatching {
 		   .set(q->q.addABox(GlobalKnowledge.getCapabilityABox())) //capability repository 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-equation-measure.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
+		   .set(q->q.getPlan(0).addVarBinding("func", ResourceFactory.createResource(function.getURI())))
 		   .set(q->q.setLocal=true)
 		   .set(q->q.setSelectPostProcess(tab->{
 			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
@@ -181,10 +184,10 @@ public class FeatureProcessMatching {
 	 * Service to post feature specification
 	 * 
 	 * @param featureIRI the intermediate feature IRI
-	 * @param processType type of process to be matched
+	 * @param function type of process to be matched
 	 * @return process IRIs generated for each function (capability profile) matched 
 	 */
-	public static Node ask_to_match(Node featureIRI, Node processIRI, Node processType){
+	public static Node ask_to_match(Node featureIRI, Node processIRI, Node functionURI){
 		log.info("\n---------------------------------------------------------------------------------------------------------------------");
 		//log.info("##Testing whether feature " + featureIRI.getLocalName() + " matches process " + processIRI.getLocalName() + "|\n");		
 		
@@ -192,11 +195,11 @@ public class FeatureProcessMatching {
 
 		matching.featureSpec = featureIRI.getLocalName();
 		matching.processInd = processIRI.getLocalName();
-		matching.processType = processType.getLocalName();
+		matching.function = functionURI.getLocalName();
 		
 		//load localKB 
 		matching.loadSpecifications(featureIRI);
-		matching.loadCapability(processIRI);
+		matching.loadCapability(processIRI, functionURI);
 		
 		//perform core rules
 		matching.execute();

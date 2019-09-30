@@ -251,7 +251,8 @@ public class ProcessSelection {
 		FeatureProcessMatching hs = new FeatureProcessMatching(new String[]{});
 		
 		hs.loadSpecifications(ResourceFactory.createResource("http://www.ohio.edu/simplanner/design2019/5/2/724804#FormFeature_I3443").asNode());
-		hs.loadCapability(ResourceFactory.createResource("http://www.ohio.edu/ontologies/capability-implanner#twistdrilling0101").asNode());
+		hs.loadCapability(ResourceFactory.createResource("http://www.ohio.edu/ontologies/capability-implanner#twistdrilling0101").asNode(), 
+				ResourceFactory.createResource("http://www.ohio.edu/ontologies/capability-implanner#holemaking3118").asNode());
 		
 		System.out.println("---------------------------------------------------------------------------------------------------------------------");
 		System.out.println("---------------------------------------------------------------------------------------------------------------------");

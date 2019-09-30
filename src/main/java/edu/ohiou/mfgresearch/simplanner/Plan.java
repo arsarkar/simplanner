@@ -1,4 +1,4 @@
-package edu.ohiou.mfgresearch.reader.graph;
+package edu.ohiou.mfgresearch.simplanner;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,7 +28,6 @@ import edu.ohiou.mfgresearch.reader.PropertyReader;
 import edu.ohiou.mfgresearch.services.FeatureProcessSelection;
 import edu.ohiou.mfgresearch.services.GlobalKnowledge;
 import edu.ohiou.mfgresearch.services.PartProcessSelection;
-import edu.ohiou.mfgresearch.simplanner.IMPM;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 

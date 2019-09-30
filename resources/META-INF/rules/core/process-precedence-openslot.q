@@ -7,10 +7,23 @@ PREFIX cco:<http://www.ontologyrepository.com/CommonCoreOntologies/>
 CONSTRUCT{
 	pp:hasSucceedingProcess rdf:type owl:ObjectProperty.
 	?root 	rdf:type pp:RootProcess.
+	
 	?em1	rdf:type	capa:EndMilling.
+	?sr1	rdf:type	 capa:SlotRoughing.
+	?em1	cco:realizes ?sr1.
+	
 	?em2	rdf:type	capa:EndMilling.
+	?sf1	rdf:type	 capa:SlotFinishing.
+	?em2 	cco:realizes ?sf1.
+	
 	?sm1	rdf:type	capa:SideMilling.
+	?sr2	rdf:type	 capa:SlotRoughing.
+	?sm1	cco:realizes ?sr2.
+	
 	?sm2	rdf:type	capa:SideMilling.
+	?sf2	rdf:type	 capa:SlotFinishing.
+	?sm2 	cco:realizes ?sf2.	
+	
 	?root 	pp:hasSucceedingProcess ?em1.
 	?root 	pp:hasSucceedingProcess ?sm1.
 	?em1 	pp:hasSucceedingProcess ?em2.
