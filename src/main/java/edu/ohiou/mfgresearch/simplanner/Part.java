@@ -50,6 +50,9 @@ class Part implements Runnable {
 	@Option(names={"-t", "--tolerance"}, paramLabel="TOLERANCE", description="tolerance type or * for all tolerances")
 	private String tolType="";
 	
+	@Option(names={"-u", "--unit"}, paramLabel="Unit", description="set the unit, default unit is set to millimeter.")
+	private String unit = "mm";
+	
 	public static void main(String[] args) {
 		part = new Part();
 		Scanner scanner = new Scanner(System.in);
@@ -77,7 +80,7 @@ class Part implements Runnable {
 
 		if(path!=null){
 			if(file!=null){
-				PartSpecificationGraph spec = new PartSpecificationGraph("", file.getPath());
+				PartSpecificationGraph spec = new PartSpecificationGraph("", file.getPath(), IMPM.getUnit(unit));
 				String label = spec.loadPart(path.getPath());
 				System.out.println("Part specification " + label + " is loaded from "+ file.getAbsolutePath());
 			}

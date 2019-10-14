@@ -10,6 +10,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.jena.atlas.logging.Log;
 import org.apache.jena.graph.Node;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
@@ -18,6 +19,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.binding.Binding;
+
 import edu.ohiou.mfgresearch.io.FunQL;
 import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
@@ -62,6 +65,9 @@ class Process implements Runnable {
 	
 	@Option(names={"-new", "--create"}, description="Add/modify capability for a process. the capability is added to new function if '-func' is provided")
 	private boolean create = false;
+	
+	@Option(names={"-mod", "--update"}, description="modify capability for a process. the capability is added to new function if '-func' is provided")
+	private boolean update = false;
 	
 	@Option(names={"-clear"}, description="sure to clear the knowledge base?", interactive=true)
 	private boolean clear = false;
@@ -155,6 +161,7 @@ class Process implements Runnable {
 				System.err.println("Failed to create capability due to \n"+e.getMessage());
 			}
 			create = false;
+			update = false;
 			equation = null;
 			minLimit=Double.NaN;
 			maxLimit=Double.NaN;		
@@ -180,10 +187,16 @@ class Process implements Runnable {
 			System.err.println("need at least a process type or process instance to continue...");
 			return;
 		}
+		else{
+			System.out.println("Process entered: " + processURI);
+		}
 		if(functionURI.length()==0|| functionURI.trim().equals("*")){
 			System.err.println("provide the function or function instance to continue...");
 			return;
 		}	
+		else{
+			System.out.println("Function entered: " + functionURI);
+		}
 		
 		String functionIns = "";
 		if(isTypeURI(functionURI)){
@@ -205,40 +218,126 @@ class Process implements Runnable {
 			System.out.println(functionIns + " is an instance of a Function");
 		}
 		if(capaType.length()>0){
-			//check limits 
-			if(maxLimit==Double.NaN && minLimit==Double.NaN){
-				System.err.println("need at least a min or max limit, currently both limits cannot be equations.");
-			}
-			else{
-				Node maxICE = null, minICE = null;
-				if(equation!=null && minLimit!=Double.NaN){
-					System.out.println("Setting max limit = " + equation.eqn.trim() + ", min limit = " + minLimit);
-					//process equation as max 
-					maxICE = pcg.createCapabilityEquationUnit(equation.eqn.trim(), findArgs(equation.eqn.trim(), equation.argms), unit, true);
-					minICE = pcg.createCapabilityLimitUnit(minLimit, unit, false);
-				}
-				else if(equation!=null && maxLimit!=Double.NaN){
-					System.out.println("Setting max limit = " + maxLimit + ", min limit = " + equation.eqn.trim());
-					//process equation as min
-					maxICE = pcg.createCapabilityLimitUnit(maxLimit, unit, true);
-					minICE = pcg.createCapabilityEquationUnit(equation.eqn.trim(), findArgs(equation.eqn.trim(), equation.argms), unit, false);
-				}
-				else if(maxLimit!=Double.NaN && minLimit!=Double.NaN){
-					System.out.println("Setting max limit = " + maxLimit + ", min limit = " + minLimit);
-					//both limits are crisp
-					maxICE = pcg.createCapabilityLimitUnit(maxLimit, unit, true);
-					minICE = pcg.createCapabilityLimitUnit(minLimit, unit, false);
-				}
-				else{
-					System.err.println("Not enough data is provided to proceed...");
+			if(update){
+				System.out.println("Capability instance entered: " + capaType);
+				if(!Double.isNaN(minLimit)) System.out.println("minimum limit = "+minLimit);
+				if(!Double.isNaN(maxLimit)) System.out.println("maximum limit = "+maxLimit);
+				if(equation!=null) {
+					System.out.println("equation = "+ equation.eqn.toString()); 
+					if(equation.argms!= null){
+						for(int i= 0; i< equation.argms.length; i++){
+							System.out.println(" arg" + i + " = " + equation.argms[i]);
+						}
+					}
 				}
 
-				Node capabilityIns = pcg.crateCapability(ResourceFactory.createResource(functionIns).asNode(), 
-											capaType.trim(), reference.trim(), maxICE, minICE);
-				System.out.println("New Capability added to profile "+ capabilityIns.getURI());
-				m.add(pcg.getCapabilityKB());
-				readCapability(functionIns, capaType);
-			}			
+				//check limits 
+				if(Double.isNaN(minLimit) && Double.isNaN(maxLimit)){
+					System.err.println("need at least a min or max limit, currently both limits cannot be equations.");
+				}
+				else{
+					//query the max and min ICE
+					Uni.of(FunQL::new)
+						.set(q->q.addTBox(tBox))
+						.set(q->q.addABox(m))
+						.set(q->q.addPlan("resources/META-INF/rules/reader/read-capability-limits.q"))
+						.set(q->q.getPlan(0).addVarBinding("func", ResourceFactory.createResource(functionURI.trim())))
+						.set(q->q.getPlan(0).addVarBinding("capa", ResourceFactory.createResource(capaType.trim())))
+						.set(q->q.setSelectPostProcess(tab->{
+						   if(!tab.isEmpty()){
+							   Binding b = tab.rows().next();
+							   try {							   
+								   if(equation!=null && !Double.isNaN(minLimit)){
+										System.out.println("Setting max limit = " + equation.eqn.trim() + ", min limit = " + minLimit);
+										//process equation as max 
+										pcg.createCapabilityEquationUnit(b.get(Var.alloc("maxICE")).getURI(), equation.eqn.trim(), findArgs(equation.eqn.trim(), equation.argms), unit, true);
+										pcg.createCapabilityLimitUnit(b.get(Var.alloc("minICE")).getURI(), minLimit, unit, false);
+									}
+									else if(equation!=null && !Double.isNaN(maxLimit)){
+										System.out.println("Setting max limit = " + maxLimit + ", min limit = " + equation.eqn.trim());
+										//process equation as min
+										pcg.createCapabilityLimitUnit(b.get(Var.alloc("maxICE")).getURI(), maxLimit, unit, true);
+										pcg.createCapabilityEquationUnit(b.get(Var.alloc("minICE")).getURI(), equation.eqn.trim(), findArgs(equation.eqn.trim(), equation.argms), unit, false);
+									}
+									else if(!Double.isNaN(maxLimit) && !Double.isNaN(minLimit)){
+										System.out.println("Setting max limit = " + maxLimit + ", min limit = " + minLimit);
+										//both limits are crisp
+										pcg.createCapabilityLimitUnit(b.get(Var.alloc("maxICE")).getURI(), maxLimit, unit, true);
+										pcg.createCapabilityLimitUnit(b.get(Var.alloc("minICE")).getURI(), minLimit, unit, false);
+									}
+									else{
+										System.err.println("Not enough data is provided to proceed...");
+									}
+								} catch (Exception e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+						   }
+						   return tab;
+						}))
+						.set(q->q.execute())
+						.onFailure(e->e.printStackTrace(System.out));
+
+					m.add(pcg.getCapabilityKB());
+					readCapability(functionIns, capaType);
+				}
+			}
+			else{
+				System.out.println("Capability type entered: " + capaType);
+				System.out.println("with informations:");
+				if(minLimit!=Double.NaN) System.out.println("minimum limit = "+minLimit);
+				if(maxLimit!=Double.NaN) System.out.println("maximum limit = "+maxLimit);
+				if(equation!=null) {
+					System.out.println("equation = "+ equation.eqn.toString()); 
+					if(equation.argms!= null){
+						for(int i= 0; i< equation.argms.length; i++){
+							System.out.println(" arg" + i + " = " + equation.argms[i]);
+						}
+					}
+				}
+				if(reference!=null) System.out.println("reference = "+ reference);
+				//check limits 
+				if(maxLimit==Double.NaN && minLimit==Double.NaN){
+					System.err.println("need at least a min or max limit, currently both limits cannot be equations.");
+				}
+				else{
+					Node maxICE = null, minICE = null;
+					 if(equation!=null && !Double.isNaN(minLimit)){
+						System.out.println("Setting max limit = " + equation.eqn.trim() + ", min limit = " + minLimit);
+						//process equation as max 
+						maxICE = pcg.createCapabilityEquationUnit("", equation.eqn.trim(), findArgs(equation.eqn.trim(), equation.argms), unit, true);
+						minICE = pcg.createCapabilityLimitUnit("", minLimit, unit, false);
+					}
+					else if(equation!=null && !Double.isNaN(maxLimit)){
+						System.out.println("Setting max limit = " + maxLimit + ", min limit = " + equation.eqn.trim());
+						//process equation as min
+						maxICE = pcg.createCapabilityLimitUnit("", maxLimit, unit, true);
+						minICE = pcg.createCapabilityEquationUnit("", equation.eqn.trim(), findArgs(equation.eqn.trim(), equation.argms), unit, false);
+					}
+					else if(!Double.isNaN(maxLimit) && !Double.isNaN(minLimit)){
+						System.out.println("Setting max limit = " + maxLimit + ", min limit = " + minLimit);
+						//both limits are crisp
+						maxICE = pcg.createCapabilityLimitUnit("", maxLimit, unit, true);
+						minICE = pcg.createCapabilityLimitUnit("", minLimit, unit, false);
+					}
+					else{
+						System.err.println("Not enough data is provided to proceed...");
+					}
+					if(reference.length() == 0){
+						System.out.println("No Reference for the capability is given");
+						return;
+					}
+					Node capabilityIns = pcg.crateCapability(ResourceFactory.createResource(functionIns).asNode(), 
+												capaType.trim(), reference.trim(), maxICE, minICE);
+					System.out.println("New Capability added to profile "+ capabilityIns.getURI());
+					m.add(pcg.getCapabilityKB());
+					readCapability(functionIns, capaType);
+				}	
+			}
+		
+		}
+		else{
+			System.out.println("Capability type is not found");
 		}
 	}
 
@@ -331,6 +430,8 @@ class Process implements Runnable {
 		   .set(q->q.addPlan("resources/META-INF/rules/reader/read-capability-measurement.q"))
 		   .select(q->!function.equals("*"), q->q.getPlan(0).addVarBinding("func", ResourceFactory.createResource(function)))
 		   .select(q->!capabilityType.equals("*"), q->q.getPlan(0).addVarBinding("Capability", ResourceFactory.createResource(capabilityType)))
+		   .set(q->q.getPlan(0).addVarBinding("minUnit", ResourceFactory.createResource(IMPM.getUnit(unit))))
+		   .set(q->q.getPlan(0).addVarBinding("maxUnit", ResourceFactory.createResource(IMPM.getUnit(unit))))
 		   .set(q->q.setSelectPostProcess(tab->{
 			   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping()); 
 //			   else System.out.println("No capability is found for capability type " + capabilityType);
@@ -345,6 +446,8 @@ class Process implements Runnable {
 		   .set(q->q.addPlan("resources/META-INF/rules/reader/read-capability-limit-equation.q"))
 		   .select(q->!function.equals("*"), q->q.getPlan(0).addVarBinding("func", ResourceFactory.createResource(function)))
 		   .select(q->!capabilityType.equals("*"), q->q.getPlan(0).addVarBinding("Capability", ResourceFactory.createResource(capabilityType)))
+		   .set(q->q.getPlan(0).addVarBinding("minUnit", ResourceFactory.createResource(IMPM.getUnit(unit))))
+		   .set(q->q.getPlan(0).addVarBinding("maxUnit", ResourceFactory.createResource(IMPM.getUnit(unit))))
 		   .set(q->q.setSelectPostProcess(tab->{
 			   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping()); 
 //			   else System.out.println("No capability is found for capability type " + capabilityType);
@@ -359,6 +462,8 @@ class Process implements Runnable {
 		   .set(q->q.addPlan("resources/META-INF/rules/reader/read-capability-equation-limit.q"))
 		   .select(q->!function.equals("*"), q->q.getPlan(0).addVarBinding("func", ResourceFactory.createResource(function)))
 		   .select(q->!capabilityType.equals("*"), q->q.getPlan(0).addVarBinding("Capability", ResourceFactory.createResource(capabilityType)))
+		   .set(q->q.getPlan(0).addVarBinding("minUnit", ResourceFactory.createResource(IMPM.getUnit(unit))))
+		   .set(q->q.getPlan(0).addVarBinding("maxUnit", ResourceFactory.createResource(IMPM.getUnit(unit))))
 		   .set(q->q.setSelectPostProcess(tab->{
 			   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping()); 
 //			   else System.out.println("No capability is found for capability type " + capabilityType);

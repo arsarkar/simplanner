@@ -149,6 +149,28 @@ public class ProcessCapabilityGraph {
 			   .map(PlanUtil::getConstructBasicPattern)
 			   .get();
 	}
+	
+	private BasicPattern createEquationLimit1(int argCount){
+		return
+			Uni.of(ConstructBuilder::new)
+			   .set(b->b.addPrefix("rdf", IMPM.rdf))
+			   .set(b->b.addPrefix("owl", IMPM.owl))
+			   .set(b->b.addPrefix("cco", IMPM.cco))
+			   .set(b->b.addPrefix("capa", IMPM.capability))
+			   .set(b->b.addConstruct("?cmax", "rdf:type", "cco:Equation"))
+			   .set(b->b.addConstruct("?ie1", "rdf:type", "cco:InformationBearingEntity"))
+			   .set(b->b.addConstruct("cco:inheres_in", "rdf:type", "owl:ObjectProperty"))
+			   .set(b->b.addConstruct("?cmax", "cco:inheres_in", "?ie1"))
+			   .set(b->b.addConstruct("cco:has_string_value", "rdf:type", "owl:DatatypeProperty"))
+			   .set(b->b.addConstruct("?ie1", "cco:has_string_value", "?eq"))
+			   .set(b->b.addConstruct("cco:uses_measurement_unit", "rdf:type", "owl:ObjectProperty"))
+			   .set(b->b.addConstruct("?ie1", "cco:uses_measurement_unit", "?unit"))
+			   .set(b->b.addConstruct("cco:uses_equation_type", "rdf:type", "owl:ObjectProperty"))
+			   .set(b->b.addConstruct("?ie1", "cco:uses_equation_type", "cco:JessEquation"))
+			   .map(b->b.build())
+			   .map(PlanUtil::getConstructBasicPattern)
+			   .get();
+	}
 
 	private BasicPattern createNonSelfRefRangeCapability(){
 		return
@@ -288,7 +310,7 @@ public class ProcessCapabilityGraph {
 		return eqNode;
 	}
 	
-	public Node createCapabilityEquationUnit(String equation, Map<String, String> argTypes, String unit, boolean isMax) throws Exception{		
+	public Node createCapabilityEquationUnit(String ice, String equation, Map<String, String> argTypes, String unit, boolean isMax) throws Exception{		
 		List<String> args = getArgsFromEquation(equation);
 		List<String> aTypes = new LinkedList<String>();
 		for(String a:args){
@@ -299,21 +321,27 @@ public class ProcessCapabilityGraph {
 		if(args.size() != aTypes.size()){
 			throw new Exception("Arguments are not supplied properly!");
 		}
-		BasicPattern patMax = createEquationLimit(args.size()); 
+		BasicPattern patMax;
+		if(ice.length()>0){
+			patMax = createEquationLimit1(args.size()); 
+		}
+		else{
+			patMax = createEquationLimit(args.size()); 
+		}
 		Function<Table, BasicPattern> expander = IPlanner.createPatternExpander(patMax);
 		Function<BasicPattern, BasicPattern> updater = IPlanner.createUpdateExecutor(capabilityKB);
 		Table t = TableFactory.create();
 		Binding b = BindingFactory.binding();
-		Node eqNode = NodeFactory.createURI(newIndiForType.apply("Equation"));
+		Node eqNode = null;
+		if(ice.length()>0){
+			 eqNode = NodeFactory.createURI(ice);
+		}
+		else{
+			eqNode = NodeFactory.createURI(newIndiForType.apply("Equation"));
+		}
 		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("cmax"), eqNode));
 		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("ie1"), NodeFactory.createURI(newIndiForType.apply("InformationBearingEntity"))));
-		for(int i=0; i<args.size(); i++){
-			b = Algebra.merge(b, BindingFactory.binding(Var.alloc("at"+i), ResourceFactory.createResource(aTypes.get(i)).asNode()));
-			String argT = aTypes.get(i).substring(aTypes.get(i).lastIndexOf("#")+1, aTypes.get(i).length());
-			b = Algebra.merge(b, BindingFactory.binding(Var.alloc("a"+i), NodeFactory.createURI(newIndiForType.apply(argT))));
-			b = Algebra.merge(b, BindingFactory.binding(Var.alloc("ag"+i), NodeFactory.createLiteralByValue(args.get(i), XSDDatatype.XSDstring)));
-			b = Algebra.merge(b, BindingFactory.binding(Var.alloc("unit"), NodeFactory.createURI(IMPM.getUnit(unit))));
-		}
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("unit"), NodeFactory.createURI(IMPM.getUnit(unit))));
 		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("eq"), NodeFactory.createLiteralByValue(equation, XSDDatatype.XSDstring)));
 		t.addBinding(b);
 		expander.andThen(updater).apply(t);	
@@ -347,14 +375,19 @@ public class ProcessCapabilityGraph {
 		return mNode;
 	}
 
-	public Node createCapabilityLimitUnit(double limit, String unit, boolean isMax) throws Exception{
+	public Node createCapabilityLimitUnit(String ice, double limit, String unit, boolean isMax) throws Exception{
 		
 		BasicPattern pat = createMeasurementLimit();
 		Function<Table, BasicPattern> expander = IPlanner.createPatternExpander(pat);
 		Function<BasicPattern, BasicPattern> updater = IPlanner.createUpdateExecutor(capabilityKB);
 		Table t = TableFactory.create();
 		Binding b = BindingFactory.binding();
-		Node mNode = NodeFactory.createURI(newIndiForType.apply("MeasurementInformationContentEntity"));
+		Node mNode = null;
+		if(ice.length()>0){
+			mNode = NodeFactory.createURI(ice);
+		}else{			
+			mNode = NodeFactory.createURI(newIndiForType.apply("MeasurementInformationContentEntity"));
+		}
 		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("cm"), mNode));
 		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("im"), NodeFactory.createURI(newIndiForType.apply("InformationBearingEntity"))));
 		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("limit"), NodeFactory.createLiteral(String.valueOf(limit), XSDDatatype.XSDdouble)));

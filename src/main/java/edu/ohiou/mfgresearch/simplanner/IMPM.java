@@ -101,14 +101,14 @@ public final class IMPM {
 	}
 	
 	public static void loadUnit(){
-		unitMap.put(IMPM.cco+"/CentimeterMeasurementUnit", "cm, centimeter");
-		unitMap.put(IMPM.cco+"/DecimeterMeasurementUnit", "dm, decimeter");
-		unitMap.put(IMPM.cco+"/FootMeasurementUnit", "ft, foot");
-		unitMap.put(IMPM.cco+"/InchMeasurementUnit", "in, inch");
-		unitMap.put(IMPM.cco+"/KilometerMeasurementUnit", "km, kilometer");
-		unitMap.put(IMPM.cco+"/MeterMeasurementUnit", "m, meter");
-		unitMap.put(IMPM.cco+"/MileMeasurementUnit", "mile");
-		unitMap.put(IMPM.cco+"/MillimeterMeasurementUnit", "mm, millimeter");
+		unitMap.put(IMPM.cco+"CentimeterMeasurementUnit", "cm, centimeter");
+		unitMap.put(IMPM.cco+"DecimeterMeasurementUnit", "dm, decimeter");
+		unitMap.put(IMPM.cco+"FootMeasurementUnit", "ft, foot");
+		unitMap.put(IMPM.cco+"InchMeasurementUnit", "in, inch");
+		unitMap.put(IMPM.cco+"KilometerMeasurementUnit", "km, kilometer");
+		unitMap.put(IMPM.cco+"MeterMeasurementUnit", "m, meter");
+		unitMap.put(IMPM.cco+"MileMeasurementUnit", "mile");
+		unitMap.put(IMPM.cco+"MillimeterMeasurementUnit", "mm, millimeter");
 	}
 	
 	//utility functions

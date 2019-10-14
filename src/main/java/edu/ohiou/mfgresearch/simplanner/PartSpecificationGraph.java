@@ -52,11 +52,13 @@ public class PartSpecificationGraph {
 	 * @return
 	 */
 	public String getFeatureType(String featureName){
+		log.info("reading type of feature " + featureName);
 		return loader.readFeatureType(featureName);		
 	}
 	
 	
 	public String[] getNextFeatures(String featureName){
+		log.info("reading next feature of " + featureName);
 		return loader.readNextFeature(featureName).toArray(new String[0]);
 	}
 	
@@ -66,6 +68,7 @@ public class PartSpecificationGraph {
 	 * @return
 	 */
 	public String[] getDimensions(String featureName){
+		log.info("reading dimensions of feature " + featureName);
 		return
 		Omni.of(loader.readFeatureDimensions(featureName).keySet().toArray(new String[0]))
 //			.selectMap(d->d.equals("slotPoint"), d->"design:SlotPointSpecification")
@@ -83,6 +86,7 @@ public class PartSpecificationGraph {
 //			.selectMap(d->d.equals("bottomDistance"), d->"design:BottomDistanceSpecification")
 //			.selectMap(d->d.equals("PocketPoint"), d->"design:PocketPointSpecification")
 //			.map(d->d.replace("design:", "http://www.ohio.edu/ontologies/design#"))
+			.set(d->log.info(" " + d + " "))
 			.toList()
 			.toArray(new String[0]);	
 	}
@@ -94,6 +98,7 @@ public class PartSpecificationGraph {
 	 * @return
 	 */
 	public String getDimensionMeasure(String featureName, String dimensionType){
+		log.info(" Dimension " + dimensionType + " of " + featureName + " has value ");
 		return
 		Uni.of(dimensionType)
 //			.map(d->d.replace("http://www.ohio.edu/ontologies/design#", "design:"))
@@ -112,6 +117,7 @@ public class PartSpecificationGraph {
 //			.selectMap(d->d.equals("design:BottomDistanceSpecification"), d->"bottomDistance")
 //			.selectMap(d->d.equals("design:PocketPointSpecification"), d->"PocketPoint")
 			.map(d->loader.readFeatureDimensions(featureName).get(dimensionType))
+			.set(dm->log.info(dm))
 			.get();
 	}
 	
@@ -121,8 +127,10 @@ public class PartSpecificationGraph {
 	 * @return
 	 */
 	public String[] getTolerance(String featureName){
+		log.info("reading tolerances of feature " + featureName);
 		return
 		Omni.of(loader.readTolerances(featureName).keySet().toArray(new String[0]))
+			.set(t->log.info(t))	
 			.toList()
 			.toArray(new String[0]);	
 	}
@@ -134,9 +142,11 @@ public class PartSpecificationGraph {
 	 * @return
 	 */
 	public Double getToleranceMeasure(String featureName, String toleranceType){
+		log.info(" Tolerance " + toleranceType + " of " + featureName + " has value ");
 		return
-		Uni.of(toleranceType)
+		Uni.of(toleranceType)	
 			.map(t->loader.readTolerances(featureName).get(toleranceType))
+			.set(dm->log.info(dm))
 			.map(t->Double.parseDouble(t))
 			.get();
 	}
@@ -164,12 +174,14 @@ public class PartSpecificationGraph {
 	
 	
 	private String partLabel = "";
+	private String unit = "";
 	
-	public PartSpecificationGraph(String partName, String path) {
+	public PartSpecificationGraph(String partName, String path, String unit) {
 
 //		log.info("Starting program for building design specification KB...");
 		//create the IMPlanloader
 		loader = new IMPlanXMLLoader(path);
+		this.unit  = unit;
 		this.partLabel = partName.length()>0?partName:loader.readPartName();
 		//create specification A-Box 
 		m = Uni.of(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM))
@@ -256,16 +268,32 @@ public class PartSpecificationGraph {
 	}
 	
 	public Model runRule_FeatureDimensionMeasurement(Model kb){
-		return
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
-		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan("resources/META-INF/rules/specification/read-dimension-measures-for-feature.q", this))
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getaBox())
-		   .onFailure(e->e.printStackTrace(System.out))
-		   .get();
+		if(unit.equals(IMPM.getUnit("mm"))){
+			return
+			Uni.of(FunQL::new)
+			   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+			   .set(q->q.addABox(kb))
+			   .set(q->q.addPlan("resources/META-INF/rules/specification/read-dimension-measures-for-feature.q", this))
+			   .map(q->q.execute())
+			   .map(q->q.getBelief())
+			   .map(b->b.getaBox())
+			   .onFailure(e->e.printStackTrace(System.out))
+			   .get();
+		}
+		else if(unit.equals(IMPM.getUnit("inch"))){
+			return
+			Uni.of(FunQL::new)
+			   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+			   .set(q->q.addABox(kb))
+			   .set(q->q.addPlan("resources/META-INF/rules/specification/read-dimension-measures-for-feature-inch.q", this))
+			   .map(q->q.execute())
+			   .map(q->q.getBelief())
+			   .map(b->b.getaBox())
+			   .onFailure(e->e.printStackTrace(System.out))
+			   .get();
+		}
+		return kb;
+
 	}
 	
 	public Model runRule_FeatureTolerance(Model kb){
@@ -282,16 +310,31 @@ public class PartSpecificationGraph {
 	}
 	
 	public Model runRule_FeatureToleranceMeasure(Model kb){
-		return
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
-		   .set(q->q.addABox(kb))
-		   .set(q->q.addPlan("resources/META-INF/rules/specification/read-tolerance-measurement-for-feature.q", this))
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getaBox())
-		   .onFailure(e->e.printStackTrace(System.out))
-		   .get();
+		if(unit.equals(IMPM.getUnit("mm"))){
+			return
+			Uni.of(FunQL::new)
+			   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+			   .set(q->q.addABox(kb))
+			   .set(q->q.addPlan("resources/META-INF/rules/specification/read-tolerance-measurement-for-feature.q", this))
+			   .map(q->q.execute())
+			   .map(q->q.getBelief())
+			   .map(b->b.getaBox())
+			   .onFailure(e->e.printStackTrace(System.out))
+			   .get();
+		}
+		else if(unit.equals(IMPM.getUnit("inch"))){
+			return
+			Uni.of(FunQL::new)
+			   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
+			   .set(q->q.addABox(kb))
+			   .set(q->q.addPlan("resources/META-INF/rules/specification/read-tolerance-measurement-for-feature-inch.q", this))
+			   .map(q->q.execute())
+			   .map(q->q.getBelief())
+			   .map(b->b.getaBox())
+			   .onFailure(e->e.printStackTrace(System.out))
+			   .get();
+		}
+		return kb;
 	}
 	
 	public Model runRule_inferFeatureType(Model kb){
@@ -420,7 +463,7 @@ public class PartSpecificationGraph {
 		PropertyReader prop = PropertyReader.getProperty();
 		
 		//create default knowledge with the part name
-		PartSpecificationGraph partGraph = new PartSpecificationGraph("", prop.getProperty("DESIGN_XML"));
+		PartSpecificationGraph partGraph = new PartSpecificationGraph("", prop.getProperty("DESIGN_XML"), IMPM.getUnit("mm"));
 		String designKBPath = prop.getProperty("DESIGN_PART_ABOX");
 		
 //		writePartGraph(partGraph.m, designKBPath, "NTRIPLE");
