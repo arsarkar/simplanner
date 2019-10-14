@@ -3,7 +3,7 @@ PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
 PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
 PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
 
-SELECT ?Capability ?Reference ?MaxLimit ?MaxEquation ?MinLimit ?MinEquation ?Argument
+SELECT ?Capability ?capa ?Reference ?MaxLimit ?MaxEquation ?MinLimit ?MinEquation ?arg
 WHERE{
 ?p	cco:realizes ?func.
 ?capa	rdf:type ?Capability;
@@ -20,6 +20,7 @@ WHERE{
 ?maxOrd	rdf:type	cco:MaximumOrdinalMeasurementInformation.
 ?maxIBE	rdf:type	cco:InformationBearingEntity;
 			cco:has_string_value ?MaxEquation;
+			cco:uses_measurement_unit ?minUnit;
 			cco:uses_equation_type	?eqType.
 ?arg		rdf:type	?Argument;
 			cco:is_tokenized_by	?token.
@@ -29,6 +30,7 @@ WHERE{
 			rdf:type	cco:MeasurementInformationContentEntity.
 ?minOrd	rdf:type	cco:MinimumOrdinalMeasurementInformation.
 ?minIBE	rdf:type	cco:InformationBearingEntity;
+			cco:uses_measurement_unit ?maxUnit;
 			cco:has_decimal_value	?MinLimit.	
 FILTER (?Capability NOT IN (owl:NamedIndividual))
 FILTER (?Reference NOT IN (owl:NamedIndividual))
