@@ -16,7 +16,7 @@ CONSTRUCT
     ?i1 cco:has_decimal_value ?dia.
     cco:uses_measurement_unit rdf:type owl:ObjectProperty .
     cco:InchMeasurementUnit rdf:type cco:MeasurementUnitOfLength.
-    ?i1 cco:uses_measurement_unit cco:InchMeasurementUnit.    
+    ?i1 cco:uses_measurement_unit ?unit.    
   }
 WHERE
   { 
@@ -31,7 +31,8 @@ WHERE
 	 ?dt  rdf:type				design:TypeBearingEntity;
 	 	  cco:has_URI_value 	"radius".	   	
 	 ?dm  rdf:type				design:MeasurementBearingEntity;
-	 	  cco:has_text_value 	?rad.
+	 	  cco:has_text_value 	?rad;
+	 	  cco:uses_measurement_unit ?unit.
   }
 FUNCTION{
 	?dia <- this:calculateDiameter(?rad)

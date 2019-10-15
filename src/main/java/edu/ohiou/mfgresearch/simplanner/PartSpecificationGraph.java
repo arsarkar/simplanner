@@ -345,6 +345,8 @@ public class PartSpecificationGraph {
 		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-feature-type-hole.q", this))
 		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-feature-type-slot.q", this))
 		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-feature-type-pocket.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-feature-type-openslot.q", this))
+		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-feature-type-openpocket.q", this))
 		   .set(q->q.addPlan("resources/META-INF/rules/specification/infer-feature-type-slab.q", this))
 		   .map(q->q.execute())
 		   .map(q->q.getBelief())

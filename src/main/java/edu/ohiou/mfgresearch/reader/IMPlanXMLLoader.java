@@ -96,8 +96,17 @@ public class IMPlanXMLLoader implements PartFeatureLoader {
 	public String readFeatureType(String featureName) {
 		
 		String xPath = "//*[@featureName='" + featureName + "']" ;
-		String featureClass = m.xpath(xPath).tag();
-		return featureClass.substring(featureClass.lastIndexOf(".")+1, featureClass.length());
+		String featureClass = m.xpath(xPath).tag();		
+		String type = featureClass.substring(featureClass.lastIndexOf(".")+1, featureClass.length());
+		String isClosed = m.xpath(xPath).attr("isClosed");
+		if(isClosed!=null){
+			if(Boolean.parseBoolean(isClosed)){
+				if(type.equals("Pocket")||type.equals("Slot")){
+					type = "Open" + type;
+				}
+			}
+		}
+		return type;
 	}
 
 	@Override

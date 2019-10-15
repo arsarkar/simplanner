@@ -52,6 +52,7 @@ WHERE{
 			rdf:type	cco:MeasurementInformationContentEntity.
 ?maxOrd	rdf:type	cco:MaximumOrdinalMeasurementInformation.
 ?maxIBE	rdf:type	cco:InformationBearingEntity;
+				cco:uses_measurement_unit ?unit;
 			cco:has_decimal_value	?max.	
 
 ?minICE	cco:inheres_in			?minIBE;
@@ -60,6 +61,7 @@ WHERE{
 			cco:expects	?arg.
 ?minOrd	rdf:type	cco:MinimumOrdinalMeasurementInformation.
 ?minIBE	rdf:type	cco:InformationBearingEntity;
+				cco:uses_measurement_unit ?unit;
 			cco:has_string_value ?eq;
 			cco:uses_equation_type	?eqType.
 ?arg		rdf:type	?argType;

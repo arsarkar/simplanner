@@ -8,7 +8,6 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.jena.atlas.logging.Log;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.rdf.model.Model;
@@ -33,8 +32,8 @@ public class Resource implements Runnable {
 	@Option(names={"-g", "--graph"}, paramLabel="PATH", description="file path or URL of the RDF graph")
 	private File path;
 	
-	@Option(names={"-process"}, paramLabel="CAPAPATH", description="file path or URL of the capability RDF graph")
-	private File capaPath;
+//	@Option(names={"-capag"}, paramLabel="CAPAPATH", description="file path or URL of the capability RDF graph")
+//	private File capaPath;
 	
 	@Option(names={"-save"})
 	private boolean save = false;
@@ -54,6 +53,9 @@ public class Resource implements Runnable {
 	
 	@Option(names={"-new", "--create"}, description="Add/modify capability for a process. the capability is added to new function if '-func' is provided")
 	private boolean create = false;
+	
+	@Option(names={"-assign", "--assign"}, description="Add/modify capability for a process. the capability is added to new function if '-func' is provided")
+	private boolean assign = false;
 	
 	public Resource() {
 		// TODO Auto-generated constructor stub
@@ -135,12 +137,24 @@ public class Resource implements Runnable {
 			}
 		}
 		if(function!=null){
-			for(String func:function){
-				m.add(machineResource, ResourceFactory.createProperty(IMPM.cco+"has_function"), func);
-				m.add(toolResource, ResourceFactory.createProperty(IMPM.cco+"has_function"), func);
-				System.out.println(machineResource.getLocalName() + ", " + toolResource.getLocalName() + " has function " + func);
+			if(assign){
+	
+				for(String func:function){
+					m.add(ResourceFactory.createProperty("http://www.ontologyrepository.com/CommonCoreOntologies/has_function"), 
+							ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+							ResourceFactory.createProperty("http://www.w3.org/2002/07/owl#ObjectProperty"));
+					
+					m.add(machineResource, ResourceFactory.createProperty(IMPM.cco+"has_function"), ResourceFactory.createResource(func));
+					m.add(toolResource, ResourceFactory.createProperty(IMPM.cco+"has_function"), ResourceFactory.createResource(func));
+					System.out.println(machineResource.getLocalName() + ", " + toolResource.getLocalName() + " has function " + func);
+				}
+				function = null;
+				assign = false;
 			}
-			function = null;
+			else{
+				//read machine and tool for the given function
+				
+			}
 		}
 	}
 

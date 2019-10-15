@@ -31,6 +31,7 @@ public class FeatureProcessMatching {
 	String localPath;
 	PropertyReader prop = PropertyReader.getProperty();
 	String featureSpec = "", processInd = "", function ="";
+	Node unit = null;
 	
 	public Model getLocalKB() {
 		return localKB;
@@ -96,6 +97,8 @@ public class FeatureProcessMatching {
 				   tab.rows().forEachRemaining(r->{
 					   log.info(r.get(Var.alloc("d")).getLocalName() + " of type " + r.get(Var.alloc("dimType")).getLocalName() + " having value " + r.get(Var.alloc("dim")).getLiteral().getValue());
 				   });
+				   unit = tab.rows().next().get(Var.alloc("unit"));
+				   log.info("The unit used in the specification is " + unit);
 			   }
 			   return tab;
 		   }))
@@ -122,6 +125,7 @@ public class FeatureProcessMatching {
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-measure.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.getPlan(0).addVarBinding("func", ResourceFactory.createResource(function.getURI())))
+		   .set(q->q.getPlan(0).addVarBinding("unit", ResourceFactory.createResource(unit.getURI())))
 		   .set(q->q.setLocal=true)		   
 		   .set(q->q.setSelectPostProcess(tab->{
 			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
@@ -143,6 +147,7 @@ public class FeatureProcessMatching {
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-measure-equation.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.getPlan(0).addVarBinding("func", ResourceFactory.createResource(function.getURI())))
+		   .set(q->q.getPlan(0).addVarBinding("unit", ResourceFactory.createResource(unit.getURI())))
 		   .set(q->q.setLocal=true)
 		   .set(q->q.setSelectPostProcess(tab->{
 			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
@@ -164,6 +169,7 @@ public class FeatureProcessMatching {
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transfer-capability-equation-measure.rq"))
 		   .set(q->q.getPlan(0).addVarBinding("p", ResourceFactory.createResource(processIRI.getURI())))
 		   .set(q->q.getPlan(0).addVarBinding("func", ResourceFactory.createResource(function.getURI())))
+		   .set(q->q.getPlan(0).addVarBinding("unit", ResourceFactory.createResource(unit.getURI())))
 		   .set(q->q.setLocal=true)
 		   .set(q->q.setSelectPostProcess(tab->{
 			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
