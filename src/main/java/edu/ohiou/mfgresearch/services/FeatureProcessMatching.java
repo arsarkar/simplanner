@@ -3,6 +3,8 @@ package edu.ohiou.mfgresearch.services;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.jena.graph.Node;
@@ -30,7 +32,7 @@ public class FeatureProcessMatching {
 	Model localKB;
 	String localPath;
 	PropertyReader prop = PropertyReader.getProperty();
-	String featureSpec = "", processInd = "", function ="";
+	String inputFeature = "", processInd = "", function ="";
 	Node unit = null;
 	
 	public Model getLocalKB() {
@@ -89,7 +91,7 @@ public class FeatureProcessMatching {
 				   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
 			   }
 			   if(tab.isEmpty()){
-				  log.info("No specification is avalable for the feature " + featureSpec); 
+				  log.info("No specification is avalable for the feature " + inputFeature); 
 			   }
 			   else{
 				   log.info("Trying to satisfy feature specification " + tab.rows().next().get(Var.alloc("fs")).getLocalName() +
@@ -199,7 +201,7 @@ public class FeatureProcessMatching {
 		
 		FeatureProcessMatching matching = new FeatureProcessMatching(new String[]{});
 
-		matching.featureSpec = featureIRI.getLocalName();
+		matching.inputFeature = featureIRI.getURI();
 		matching.processInd = processIRI.getLocalName();
 		matching.function = functionURI.getLocalName();
 		
@@ -371,7 +373,7 @@ public class FeatureProcessMatching {
 				   log.info("No dimension is satisfied by any capability of " + processInd);
 			   }
 			   else{
-				   log.info("The following specifications of " + featureSpec + " are satisfied by " + processInd);
+				   log.info("The following specifications of " + inputFeature + " are satisfied by " + processInd);
 				   tab.rows().forEachRemaining(r->{
 					   log.info("Dimension " +  r.get(Var.alloc("d")).getLocalName() + "(" +  r.get(Var.alloc("dimType")).getLocalName() + ")" + "\t" +
 							   				" is satisfied by " +  r.get(Var.alloc("capa")).getLocalName() + "(" +  r.get(Var.alloc("capaType")).getLocalName() + ")");
@@ -399,7 +401,7 @@ public class FeatureProcessMatching {
 				   log.info("every dimension is satisfied by some capability of " + processInd);
 			   }
 			   else{
-				   log.info("The following specifications of " + featureSpec + " are not satisfied by " + processInd);
+				   log.info("The following specifications of " + inputFeature + " are not satisfied by " + processInd);
 				   tab.rows().forEachRemaining(r->{
 					   log.info("Dimension " +  r.get(Var.alloc("d")).getLocalName() + "(" +  r.get(Var.alloc("dimType")).getLocalName() + ")" + "\t" +
 							   				" is not satisfied by " +  r.get(Var.alloc("capa")).getLocalName() + "(" +  r.get(Var.alloc("capaType")).getLocalName() + ")");
@@ -427,7 +429,7 @@ public class FeatureProcessMatching {
 				   log.info("every dimension is compared by some capability of " + processInd);
 			   }
 			   else{
-				   log.info("The following specifications of " + featureSpec + " have no corresponding capability for " + processInd);
+				   log.info("The following specifications of " + inputFeature + " have no corresponding capability for " + processInd);
 				   tab.rows().forEachRemaining(r->{
 					   log.info("Dimension " +  r.get(Var.alloc("d")).getLocalName() + "(" +  r.get(Var.alloc("dimType")).getLocalName() + ")");
 				   });
@@ -448,7 +450,7 @@ public class FeatureProcessMatching {
 		Uni.of(FunQL::new)
 			.set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 			.set(q->q.addABox(localKB)) 
-			.set(q->q.addPlan("resources/META-INF/rules/core/create-interm-feature.rq"))
+			.set(q->q.addPlan("resources/META-INF/rules/core/create-interm-feature.rq", this))
 			.set(q->q.setLocal=true)
 			.set(q->q.setServicePostProcess(tab->{
 				if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
@@ -481,7 +483,7 @@ public class FeatureProcessMatching {
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 		   .set(q->q.addABox(localKB)) 
-		   .set(q->q.addPlan("resources/META-INF/rules/core/create-final-feature.rq"))
+		   .set(q->q.addPlan("resources/META-INF/rules/core/create-final-feature.rq", this))
 		   .set(q->q.setLocal=true)
 		   .set(q->q.setServicePostProcess(tab->{
 			   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
@@ -513,7 +515,7 @@ public class FeatureProcessMatching {
 		Uni.of(FunQL::new)
 			   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
 			   .set(q->q.addABox(localKB)) 
-			   .set(q->q.addPlan("resources/META-INF/rules/core/create-unsatisfied-feature.rq"))
+			   .set(q->q.addPlan("resources/META-INF/rules/core/create-unsatisfied-feature.rq", this))
 			   .set(q->q.setLocal=true)
 			   .set(q->q.setServicePostProcess(tab->{
 				   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
@@ -557,6 +559,8 @@ public class FeatureProcessMatching {
 		   .set(m->localKB.add(m))
 		   .set(m->GlobalKnowledge.getCurrentPart().add(m));
 		
+
+		
 		//save the intermediate RDF for bug fixing
 //		try {
 //			GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-match-dim.rdf")), "RDF/XML");
@@ -564,6 +568,51 @@ public class FeatureProcessMatching {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
+	}
+	
+	public Node createOutputFeature(){
+		String outFeatureIRI = IMPM.design_ins + "FormFeature_I" + IMPM.newHash(4);
+//		//assert concretization from input feature
+		log.info("\n ##running rule create-interm-feature-existing-dimensions.rq... ");
+		//save the intermediate RDF for bug fixing
+//		try {
+//			OutputStream os = new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-existing-feature.rdf"));
+//			Uni.of(ModelFactory.createDefaultModel())
+//				.set(m->m.add(GlobalKnowledge.getCurrentPart()))
+//				.set(m->m.add(GlobalKnowledge.getCurrentPlan()))
+//				.set(m->m.add(localKB))
+//				.set(m->m.write(os, "RDF/XML"));
+//			os.flush();
+//			os.close();
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		Uni.of(FunQL::new)
+		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+		   .set(q->q.addABox(GlobalKnowledge.getSpecification()))
+		   .set(q->q.addABox(GlobalKnowledge.getCurrentPart())) 
+		   .set(q->q.addPlan("resources/META-INF/rules/core/select-interm-feature-existing-dimensions.rq"))
+		   .set(q->q.getPlan(0).addVarBinding("f1", ResourceFactory.createResource(inputFeature)))
+		   .set(q->q.setSelectPostProcess(tab->{
+			   if(!tab.isEmpty()){
+				   tab.rows().forEachRemaining(b->{
+					   if(b.contains(Var.alloc("d1"))){	
+						   GlobalKnowledge.getCurrentPart().add(ResourceFactory.createResource(b.get(Var.alloc("d1")).getURI()), 
+								   								ResourceFactory.createProperty(IMPM.cco+"inheres_in"),
+								   								ResourceFactory.createResource(outFeatureIRI));
+					   }
+				   });				   
+			   }
+			   return tab;
+		   }))
+		   .map(q->q.execute())
+		   .onFailure(e->log.error(e.getMessage()));
+		
+		return ResourceFactory.createResource(outFeatureIRI).asNode();
 	}
 	
 	public Double matchSpecCapMeasure(Double dim, Double max, Double min) throws Exception{

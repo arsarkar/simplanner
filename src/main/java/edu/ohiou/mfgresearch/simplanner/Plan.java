@@ -149,11 +149,13 @@ public class Plan implements Runnable{
 				   Iterator<Binding> tabIter = tab.rows();
 				   while(tabIter.hasNext()){
 					   Binding b = tabIter.next();
-					   if(b.get(Var.alloc("pBefore")).getLocalName().contains("RootProcess")){
-						   tabIter.remove();
-					   }
-					   else{
-						   precedings.add(new String[]{b.get(Var.alloc("pBefore")).getLocalName(), b.get(Var.alloc("p1")).getLocalName(), b.get(Var.alloc("fName")).getLiteralValue().toString()});
+					   if(b.contains(Var.alloc("pBefore"))){
+						   if(b.get(Var.alloc("pBefore")).getLocalName().contains("RootProcess")){
+							   tabIter.remove();
+						   }
+						   else{
+							   precedings.add(new String[]{b.get(Var.alloc("pBefore")).getLocalName(), b.get(Var.alloc("p1")).getLocalName(), b.get(Var.alloc("fName")).getLiteralValue().toString()});
+						   }
 					   }
 				   }
 

@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,6 +19,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.algebra.Table;
+import org.apache.jena.sparql.algebra.TableFactory;
 import org.apache.jena.sparql.core.Var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -329,8 +332,25 @@ public class FeatureProcessSelection {
 				.onSuccess(m->fpSel.localKB.add(m));
 			
 			//check to see if spot drilling is applicable 
-			
-			
+//			Uni.of(FunQL::new)
+//				.set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+//				.set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
+//				.set(q->q.addABox(prop.getProperty("CAPABILITY_ABOX_MM")))
+//				.set(q->q.addABox(fpSel.localKB))
+//				.set(q->q.addPlan("resources/META-INF/rules/core/process-planning-holestarting.rq"))
+//				.set(q->q.setLocal=true)
+//				.set(q->q.setServicePostProcess(tab->{
+//					if(!tab.isEmpty()){
+//						Node f2 = tab.rows().next().get(Var.alloc("f2"));
+//						
+//					}
+//					return tab;
+//				}))
+//				.map(q->q.execute())
+//				.map(q->q.getBelief())
+//				.map(b->b.getLocalABox())
+//				.onFailure(e->e.printStackTrace(System.out))
+//				.onSuccess(m->fpSel.localKB.add(m));			
 
 			fpSel.execute();
 			
@@ -611,6 +631,25 @@ public class FeatureProcessSelection {
 			if(!Boolean.parseBoolean(prop.getProperty("SHOW_PROCESS_GRAPH").trim())) return tab; 
 			int numChildren = tab.size();
 			if(fpl.getRank()>0) fpl.nextOrbit();
+			
+			//save the intermediate RDF for bug fixing
+//			try {
+//				OutputStream os = new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-feature-graph.rdf"));
+//			Uni.of(ModelFactory.createDefaultModel())
+//				.set(m->m.add(GlobalKnowledge.getCurrentPart()))
+//				.set(m->m.add(GlobalKnowledge.getCurrentPlan()))
+//				.set(m->m.add(localKB))
+//				.set(m->m.write(os, "RDF/XML"));
+//				os.flush();
+//				os.close();
+//			} catch (FileNotFoundException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+			
 			fpl.setNumPlanets(numChildren);
 			tab.rows().forEachRemaining(b->{
 				//add the last process planned, only fires for start process
@@ -647,27 +686,43 @@ public class FeatureProcessSelection {
 						   }
 						   else{
 							   ResultSetFormatter.out(System.out, tab1.toResultSet(), q.getAllPrefixMapping());
-							   String ft = tab1.rows().next().get(Var.alloc("ft")).getURI();
-							   //get satisfied dimension and tolerances
+							   Table filtTab = TableFactory.create();
 							   StringBuilder s = new StringBuilder();
-							   s.append(" concretizes ");
 							   tab1.rows().forEachRemaining(b1->{
-								   s.append(" ").append(b1.get(Var.alloc("d")).getLocalName());
+								   String ft = b1.get(Var.alloc("ft")).getURI();
+								   if(ft.equals("http://www.ohio.edu/ontologies/design#FormFeature")){
+									   //get satisfied dimension and tolerances
+									   if(b1.contains(Var.alloc("d"))){
+										   s.append(" concretizes ");
+										   s.append(" ").append(b1.get(Var.alloc("d")).getLocalName());
+									   }
+									   return;
+								   }
+								   filtTab.addBinding(b1);
 							   });
 
 							   ColoredNode cn = null; 
-							   if(ft.equals("http://www.ohio.edu/ontologies/design#IntermediateFormFeature")){
-								   cn = new ColoredNode(iFeature.getLocalName(), Color.BLUE);
+							   if(!filtTab.isEmpty()){
+								   String ft = filtTab.rows().next().get(Var.alloc("ft")).getURI();
+								   
+								   if(ft.equals("http://www.ohio.edu/ontologies/design#IntermediateFormFeature")){
+									   cn = new ColoredNode(iFeature.getLocalName(), Color.BLUE);
+									   cn.setTooltip(s.toString());
+								   }
+								   else if(ft.equals("http://www.ohio.edu/ontologies/design#UnsatisfiedFeature")){
+									   cn = new ColoredNode(iFeature.getLocalName(), Color.RED);
+									   cn.setTooltip(s.toString());
+								   }
+//								   else if(ft.equals("http://www.ohio.edu/ontologies/design#FinalFeature")){
+//									   cn = new ColoredNode(iFeature.getLocalName(), Color.GREEN);
+//									   cn.setTooltip(s.toString());
+//								   }
+							   }
+							   else{
+								   cn = new ColoredNode(iFeature.getLocalName(), Color.GREEN);
 								   cn.setTooltip(s.toString());
 							   }
-							   else if(ft.equals("http://www.ohio.edu/ontologies/design#UnsatisfiedFeature")){
-								   cn = new ColoredNode(iFeature.getLocalName(), Color.RED);
-								   cn.setTooltip(s.toString());
-							   }
-							   else if(ft.equals("http://www.ohio.edu/ontologies/design#FinalFeature")){
-								   cn = new ColoredNode(iFeature.getLocalName(), Color.CYAN);
-								   cn.setTooltip(s.toString());
-							   }
+							   
 							   g.addNode(new edu.ohiou.mfgresearch.labimp.graph.Node (cn));
 							   final ColoredNode chNode = cn;
 							   Uni.of(g)
@@ -699,12 +754,22 @@ public class FeatureProcessSelection {
 			log.info("match feature by process-planning-1.rq. iteration ---> " + counter);
 			
 			//save the intermediate RDF for bug fixing
-//			try {
-//				GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-feature-"+counter+".rdf")), "RDF/XML");
-//			} catch (FileNotFoundException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+			try {
+				OutputStream os = new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-feature-"+counter+".rdf"));
+			Uni.of(ModelFactory.createDefaultModel())
+				.set(m->m.add(GlobalKnowledge.getCurrentPart()))
+				.set(m->m.add(GlobalKnowledge.getCurrentPlan()))
+				.set(m->m.add(localKB))
+				.set(m->m.write(os, "RDF/XML"));
+				os.flush();
+				os.close();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 			boolean	isSuccessful = 	
 					Uni.of(FunQL::new)
@@ -713,7 +778,7 @@ public class FeatureProcessSelection {
 					   .set(q->q.addABox(localKB))
 					   .set(q->q.addABox(GlobalKnowledge.getCurrentPart()))
 					   .set(q->q.addABox(GlobalKnowledge.getCurrentPlan()))
-					   .set(q->q.addPlan("resources/META-INF/rules/core/process-planning-1.rq"))
+					   .set(q->q.addPlan("resources/META-INF/rules/core/process-planning-preparation.rq"))
 //					   .set(q->q.getPlan(0).addVarBinding("p0", ResourceFactory.createResource(processNodes.get(0).getURI())))
 					   .set(q->q.setLocal=true)
 //					   .set(q->q.setServicePostProcess(plotProcessSelectionTree))
@@ -736,7 +801,6 @@ public class FeatureProcessSelection {
 							   tab.rows().forEachRemaining(r->{
 								   log.info("\nOccurrence " + r.get(Var.alloc("pNext1")).getLocalName() + "(" + r.get(Var.alloc("pType")).getLocalName() + ")" +
 										   		" is applied after " + r.get(Var.alloc("pCurrent")).getLocalName() + " generating output feature " + r.get(Var.alloc("f2")).getLocalName());
-							   
 							   });
 						   }						   
 						   return tab;
@@ -746,11 +810,51 @@ public class FeatureProcessSelection {
 						   GlobalKnowledge.getCurrentPlan().add(q.getBelief().getLocalABox());   
 					   })
 					   .map(q->q.isQuerySuccess())
-					   .get();			
+					   .get();	
 			
-			
+			if(!isSuccessful){
+				isSuccessful = 	
+						Uni.of(FunQL::new)
+						   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
+						   .set(q->q.addTBox(GlobalKnowledge.getPlanTBox()))
+						   .set(q->q.addABox(localKB))
+						   .set(q->q.addABox(GlobalKnowledge.getCurrentPart()))
+						   .set(q->q.addABox(GlobalKnowledge.getCurrentPlan()))
+						   .set(q->q.addPlan("resources/META-INF/rules/core/process-planning-1.rq"))
+//						   .set(q->q.getPlan(0).addVarBinding("p0", ResourceFactory.createResource(processNodes.get(0).getURI())))
+						   .set(q->q.setLocal=true)
+//						   .set(q->q.setServicePostProcess(plotProcessSelectionTree))
+						   .set(q->q.setSelectPostProcess(tab->{
+							   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
+								   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+							   }
+							   if(!tab.isEmpty()){
+								   tab.rows().forEachRemaining(r->{
+									   log.info("Process type " + r.get(Var.alloc("pType")).getLocalName() + " can be applied after current occurrence " + r.get(Var.alloc("pCurrent")).getLocalName() + "(" + r.get(Var.alloc("pt")).getLocalName() + ")");
+								   });
+							   }
+							   return tab;
+						   }))
+						   .set(q->q.setServicePostProcess(plotProcessSelectionTree.andThen(tab->{
+							   if(Boolean.parseBoolean(prop.getProperty("SHOW_CONSTRUCT_RESULT").trim())){
+								   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+							   }
+							   if(!tab.isEmpty()){
+								   tab.rows().forEachRemaining(r->{
+									   log.info("\nOccurrence " + r.get(Var.alloc("pNext1")).getLocalName() + "(" + r.get(Var.alloc("pType")).getLocalName() + ")" +
+											   		" is applied after " + r.get(Var.alloc("pCurrent")).getLocalName() + " generating output feature " + r.get(Var.alloc("f2")).getLocalName());
+								   });
+							   }						   
+							   return tab;
+						   })))
+						   .map(q->q.execute())
+						   .set(q->{
+							   GlobalKnowledge.getCurrentPlan().add(q.getBelief().getLocalABox());   
+						   })
+						   .map(q->q.isQuerySuccess())
+						   .get();	
+			}	
 			stopIteration = !isSuccessful;
-		
 		}
 	}
 }

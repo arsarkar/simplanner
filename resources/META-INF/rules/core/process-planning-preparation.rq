@@ -1,0 +1,37 @@
+PREFIX  fpmatch: <edu.ohiou.mfgresearch.services.FeatureProcessMatching>
+PREFIX  rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  plan: <http://www.ohio.edu/ontologies/manufacturing-plan#>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+
+CONSTRUCT{
+cco:has_output rdf:type	owl:ObjectProperty.
+cco:has_input rdf:type	owl:ObjectProperty.
+plan:precedes rdf:type	owl:ObjectProperty.
+?f2	rdf:type		design:FormFeature.
+?pNext1	rdf:type ?pType;
+			cco:has_output	?f2;
+			cco:has_input		?f1.
+?pCurrent	plan:precedes	?pNext1.
+}
+WHERE{
+?p0	rdf:type plan:RootProcess.
+?p0	rdf:type plan:PlannedProcess.
+?p0	plan:precedes* ?pCurrent.
+
+?pCurrent   rdf:type	?pt.
+?pPrevious	 rdf:type	?pt.
+?pPrevious	 plan:hasOptionallySucceedingProcess ?pNext.
+?pNext		 rdf:type	?pType.
+
+?func	rdf:type		?fType.
+?pNext  cco:realizes  ?func.
+
+?pCurrent	cco:has_output		?f1.
+FILTER NOT EXISTS {?pCurrent plan:precedes ?p2}.
+FILTER NOT EXISTS {?f1 cco:concretizes	?fs}.
+}
+FUNCTION{
+	?f2 <- fpmatch:ask_to_match(?f1,?pNext, ?func)
+}

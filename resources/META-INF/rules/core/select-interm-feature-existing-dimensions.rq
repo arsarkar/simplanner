@@ -1,0 +1,26 @@
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
+
+SELECT ?fs ?d ?d1
+WHERE{
+ ?fs  				rdf:type              					design:FeatureSpecification;
+					cco:inheres_in       				?i1;
+					cco:represents						?r.
+ ?i1  				rdf:type              					design:LabelBearingEntity;
+					cco:has_text_value  				?fName.
+ ?fq  				rdf:type              					design:FeatureQualityMap;
+					design:describes_map_with 	?fs;
+					design:describes_map_with 	?d.
+ ?d				rdf:type 							?dimType.		
+ ?ice1  			rdf:type            					cco:FormFeatureIdentifier; 
+					cco:inheres_in       				?i1.
+ ?f1   			rdf:type              					design:FormFeature;
+					cco:designated_by 				?ice1.
+ 
+	 ?d1	  			cco:inheres_in						?f1;
+						cco:concretizes						?d.			
+ FILTER(?dimType IN (design:DiameterSpecification, design:DepthSpecification, design:RoundnessSpecification, design:SurfaceFinishSpecification, design:PositiveToleranceSpecification, design:TruePositionSpecification, design:Perpendicularity, design:Parallelism))
+}

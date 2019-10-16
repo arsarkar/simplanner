@@ -38,7 +38,7 @@ WHERE{
  ?dm  			rdf:type								design:MeasurementBearingEntity;
 					cco:has_decimal_value 		?dim;		
 					cco:uses_measurement_unit	?unit.
-?ice1  			rdf:type            					cco:FormFeatureIdentifier; 
+ ?ice1  			rdf:type            					cco:FormFeatureIdentifier; 
 					cco:inheres_in       				?i1.
  ?f1   			rdf:type              				design:FormFeature;
 					cco:designated_by 				?ice1.

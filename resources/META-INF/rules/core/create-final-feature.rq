@@ -1,3 +1,4 @@
+PREFIX  this: <edu.ohiou.mfgresearch.services.FeatureProcessMatching>
 PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
 PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
@@ -25,4 +26,7 @@ WHERE{
 											design:describes_map_with 	?dm2.
 								?d2	    rdf:type 				cco:InformationQualityEntity;
 											cco:not_concretizes	 			?dm2.}						   
+}
+FUNCTION{
+	?f1 <- this:createOutputFeature()
 }
