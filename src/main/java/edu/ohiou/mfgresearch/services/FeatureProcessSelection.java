@@ -116,10 +116,16 @@ public class FeatureProcessSelection {
 		else if(featureType.equals("Slot")){
 			return ask_to_select_open_slotmaking_processes(featureSpecification);
 		}
+		else if(featureType.equals("ClosedSlot")){
+			return ask_to_select_open_slotmaking_processes(featureSpecification);
+		}
 		else if(featureType.equals("Slab")){
 			return ask_to_select_slabmaking_processes(featureSpecification);
 		}
 		else if(featureType.equals("Pocket")){
+			return ask_to_select_open_pocketmaking_processes(featureSpecification);
+		}
+		else if(featureType.equals("ClosedPocket")){
 			return ask_to_select_open_pocketmaking_processes(featureSpecification);
 		}
 //		else if(featureType.equals("http://www.ohio.edu/ontologies/design#Chamfer")){

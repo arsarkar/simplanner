@@ -102,7 +102,7 @@ public class IMPlanXMLLoader implements PartFeatureLoader {
 		if(isClosed!=null){
 			if(Boolean.parseBoolean(isClosed)){
 				if(type.equals("Pocket")||type.equals("Slot")){
-					type = "Open" + type;
+					type = "Closed" + type;
 				}
 			}
 		}

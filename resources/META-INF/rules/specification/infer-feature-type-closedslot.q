@@ -5,11 +5,11 @@ PREFIX  design: <http://www.ohio.edu/ontologies/design#>
 
 CONSTRUCT 
   { 
-  	?f rdf:type design:OpenSlotSpecification
+  	?f rdf:type design:ClosedSlotSpecification
   }
 WHERE
   { ?f   rdf:type            design:FeatureSpecification .
     ?i1  rdf:type            design:TypeBearingEntity .    
     ?f   cco:inheres_in      ?i1 .
-    ?i1  cco:has_URI_value   "OpenSlot"
+    ?i1  cco:has_URI_value   "ClosedSlot"
   }

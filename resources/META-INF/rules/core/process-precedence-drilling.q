@@ -6,6 +6,7 @@ PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
 
 CONSTRUCT{
 	pp:hasSucceedingProcess rdf:type owl:ObjectProperty.
+	pp:hasOptionallySucceedingProcess rdf:type owl:ObjectProperty.
 	
 	?root rdf:type pp:RootProcess.
 	
