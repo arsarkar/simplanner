@@ -20,7 +20,7 @@ CONSTRUCT
   }
 WHERE
   { 
-	 ?f   rdf:type              design:HoleSpecification.
+	 ?f   rdf:type              ?fType.
 	 ?fq  rdf:type              design:FeatureQualityMap .
 	 ?fq  design:describes_map_with ?f;
 		  design:describes_map_with ?d.
@@ -33,6 +33,7 @@ WHERE
 	 ?dm  rdf:type				design:MeasurementBearingEntity;
 	 	  cco:has_text_value 	?dep;
 	 	  cco:uses_measurement_unit ?unit.
+	 FILTER(?fType IN (design:HoleSpecification, design:ClosedPocketSpecification, design:ClosedSlotSpecification, design:PocketSpecification, design:SlotSpecification))	  
   }
 FUNCTION{
 	?depth <- this:calculateDepth(?dep)
