@@ -420,7 +420,7 @@ public class ProcessSelection {
 		Function<Node, String> renameNode = n->{
 			String ns = n.getNameSpace();
 			String name = n.getLocalName();
-			String newName = name.replaceFirst("I[0-9]*(?!.*I[0-9]*)", "I"+IMPM.newHash(4));
+			String newName = name.replaceFirst("I[0-9]*(?!.*I[0-9]*)", "I"+IMPM.newHash(6));
 			return ns+newName;
 		};
 

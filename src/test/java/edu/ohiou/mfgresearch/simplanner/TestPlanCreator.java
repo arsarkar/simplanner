@@ -34,7 +34,7 @@ public class TestPlanCreator {
 		planKB = ModelFactory.createDefaultModel();
 		Function<Table, BasicPattern> expander = IPlanner.createPatternExpander(createInitialPlanPattern());
 		Function<BasicPattern, BasicPattern> updater = IPlanner.createUpdateExecutor(planKB);
-		String iProessString =  IMPM.plan_ins + "IProcess" + IMPM.newHash(4);
+		String iProessString =  IMPM.plan_ins + "IProcess" + IMPM.newHash(6);
 		pNodes.put("IProcess", iProessString);
 		Binding b = BindingFactory.binding(Var.alloc("p"), NodeFactory.createURI(iProessString));
 		expander.andThen(updater).apply(Uni.of(TableFactory.create()).set(t->t.addBinding(b)).get());	
@@ -44,7 +44,7 @@ public class TestPlanCreator {
 		Function<BasicPattern, BasicPattern> updater1 = IPlanner.createUpdateExecutor(planKB);
 		Binding b3 = BindingFactory.binding(Var.alloc("p"), NodeFactory.createURI(iProessString));
 		Binding b4 = BindingFactory.binding(b3, Var.alloc("r"), NodeFactory.createURI(rootFeatureURI));
-		String fString =  IMPM.design_ins + "feature" + "_" + IMPM.newHash(4);
+		String fString =  IMPM.design_ins + "feature" + "_" + IMPM.newHash(6);
 		fNodes.put(rootFeatureURI, fString);
 		Binding b5 = BindingFactory.binding(b4, Var.alloc("f"), NodeFactory.createURI(fString));
 		expander1.andThen(updater1)
@@ -116,7 +116,7 @@ public class TestPlanCreator {
 			tNode = NodeFactory.createURI(pNodes.get(target));
 		}
 		else{
-			String pString =  IMPM.plan_ins + target + "_" + IMPM.newHash(4);
+			String pString =  IMPM.plan_ins + target + "_" + IMPM.newHash(6);
 			pNodes.put(target, pString);
 			tNode = NodeFactory.createURI(pString);
 		}
@@ -146,7 +146,7 @@ public class TestPlanCreator {
 			tNode = NodeFactory.createURI(pNodes.get(target));
 		}
 		else{
-			String pString =  IMPM.plan_ins + target + "_" + IMPM.newHash(4);
+			String pString =  IMPM.plan_ins + target + "_" + IMPM.newHash(6);
 			pNodes.put(target, pString);
 			tNode = NodeFactory.createURI(pString);
 		}

@@ -2,6 +2,9 @@ package edu.ohiou.mfgresearch.simplanner;
 
 import static org.junit.Assert.*;
 
+import java.util.UUID;
+
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,6 +43,13 @@ public class LoaderTest {
 		String s1 = "http://www.ohio.edu/ontologies/";
 		boolean flag = s.contains(s1);
 		System.out.println(flag);
+	}
+	
+	@Test
+	public void randomNumber1(){
+		for(int i=0; i<100; i++){
+			System.out.println(RandomStringUtils.random(4, "0123456789abcdefghjkmnpqrxyz"));
+		}
 	}
 	
 	@Test

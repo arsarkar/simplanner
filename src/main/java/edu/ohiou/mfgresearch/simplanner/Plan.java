@@ -3,6 +3,8 @@ package edu.ohiou.mfgresearch.simplanner;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,10 +45,13 @@ public class Plan implements Runnable{
 	private String part="";	
 	
 	@Option(names={"-g", "--graph"}, paramLabel="PATH", description="file path or URL of the part specification RDF")
-	private File path;	
+	private File path;		
 	
 	@Option(names={"-save"}, paramLabel="", description = "file to save the plan")
 	private File planPath;
+	
+	@Option(names={"-u", "--unit"}, paramLabel="Unit", description="set the unit, default unit is set to millimeter.")
+	private String unit = "mm";
 	
 	public static void main(String[] args) {
 		plan = new Plan();
@@ -73,6 +78,9 @@ public class Plan implements Runnable{
 
 	@Override
 	public void run() {
+		if(unit.length()>0){
+			GlobalKnowledge.setUnit(unit);
+		}
 		if(path!=null){
 //			GlobalKnowledge.loadSpecification(path.getAbsolutePath());
 			Uni.of(path)
@@ -101,8 +109,8 @@ public class Plan implements Runnable{
 				   return tab;
 			   }))
 			   .set(q->q.execute())
-			   .onFailure(e->e.printStackTrace(System.out))
-			   ;			
+			   .onFailure(e->e.printStackTrace(System.out));
+			
 			readPlan();
 			feature = "";
 		}
@@ -118,13 +126,27 @@ public class Plan implements Runnable{
 	}
 	
 	public void savePlan(){
-		Uni.of(ModelFactory.createDefaultModel())
-			.set(m->m.add(GlobalKnowledge.getPlan()))
-			.set(m->m.add(GlobalKnowledge.getPart()))
-			.set(m->m.add(GlobalKnowledge.getSpecification()))
-			.set(m->m.write(new FileOutputStream(planPath)))
-			.onFailure(e->e.printStackTrace(System.out));
+		
+		try {
+			OutputStream fs = new FileOutputStream(planPath);
+			System.out.println("Saving the plan file at " + planPath);
+			Uni.of(ModelFactory.createDefaultModel())
+				.set(m->m.add(GlobalKnowledge.getPlan()))
+				.set(m->m.add(GlobalKnowledge.getPart()))
+				.set(m->m.add(GlobalKnowledge.getSpecification()))
+				.set(m->m.write(fs))
+				.onFailure(e->e.printStackTrace(System.out));
+			fs.flush();
+			fs.close();
 			planPath = null;
+			System.out.println("Plan is successfully saaved");
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 	
 	/**

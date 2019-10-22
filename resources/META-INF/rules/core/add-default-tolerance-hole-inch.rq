@@ -1,0 +1,25 @@
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX  design: <http://www.ohio.edu/ontologies/design#>
+
+CONSTRUCT{
+cco:inheres_in							rdf:type	owl:ObjectProperty.
+cco:represents							rdf:type	owl:ObjectProperty.
+design:describes_map_with		rdf:type	owl:ObjectProperty.
+cco:has_text_value					rdf:type	owl:DatatypeProperty.
+cco:has_decimal_value				rdf:type	owl:DatatypeProperty.
+ ?fq  		rdf:type          					design:FeatureQualityMap;
+			design:describes_map_with ?fs;
+			design:describes_map_with ?d.
+ ?rd		rdf:type							design:ToleranceRepresentation.			
+ ?d	  	rdf:type 							design:PositiveToleranceSpecification;	
+			cco:inheres_in					?dm;
+			cco:represents					?rd.	
+ ?dm  	rdf:type							design:MeasurementBearingEntity;
+			cco:uses_measurement_unit	cco:InchMeasurementUnit;
+			cco:has_decimal_value 	"0.05"^^<http://www.w3.org/2001/XMLSchema#double>.	 
+}
+WHERE{
+	?fs  		rdf:type              	 				design:FeatureSpecification.			
+}

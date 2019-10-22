@@ -59,7 +59,7 @@ public class ProcessCapabilityGraph {
 	}
 
 	ProcessCapabilityLoader loader;
-	Function<String, String> newIndiForType =c->capabilityKBURI+ "#" +c.toLowerCase()+IMPM.newHash(4);
+	Function<String, String> newIndiForType =c->capabilityKBURI+ "#" +c.toLowerCase()+IMPM.newHash(6);
 	
 	/**
 	 * returns the pattern for creating new process 

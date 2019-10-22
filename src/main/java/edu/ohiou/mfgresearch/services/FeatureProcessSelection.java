@@ -12,15 +12,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.apache.jena.arq.querybuilder.ConstructBuilder;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Table;
 import org.apache.jena.sparql.algebra.TableFactory;
+import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +36,8 @@ import edu.ohiou.mfgresearch.labimp.graph.Graph;
 import edu.ohiou.mfgresearch.labimp.graph.GraphViewer;
 import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.lambda.Uni;
+import edu.ohiou.mfgresearch.plan.IPlanner;
+import edu.ohiou.mfgresearch.plan.PlanUtil;
 import edu.ohiou.mfgresearch.reader.PropertyReader;
 import edu.ohiou.mfgresearch.reader.graph.FeatureProcessLayouter;
 import edu.ohiou.mfgresearch.reader.graph.ColoredArc;
@@ -265,6 +274,55 @@ public class FeatureProcessSelection {
 		return isAvailable;
 	}
 	
+	private BasicPattern createMeasurementQuality(){
+		return
+			Uni.of(ConstructBuilder::new)
+			   .set(b->b.addPrefix("rdf", IMPM.rdf))
+			   .set(b->b.addPrefix("owl", IMPM.owl))
+			   .set(b->b.addPrefix("cco", IMPM.cco))
+			   .set(b->b.addPrefix("design", IMPM.design))
+			   .set(b->b.addConstruct("design:describes_map_with", "rdf:type", "owl:ObjectProperty"))
+			   .set(b->b.addConstruct("cco:inheres_in", "rdf:type", "owl:ObjectProperty"))
+			   .set(b->b.addConstruct("cco:represents", "rdf:type", "owl:ObjectProperty"))
+			   .set(b->b.addConstruct("cco:uses_measurement_unit", "rdf:type", "owl:ObjectProperty"))
+			   .set(b->b.addConstruct("cco:has_decimal_value", "rdf:type", "owl:DatatypeProperty"))
+			   
+			   .set(b->b.addConstruct("?fq", "rdf:type", "design:FeatureQualityMap"))
+			   .set(b->b.addConstruct("?fq", "design:describes_map_with", "?fs"))
+			   .set(b->b.addConstruct("?fq", "design:describes_map_with", "?d"))
+			   .set(b->b.addConstruct("?rd", "rdf:type", "design:ToleranceRepresentation"))
+			   .set(b->b.addConstruct("?d", "rdf:type", "?dType"))
+			   .set(b->b.addConstruct("?d", "cco:inheres_in", "?dm"))
+			   .set(b->b.addConstruct("?d", "cco:represents", "?rd"))
+			   .set(b->b.addConstruct("?dm", "rdf:type", "design:MeasurementBearingEntity"))
+			   .set(b->b.addConstruct("?dm", "cco:uses_measurement_unit", "?unit"))
+			   .set(b->b.addConstruct("?dm", "cco:has_decimal_value", "?val"))
+			   .map(b->b.build())
+			   .map(PlanUtil::getConstructBasicPattern)
+			   .get();
+	}	
+	
+	public void createDefaultToleranceMeasurement(String featureSpecification, String toleranceType, double value) throws Exception{
+		Function<String, String> newIndiForType =c->IMPM.design_ins +c.toLowerCase()+IMPM.newHash(6);
+		Model m = ModelFactory.createDefaultModel();
+		BasicPattern pat = createMeasurementQuality();
+		Function<Table, BasicPattern> expander = IPlanner.createPatternExpander(pat);
+		Function<BasicPattern, BasicPattern> updater = IPlanner.createUpdateExecutor(m);
+		Table t = TableFactory.create();
+		Binding b = BindingFactory.binding();
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("fs"), NodeFactory.createURI(featureSpecification)));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("fq"), NodeFactory.createURI(newIndiForType.apply("FeatureQualityMap"))));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("rd"), NodeFactory.createURI(newIndiForType.apply("ToleranceRepresentation"))));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("dType"), NodeFactory.createURI(newIndiForType.apply("ToleranceSpecification"))));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("d"), NodeFactory.createURI(newIndiForType.apply(toleranceType))));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("dm"), NodeFactory.createURI(newIndiForType.apply("MeasurementBearingEntity"))));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("val"), NodeFactory.createLiteral(String.valueOf(value), XSDDatatype.XSDdouble)));
+		b = Algebra.merge(b, BindingFactory.binding(Var.alloc("unit"), NodeFactory.createURI(GlobalKnowledge.getUnit())));
+		t.addBinding(b);
+		expander.andThen(updater).apply(t);
+		GlobalKnowledge.getSpecification().add(m);
+	}
+	
 	/**
 	 * Service to plan holemaking
 	 * @param featureName
@@ -308,7 +366,8 @@ public class FeatureProcessSelection {
 				Uni.of(FunQL::new)
 				.set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 				.set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
-				.set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-hole.rq"))
+				.select(q->GlobalKnowledge.getUnit().equals(IMPM.getUnit("inch")), q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-hole-inch.rq")) 
+				.select(q->GlobalKnowledge.getUnit().equals(IMPM.getUnit("mm")), q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-hole-mm.rq"))
 				.set(q->q.setLocal=true)
 				.set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
 				.map(q->q.execute())
@@ -411,7 +470,8 @@ public class FeatureProcessSelection {
 				Uni.of(FunQL::new)
 				   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 				   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
-				   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot.rq"))
+				   .select(q->GlobalKnowledge.getUnit().equals(IMPM.getUnit("inch")), q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot_pocket-inch.rq")) 
+				   .select(q->GlobalKnowledge.getUnit().equals(IMPM.getUnit("mm")), q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot_pocket-mm.rq"))
 				   .set(q->q.setLocal=true)
 				   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
 				   .map(q->q.execute())
@@ -492,7 +552,8 @@ public class FeatureProcessSelection {
 				Uni.of(FunQL::new)
 				   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 				   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
-				   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot.rq"))
+				   .select(q->GlobalKnowledge.getUnit().equals(IMPM.getUnit("inch")), q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot_pocket-inch.rq")) 
+				   .select(q->GlobalKnowledge.getUnit().equals(IMPM.getUnit("mm")), q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot_pocket-mm.rq"))
 				   .set(q->q.setLocal=true)
 				   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
 				   .map(q->q.execute())
@@ -569,12 +630,29 @@ public class FeatureProcessSelection {
 		if(fpSel.execute){
 			//if there is no feature specifcation, then assert a default specification.
 			if(!anySpecificationOfFeature(featureSpecification)){
+				
+//				try {
+//					fpSel.createDefaultToleranceMeasurement(featureSpecification.getURI(), "http://www.ohio.edu/ontologies/design#PositiveToleranceSpecification", 0.05);
+//				} catch (Exception e1) {
+//					// TODO Auto-generated catch block
+//					e1.printStackTrace();
+//				}
+				
 				Uni.of(FunQL::new)
 				   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 				   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
-				   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot.rq")) //same wwith slot
+				   .select(q->GlobalKnowledge.getUnit().equals(IMPM.getUnit("inch")), q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot_pocket-inch.rq")) 
+				   .select(q->GlobalKnowledge.getUnit().equals(IMPM.getUnit("mm")), q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot_pocket-mm.rq"))
 				   .set(q->q.setLocal=true)
 				   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
+				   .set(q->q.setSelectPostProcess(tab->{
+					   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+					   return tab;
+				   }))
+				   .set(q->q.setServicePostProcess(tab->{
+					   ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping());
+					   return tab;
+				   }))				   
 				   .map(q->q.execute())
 				   .map(q->q.getBelief())
 				   .map(b->b.getLocalABox())
@@ -657,7 +735,8 @@ public class FeatureProcessSelection {
 				Uni.of(FunQL::new)
 				   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 				   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
-				   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot.rq")) //same wwith slot
+				   .select(q->GlobalKnowledge.getUnit().equals(IMPM.getUnit("inch")), q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot_pocket-inch.rq")) 
+				   .select(q->GlobalKnowledge.getUnit().equals(IMPM.getUnit("mm")), q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slot_pocket-mm.rq"))
 				   .set(q->q.setLocal=true)
 				   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
 				   .map(q->q.execute())
@@ -742,7 +821,8 @@ public class FeatureProcessSelection {
 				Uni.of(FunQL::new)
 				   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
 				   .set(q->q.addABox(GlobalKnowledge.getSpecification()))			   
-				   .set(q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slab.rq")) //same wwith slot
+				   .select(q->GlobalKnowledge.getUnit().equals(IMPM.getUnit("inch")), q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slab-inch.rq")) 
+				   .select(q->GlobalKnowledge.getUnit().equals(IMPM.getUnit("mm")), q->q.addPlan("resources/META-INF/rules/core/add-default-tolerance-slab-mm.rq"))
 				   .set(q->q.setLocal=true)
 				   .set(q->q.getPlan(0).addVarBinding("fs", ResourceFactory.createResource(featureSpecification.getURI())))
 				   .map(q->q.execute())
@@ -925,22 +1005,22 @@ public class FeatureProcessSelection {
 			log.info("match feature by process-planning-1.rq. iteration ---> " + counter);
 			
 			//save the intermediate RDF for bug fixing
-			try {
-				OutputStream os = new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-feature-"+counter+".rdf"));
-			Uni.of(ModelFactory.createDefaultModel())
-				.set(m->m.add(GlobalKnowledge.getCurrentPart()))
-				.set(m->m.add(GlobalKnowledge.getCurrentPlan()))
-				.set(m->m.add(localKB))
-				.set(m->m.write(os, "RDF/XML"));
-				os.flush();
-				os.close();
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			try {
+//				OutputStream os = new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-feature-"+counter+".rdf"));
+//			Uni.of(ModelFactory.createDefaultModel())
+//				.set(m->m.add(GlobalKnowledge.getCurrentPart()))
+//				.set(m->m.add(GlobalKnowledge.getCurrentPlan()))
+//				.set(m->m.add(localKB))
+//				.set(m->m.write(os, "RDF/XML"));
+//				os.flush();
+//				os.close();
+//			} catch (FileNotFoundException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			
 			boolean	isSuccessful = 	
 					Uni.of(FunQL::new)
@@ -1067,7 +1147,7 @@ class CloneModel{
 		Function<Node, String> renameNode = n->{
 			String ns = n.getNameSpace();
 			String name = n.getLocalName();
-			String newName = name.replaceFirst("I[0-9]*(?!.*I[0-9]*)", "I"+IMPM.newHash(4));
+			String newName = name.replaceFirst("I[0-9]*(?!.*I[0-9]*)", "I"+IMPM.newHash(6));
 			return ns+newName;
 		};
 

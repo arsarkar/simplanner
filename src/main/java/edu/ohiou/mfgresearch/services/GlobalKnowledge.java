@@ -52,6 +52,7 @@ public class GlobalKnowledge {
 	private static OntModel designTBox = null;
 	private static OntModel resourceTBox = null;
 	private static OntModel planTBox = null;
+	private String unit = null;
 	private static PropertyReader prop = PropertyReader.getProperty();
 	
 	private GlobalKnowledge() {
@@ -194,6 +195,16 @@ public class GlobalKnowledge {
 		KB.specificationKB.add(m);
 	}	
 	
+	public static void setUnit(String unit){
+		load();
+		KB.unit = IMPM.getUnit(unit);
+	}
+	
+	public static String getUnit(){
+		load();
+		return KB.unit;
+	}
+	
 	private static BasicPattern createPatternInitialPlan(){
 		return
 			Uni.of(ConstructBuilder::new)
@@ -215,7 +226,7 @@ public class GlobalKnowledge {
 		}
 		Function<Table, BasicPattern> expander = IPlanner.createPatternExpander(createPatternInitialPlan());
 		Function<BasicPattern, BasicPattern> updater = IPlanner.createUpdateExecutor(KB.planKB);
-		String iProessString =  IMPM.plan_ins + "IProcess" + IMPM.newHash(4);
+		String iProessString =  IMPM.plan_ins + "IProcess" + IMPM.newHash(6);
 		Node iProcess = NodeFactory.createURI(iProessString);
 		Binding b = BindingFactory.binding(Var.alloc("p"), iProcess);
 		expander.andThen(updater).apply(Uni.of(TableFactory.create()).set(t->t.addBinding(b)).get());

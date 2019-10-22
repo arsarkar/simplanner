@@ -113,7 +113,7 @@ public class Resource implements Runnable {
 		if(machine!=null){
 			if(create){
 				RDFNode machineType = ResourceFactory.createResource(machine);
-				String machineInstanceURI = IMPM.resource_IMPM + machineType.asNode().getLocalName() + "_I" + IMPM.newHash(4);
+				String machineInstanceURI = IMPM.resource_IMPM + machineType.asNode().getLocalName() + "_I" + IMPM.newHash(6);
 				machineResource = ResourceFactory.createResource(machineInstanceURI);
 				m.add(machineResource, ResourceFactory.createProperty(IMPM.rdf+"type"), machineType);
 				System.out.println("New machine instance " + machineInstanceURI + " of type " + machineType.asNode().getLocalName());
@@ -126,7 +126,7 @@ public class Resource implements Runnable {
 		if(tool!=null){
 			if(create){
 				RDFNode toolType = ResourceFactory.createResource(tool);
-				String toolInstanceURI = IMPM.resource_IMPM + toolType.asNode().getLocalName() + "_I" + IMPM.newHash(4);
+				String toolInstanceURI = IMPM.resource_IMPM + toolType.asNode().getLocalName() + "_I" + IMPM.newHash(6);
 				toolResource = ResourceFactory.createResource(toolInstanceURI);
 				m.add(toolResource, ResourceFactory.createProperty(IMPM.rdf+"type"), toolType);
 				System.out.println("New tool instance " + toolInstanceURI + " of type " + toolType.asNode().getLocalName());

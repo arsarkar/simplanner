@@ -13,12 +13,13 @@ cco:has_decimal_value				rdf:type	owl:DatatypeProperty.
 			design:describes_map_with ?fs;
 			design:describes_map_with ?d.
  ?rd		rdf:type							design:ToleranceRepresentation.			
- ?d	  	rdf:type 							design:SurfaceFinishSpecification;	
+ ?d	  	rdf:type 							design:PositiveToleranceSpecification;	
 			cco:inheres_in					?dm;
 			cco:represents					?rd.	
  ?dm  	rdf:type							design:MeasurementBearingEntity;
-			cco:has_decimal_value 	"50.0"^^<http://www.w3.org/2001/XMLSchema#double>.	 
+			cco:uses_measurement_unit	cco:InchMeasurementUnit;
+			cco:has_decimal_value 	"0.5"^^<http://www.w3.org/2001/XMLSchema#double>.	 
 }
 WHERE{
- ?fs  		rdf:type              	design:FeatureSpecification.	 
+	?fs  		rdf:type              	 				design:FeatureSpecification.
 }

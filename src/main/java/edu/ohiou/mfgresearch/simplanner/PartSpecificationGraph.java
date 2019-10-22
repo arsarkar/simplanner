@@ -36,7 +36,7 @@ public class PartSpecificationGraph {
 	}
 	
 	PartFeatureLoader loader;	
-	Func<String, String> newIndiForType =c->IMPM.design_ins+c.toLowerCase()+IMPM.newHash(4);	
+	Func<String, String> newIndiForType =c->IMPM.design_ins+c.toLowerCase()+IMPM.newHash(6);	
 	public OntModel m;
 	
 	/**

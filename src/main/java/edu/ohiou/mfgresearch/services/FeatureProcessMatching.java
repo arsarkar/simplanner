@@ -77,6 +77,22 @@ public class FeatureProcessMatching {
 	public void loadSpecifications(Node featureIRI){
 		log.info("\n ##load specifications for feature "+ featureIRI.getLocalName());
 
+//		try {
+//			OutputStream os = new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-specification.rdf"));
+//			Uni.of(ModelFactory.createDefaultModel())
+//				.set(m->m.add(GlobalKnowledge.getSpecification()))
+//				.set(m->m.add(GlobalKnowledge.getCurrentPart()))
+//				.set(m->m.write(os, "RDF/XML"));
+//			os.flush();
+//			os.close();
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
 		//load specifications for the given feature
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))
@@ -108,8 +124,8 @@ public class FeatureProcessMatching {
 		   .map(q->q.getBelief())
 		   .map(b->b.getLocalABox())
 		   .onFailure(e->log.error(e.getMessage()))
-		   .onSuccess(m->localKB.add(m))
-		   ;
+		   .onSuccess(m->localKB.add(m));
+		
 		reloadKB("FPM-local-transfer-feature-specification.rdf");
 	}
 	
@@ -571,7 +587,7 @@ public class FeatureProcessMatching {
 	}
 	
 	public Node createOutputFeature(){
-		String outFeatureIRI = IMPM.design_ins + "FormFeature_I" + IMPM.newHash(4);
+		String outFeatureIRI = IMPM.design_ins + "FormFeature_I" + IMPM.newHash(6);
 //		//assert concretization from input feature
 		log.info("\n ##running rule create-interm-feature-existing-dimensions.rq... ");
 		//save the intermediate RDF for bug fixing

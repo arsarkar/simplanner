@@ -32,7 +32,7 @@ public class TestFeaturePrecedenceCreator {
 		partKB = ModelFactory.createDefaultModel();
 		Function<Table, BasicPattern> expander = IPlanner.createPatternExpander(createInitialPlanPattern());
 		Function<BasicPattern, BasicPattern> updater = IPlanner.createUpdateExecutor(partKB);
-		String iFeatureString =  IMPM.plan_ins + "IFeature" + IMPM.newHash(4);
+		String iFeatureString =  IMPM.plan_ins + "IFeature" + IMPM.newHash(6);
 		fNodes.put("IFeature", iFeatureString);
 		Binding b = BindingFactory.binding(Var.alloc("f"), NodeFactory.createURI(iFeatureString));
 		expander.andThen(updater).apply(Uni.of(TableFactory.create()).set(t->t.addBinding(b)).get());	
@@ -83,7 +83,7 @@ public class TestFeaturePrecedenceCreator {
 			tNode = NodeFactory.createURI(fNodes.get(target));
 		}
 		else{
-			String fString =  IMPM.plan_ins + target + "_" + IMPM.newHash(4);
+			String fString =  IMPM.plan_ins + target + "_" + IMPM.newHash(6);
 			fNodes.put(target, fString);
 			tNode = NodeFactory.createURI(fString);
 		}

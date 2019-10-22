@@ -247,6 +247,26 @@ public class PartProcessSelection {
 			
 			Function<Table, Table> plotter = plotProcessSelectionTree.apply(counter);
 			
+//			//save the intermediate RDF for bug fixing
+			Uni.of(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/PartProcess_iter_" + counter + "_plan.rdf")
+				.map(File::new)
+				.map(FileOutputStream::new)
+				.set(s->Uni.of(ModelFactory.createDefaultModel())
+							.set(m->m.add(GlobalKnowledge.getPlan()))
+							.set(m->m.write(s, "RDF/XML")))
+				.set(s->s.flush())
+				.set(s->s.close());
+			
+			Uni.of(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/PartProcess_iter_" + counter + "_part.rdf")
+				.map(File::new)
+				.map(FileOutputStream::new)
+				.set(s->Uni.of(ModelFactory.createDefaultModel())
+							.set(m->m.add(GlobalKnowledge.getPart()))
+							.set(m->m.add(GlobalKnowledge.getSpecification()))
+							.set(m->m.write(s, "RDF/XML")))
+				.set(s->s.flush())
+				.set(s->s.close());
+			
 			boolean	isSuccessful =
 				Uni.of(FunQL::new)
 				   .set(q->q.addTBox(GlobalKnowledge.getDesignTBox()))

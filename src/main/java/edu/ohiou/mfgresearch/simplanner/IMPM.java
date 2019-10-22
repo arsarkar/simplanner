@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
+
+import org.apache.commons.lang3.RandomStringUtils;
+
 import edu.ohiou.mfgresearch.lambda.Uni;
 
 public final class IMPM {
@@ -111,12 +114,16 @@ public final class IMPM {
 		unitMap.put(IMPM.cco+"MillimeterMeasurementUnit", "mm, millimeter");
 	}
 	
+	public static long id = 0L;
+	
 	//utility functions
 	public static String newHash(int length){
-		Random rand = new Random();
-		int l = (int) (Math.pow(10.0, length-1));
-		int u = l*9;
-		return String.valueOf(l + rand.nextInt(u));
+//		Random rand = new Random();
+//		int l = (int) (Math.pow(10.0, length-1));
+//		int u = l*9;
+//		return String.valueOf(l + rand.nextInt(u));
+		
+		return RandomStringUtils.random(length, "0123456789abcdefghjkmnpqrxyz");
 	}
 	
 	
