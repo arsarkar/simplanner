@@ -60,7 +60,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<mainClass>edu.ohiou.mfgresearch.simplanner.PartSpecificationGraph</mainClass>
+					<mainClass>edu.ohiou.mfgresearch.simplanner.SIMP</mainClass>
 				</configuration>
 			</plugin>
 		</plugins>

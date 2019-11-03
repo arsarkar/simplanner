@@ -34,6 +34,9 @@ public class PlanReader {
 	PropertyReader prop = PropertyReader.getProperty();
 	OntModel planTBox = ModelFactory.createOntologyModel();
 	
+	List<String[]> precedings = new LinkedList<String[]>();
+	List<Routing> routings  = new LinkedList<Routing>();
+	
 	/**
 	 * Part and plan RDF 
 	 * Part RDF should contain specification too.
@@ -59,39 +62,7 @@ public class PlanReader {
 			GlobalKnowledge.setPart();
 			GlobalKnowledge.getPart().read(partPath.getPath(), "RDF/XML");
 		}
-		
-		List<String[]> precedings = new LinkedList<String[]>();
-		List<Routing> routings  = new LinkedList<Routing>();
-//		Uni.of(FunQL::new)
-//		   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
-//		   .set(q->q.addTBox(prop.getIRIPath(IMPM.mfg_plan)))
-//		   .set(q->q.addABox(GlobalKnowledge.getPlan()))
-//		   .select(q->partPath != null, q->q.addABox(GlobalKnowledge.getPart()))
-////		   .set(q->q.addABox(GlobalKnowledge.getSpecification()))
-//		   .set(q->q.addPlan("resources/META-INF/rules/reader/read-plan1.q"))
-//		   .set(q->q.setSelectPostProcess(tab->{
-//			   if(!tab.isEmpty()) ResultSetFormatter.out(System.out, tab.toResultSet(), q.getAllPrefixMapping()); 
-//			   else System.out.println("No feature is completely processed ");
-//			   if(!tab.isEmpty()){				   			   
-//				   Iterator<Binding> tabIter = tab.rows();
-//				   while(tabIter.hasNext()){
-//					   Binding b = tabIter.next();
-//					   if(b.contains(Var.alloc("pBefore"))){
-//						   if(b.get(Var.alloc("pBefore")).getLocalName().contains("RootProcess")){
-//							   tabIter.remove();
-//						   }
-//						   else{
-//							   precedings.add(new String[]{b.get(Var.alloc("pBefore")).getLocalName(), b.get(Var.alloc("p1")).getLocalName(), b.get(Var.alloc("fName")).getLiteralValue().toString()});
-//						   }
-//					   }
-//				   }
-//
-//			   }
-//			   return tab;
-//		   }))
-//		   .set(q->q.execute())
-//		   .onFailure(e->e.printStackTrace(System.out));	
-		
+				
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(planTBox))
 		   .set(q->q.addABox(GlobalKnowledge.getPlan()))
@@ -134,8 +105,7 @@ public class PlanReader {
 										   Occurrence o2 = new Occurrence("root", "", "dummy");
 										   prec = new Precedence(o2, o1);
 										   rout.addPrec(prec);
-									   }
-									   
+									   }									   
 								   });
 							   }
 							   return tab;
@@ -158,13 +128,22 @@ public class PlanReader {
 //		for(int i=0;i<routings.size();i++){
 //			routings.get(i).calculate();
 //			System.out.println((i+1) + " : " + routings.get(i).toString());
-//		}
+//		}	
 		
 		OccurrenceTree tree = new OccurrenceTree(routings);
 		tree.writeCSV(new PrintWriter(new File(planPath.getPath().replace(".rdf", ".csv"))));
 		System.out.println("CSV is written successfully!");
 
 	}
+	
+//	public void readRouting(String leaf){
+//		routings.stream()
+//				.filter(r->{
+//					return r.getLeaf().getProcess().equals(leaf);
+//				})
+//				.
+//	}
+	
 	
 
 	public static void main(String[] args) {
@@ -173,8 +152,11 @@ public class PlanReader {
 //		String partPath = "C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/PartProcess_iter_2_part.rdf";
 //		String planPath = "C:/Users/sarkara1/Ohio University/Sormaz, Dusan - sarkar-shared/dissertation/experiment/one-process/part-one-spec1-plan3.rdf";
 		
-		String planPath = "C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/PartProcess_iter_7_plan.rdf";
-		String partPath = "C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/PartProcess_iter_7_part.rdf";
+//		String planPath = "C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/PartProcess_iter_7_plan.rdf";
+//		String partPath = "C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/PartProcess_iter_7_part.rdf";
+		
+		String planPath = "C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//eval-5a//SimplePart-v2-plan.rdf";
+		String partPath = "";
 		
 		PlanReader pr = new PlanReader(planPath, partPath);
 		try {

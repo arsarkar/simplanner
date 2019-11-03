@@ -28,7 +28,7 @@ public class OccurrenceTree {
 
 	public void writeCSV(PrintWriter ps){
 		precedences.forEach(prec->{
-			ps.write(prec.getpBefore().toString() + "," + prec.getpNext().toString() + "\n");
+			ps.write(prec.getpBefore().toString() + "," + prec.getpNext().toString() + "," + prec.getpNext().feature +"\n");
 		});
 		ps.flush();
 		ps.close();

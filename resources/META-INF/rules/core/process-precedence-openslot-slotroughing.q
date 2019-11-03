@@ -9,21 +9,22 @@ CONSTRUCT{
 	?root 	rdf:type pp:RootProcess.
 	
 	?em1	rdf:type	capa:EndMilling.
-	?pr1	rdf:type	 capa:PocketRoughing.
-	?em1	cco:realizes ?pr1.
+	?sr1	rdf:type	 capa:SlotRoughing.
+	?em1	cco:realizes ?sr1.
 	
-	?em2	rdf:type	capa:EndMilling.
-	?pf1	rdf:type	 capa:PocketFinishing.
-	?em2 	cco:realizes ?pf1.	
+	?sm1	rdf:type	capa:SideMilling.
+	?sr2	rdf:type	 capa:SlotRoughing.
+	?sm1	cco:realizes ?sr2.
 	
 	?root 	pp:hasSucceedingProcess ?em1.
-	?em1 	pp:hasSucceedingProcess ?em2. 
+	?root 	pp:hasSucceedingProcess ?sm1. 
 }
 WHERE{
-	?pr1	rdf:type	 capa:PocketRoughing.
+	?sr1	rdf:type	 capa:SlotRoughing.
 	?em1	rdf:type	 capa:EndMilling.
-	?em1	cco:realizes ?pr1.
-	?pf1	rdf:type	 capa:PocketFinishing.
-	?em2	rdf:type	 capa:EndMilling.
-	?em2 	cco:realizes ?pf1.
+	?em1	cco:realizes ?sr1.
+		
+	?sr2	rdf:type	 capa:SlotRoughing.
+	?sm1	rdf:type	 capa:SideMilling.
+	?sm1	cco:realizes ?sr2.	
 }

@@ -18,6 +18,10 @@ public class Routing {
 		this.leaf = leaf;
 	}
 
+	public Occurrence getLeaf(){
+		return leaf;
+	}
+	
 	public void addPrec(Precedence prec){
 		//adjust leaf
 		if(leaf.getProcess().equals(prec.pNext.getProcess())){
@@ -45,7 +49,7 @@ public class Routing {
 
 	@Override
 	public String toString() {
-		return rout.stream().map(o->o.toString()).collect(Collectors.joining("->"));
+		return rout.stream().map(o->o.toString()).collect(Collectors.joining(" -> "));
 	}
 	
 }

@@ -17,7 +17,7 @@ WHERE{
  	  cco:inheres_in		?dm.
  ?dm  rdf:type				design:MeasurementBearingEntity;
  	  cco:has_decimal_value 	?dim.	 	
- FILTER(?dimType IN (design:DiameterSpecification, design:DepthSpecification, design:RoundnessSpecification, design:SurfaceFinishSpecification))	  
+ FILTER(?dimType IN (design:DiameterSpecification, design:DepthSpecification, design:RoundnessSpecification, design:SurfaceFinishSpecification, design:FlatnessSpecification))	  
 }	
 
 

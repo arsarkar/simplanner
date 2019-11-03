@@ -3,7 +3,7 @@ PREFIX  owl:  <http://www.w3.org/2002/07/owl#>
 PREFIX  cco:  <http://www.ontologyrepository.com/CommonCoreOntologies/>
 PREFIX  cap: <http://www.ohio.edu/ontologies/manufacturing-capability#>
 
-SELECT ?Capability ?capa ?Reference ?MaxLimit ?MaxEquation ?MinLimit ?MinEquation ?arg
+SELECT ?capa ?MaxLimit ?MaxEquation ?MinLimit ?MinEquation ?arg
 WHERE{
 ?p	cco:realizes ?func.
 ?capa	rdf:type ?Capability;

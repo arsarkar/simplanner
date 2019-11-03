@@ -22,5 +22,5 @@ WHERE{
  
 	 ?d1	  			cco:inheres_in						?f1;
 						cco:concretizes						?d.			
- FILTER(?dimType IN (design:DiameterSpecification, design:DepthSpecification, design:RoundnessSpecification, design:SurfaceFinishSpecification, design:PositiveToleranceSpecification, design:TruePositionSpecification, design:Perpendicularity, design:Parallelism))
+ FILTER(?dimType IN (design:DiameterSpecification, design:DepthSpecification, design:RoundnessSpecification, design:SurfaceFinishSpecification, design:PositiveToleranceSpecification, design:TruePositionSpecification, design:Perpendicularity, design:Parallelism, design:FlatnessSpecification))
 }
