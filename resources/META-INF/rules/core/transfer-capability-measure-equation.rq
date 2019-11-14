@@ -65,7 +65,7 @@ WHERE{
 ?minOrd	rdf:type	cco:MinimumOrdinalMeasurementInformation.
 ?minIBE	rdf:type	cco:InformationBearingEntity;
 				cco:uses_measurement_unit ?unit;
-			cco:has_decimal_value	?min.	
+				cco:has_decimal_value	?min.	
 FILTER (?pType NOT IN (owl:NamedIndividual))
 FILTER (?capaType NOT IN (owl:NamedIndividual))
 FILTER (?refType NOT IN (owl:NamedIndividual))

@@ -155,8 +155,8 @@ public class PlanReader {
 //		String planPath = "C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/PartProcess_iter_7_plan.rdf";
 //		String partPath = "C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/PartProcess_iter_7_part.rdf";
 		
-		String planPath = "C://Users//sarkara1//Ohio University//Sormaz, Dusan - sarkar-shared//dissertation//experiment//eval-5a//SimplePart-v2-plan.rdf";
-		String partPath = "";
+		String planPath = "C:/Users/sarkara1/Ohio University/Sormaz, Dusan - sarkar-shared/dissertation/experiment/slider/trial1/PartProcess_iter_5_plan.rdf";
+		String partPath = "C:/Users/sarkara1/Ohio University/Sormaz, Dusan - sarkar-shared/dissertation/experiment/slider/trial1/PartProcess_iter_5_part.rdf";
 		
 		PlanReader pr = new PlanReader(planPath, partPath);
 		try {

@@ -272,8 +272,11 @@ public class FeatureProcessMatching {
 		log.info("\n ##running rule transform-capability-equation1... ");
 		Uni.of(FunQL::new)
 		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+		   .set(q->q.addABox(GlobalKnowledge.getSpecification())) 
+		   .set(q->q.addABox(GlobalKnowledge.getCurrentPart()))
 		   .set(q->q.addABox(localKB)) 
 		   .set(q->q.addPlan("resources/META-INF/rules/core/transform-capability-equation1.rq"))
+		   .set(q->q.getPlan(0).addVarBinding("f1", ResourceFactory.createResource(inputFeature))) 
 		   .set(q->q.setLocal=true)
 		   .set(q->q.setSelectPostProcess(tab->{
 			   if(Boolean.parseBoolean(prop.getProperty("SHOW_SELECT_RESULT").trim())){
@@ -562,21 +565,20 @@ public class FeatureProcessMatching {
 //		}
 		
 		//assert dimensions to intermediate feature 
-		log.info("\n ##running rule create-interm-feature-dimensions.rq... ");
-		Uni.of(FunQL::new)
-		   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
-		   .set(q->q.addABox(localKB)) 
-		   .set(q->q.addPlan("resources/META-INF/rules/core/create-interm-feature-dimensions.rq"))
-		   .set(q->q.setLocal=true)
-		   .map(q->q.execute())
-		   .map(q->q.getBelief())
-		   .map(b->b.getLocalABox())
-		   .onFailure(e->log.error(e.getMessage()))
-		   .set(m->localKB.add(m))
-		   .set(m->GlobalKnowledge.getCurrentPart().add(m));
-		
-
-		
+		if(!function.contains("holestarting")){
+			log.info("\n ##running rule create-interm-feature-dimensions.rq... ");
+			Uni.of(FunQL::new)
+			   .set(q->q.addTBox(GlobalKnowledge.getResourceTBox()))
+			   .set(q->q.addABox(localKB)) 
+			   .set(q->q.addPlan("resources/META-INF/rules/core/create-interm-feature-dimensions.rq"))
+			   .set(q->q.setLocal=true)
+			   .map(q->q.execute())
+			   .map(q->q.getBelief())
+			   .map(b->b.getLocalABox())
+			   .onFailure(e->log.error(e.getMessage()))
+			   .set(m->localKB.add(m))
+			   .set(m->GlobalKnowledge.getCurrentPart().add(m));
+		}
 		//save the intermediate RDF for bug fixing
 //		try {
 //			GlobalKnowledge.getCurrentPart().write(new FileOutputStream(new File(PropertyReader.getProperty().getNS("git1")+"impm-ind/plan/psec-match-dim.rdf")), "RDF/XML");

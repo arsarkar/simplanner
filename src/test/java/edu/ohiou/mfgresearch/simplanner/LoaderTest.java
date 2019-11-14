@@ -2,13 +2,16 @@ package edu.ohiou.mfgresearch.simplanner;
 
 import static org.junit.Assert.*;
 
+import java.io.FileInputStream;
 import java.util.UUID;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.joox.JOOX;
 import org.junit.Before;
 import org.junit.Test;
 
 import edu.ohiou.mfgresearch.lambda.Omni;
+import edu.ohiou.mfgresearch.lambda.Uni;
 import edu.ohiou.mfgresearch.reader.IMPlanXMLLoader;
 import edu.ohiou.mfgresearch.reader.PartFeatureLoader;
 import edu.ohiou.mfgresearch.reader.ProcessCapabilityLoader;
@@ -73,4 +76,16 @@ public class LoaderTest {
 					.set(f1->System.out.println(f1));
 			});
 	}
+	
+//	@Test
+//	public void testPlanCleaner(){
+//		Uni.of("C:/Users/sarkara1/Ohio University/Sormaz, Dusan - sarkar-shared/dissertation/experiment/slider/slider_with_slabs-single-depth.rdf")
+//		   .map(s->new FileInputStream(s))
+//		   .map(JOOX::$)
+//		   .set(m->{
+//			   m.
+//			   	.
+//		   })
+//		   ;
+//	}
 }

@@ -92,7 +92,6 @@ public class Plan implements Runnable{
 		}
 		if(feature.length()>0){
 //			GlobalKnowledge.loadInitialPlan();
-			GlobalKnowledge.loadStockFeature(feature);
 			Uni.of(FunQL::new)
 			   .set(q->q.addTBox(prop.getIRIPath(IMPM.design)))
 			   .set(q->q.addABox(GlobalKnowledge.getSpecification()))
@@ -101,9 +100,12 @@ public class Plan implements Runnable{
 			   .set(q->q.setSelectPostProcess(tab->{
 				   if(tab.isEmpty()) System.out.println("No feature is found for feature name " + feature);
 				   tab.rows().forEachRemaining(r->{
+					   System.out.println("------------------------------------------------------------------------------------------------");
 					   String fName = r.get(Var.alloc("FeatureName")).toString();
 					   String fType = r.get(Var.alloc("FeatureType")).toString();
 					   System.out.println("Starting to plan for "+ fName + " of type " + fType);
+					   GlobalKnowledge.setPart();
+					   GlobalKnowledge.loadStockFeature(feature);
 					   FeatureProcessSelection.ask_to_plan_feature(r.get(Var.alloc("FeatureSpecification")), fType);
 				   });
 				   return tab;
