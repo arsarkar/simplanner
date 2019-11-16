@@ -20,7 +20,7 @@ CONSTRUCT{
 	
 	?rm rdf:type capa:Reaming.
 	?rm 	cco:realizes	?rmfunc.
-	?rmfunc	rdf:type		?rmfType.	
+	?rmfunc	rdf:type		?rmfType.
 	
 	?root pp:hasSucceedingProcess ?td.	
 	
@@ -43,5 +43,5 @@ WHERE{
 	
 	FILTER (?tdfType NOT IN (owl:NamedIndividual))
 	FILTER (?brfType NOT IN (owl:NamedIndividual))
-	FILTER (?rmfType NOT IN (owl:NamedIndividual))	
+	FILTER (?rmfType NOT IN (owl:NamedIndividual))
 }

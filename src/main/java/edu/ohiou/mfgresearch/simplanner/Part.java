@@ -53,6 +53,9 @@ class Part implements Runnable {
 	@Option(names={"-u", "--unit"}, paramLabel="Unit", description="set the unit, default unit is set to millimeter.")
 	private String unit = "mm";
 	
+	@Option(names={"-prec"}, paramLabel="Precedence", description="file containing precedence.")
+	private File precFile;		
+	
 	public static void main(String[] args) {
 		part = new Part();
 		Scanner scanner = new Scanner(System.in);
@@ -81,12 +84,19 @@ class Part implements Runnable {
 		if(path!=null){
 			if(file!=null){
 				PartSpecificationGraph spec = new PartSpecificationGraph("", file.getPath(), IMPM.getUnit(unit));
+				if(precFile!=null) spec.addPrecedence(precFile);
 				String label = spec.loadPart(path.getPath());
 				System.out.println("Part specification " + label + " is loaded from "+ file.getAbsolutePath());
 			}
 			m.read(path.getPath());
 			System.out.printf("RDF is read from %s\n",path.getAbsolutePath());
+			//if precfile is given load precedence to the existing model
+			if(precFile!=null){
+				PartSpecificationGraph spec = new PartSpecificationGraph();
+				spec.loadPrecedence(m, precFile, path.getPath());
+			}
 			path=null;
+			
 		}
 		if(!m.isEmpty()){
 			if(featureName.length()>0){

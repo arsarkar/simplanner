@@ -11,5 +11,5 @@ WHERE{
 		design:describes_map_with 	?d.
  ?d		rdf:type 							?dimType.	
  
- FILTER(?dimType IN (design:DiameterSpecification, design:DepthSpecification, design:RoundnessSpecification, design:SurfaceFinishSpecification, design:PositiveToleranceSpecification, design:FlatnessSpecification))	 	
+ FILTER(?dimType IN (design:DiameterSpecification, design:DepthSpecification, design:RoundnessSpecification, design:SurfaceFinishSpecification, design:PositiveToleranceSpecification, design:NegativeToleranceSpecification, design:FlatnessSpecification))	 	
 }

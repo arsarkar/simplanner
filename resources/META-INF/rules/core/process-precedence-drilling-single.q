@@ -9,27 +9,18 @@ CONSTRUCT{
 	pp:hasOptionallySucceedingProcess rdf:type owl:ObjectProperty.
 	cco:realizes rdf:type owl:ObjectProperty.
 	?root 	rdf:type pp:RootProcess.
-		
-	?sp rdf:type capa:SpotDrilling.
-	?sp 	cco:realizes	?spfunc.
-	?spfunc	rdf:type		?spfType.
 	
 	?td rdf:type capa:TwistDrilling.
 	?td 	cco:realizes	?tdfunc.
 	?tdfunc	rdf:type		?tdfType.
 		
-	?root pp:hasSucceedingProcess ?sp.
-	?sp pp:hasOptionallySucceedingProcess ?td. 
+	?root pp:hasSucceedingProcess ?td.
 }
 WHERE{
-	?sp rdf:type capa:SpotDrilling.
-	?sp 	cco:realizes	?spfunc.
-	?spfunc	rdf:type		?spfType.
 
 	?td 	rdf:type 		capa:TwistDrilling.
 	?td 	cco:realizes	?tdfunc.
 	?tdfunc	rdf:type		?tdfType.
 	
-	FILTER (?spfType NOT IN (owl:NamedIndividual))
 	FILTER (?tdfType NOT IN (owl:NamedIndividual))
 }

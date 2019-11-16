@@ -17,6 +17,6 @@ WHERE{
 FILTER NOT EXISTS{?capa	rdf:type ?capaType;
 											cco:references	?ref.
 							   ?ref		rdf:type	?dimType.	}
-FILTER(?dimType IN (design:DiameterSpecification, design:DepthSpecification, design:RoundnessSpecification, design:SurfaceFinishSpecification, design:PositiveToleranceSpecification, design:TruePositionSpecification, design:Perpendicularity, design:Parallelism, design:FlatnessSpecification))	 
+FILTER(?dimType IN (design:DiameterSpecification, design:DepthSpecification, design:RoundnessSpecification, design:SurfaceFinishSpecification, design:PositiveToleranceSpecification, design:NegativeToleranceSpecification, design:TruePositionSpecification, design:Perpendicularity, design:Parallelism, design:FlatnessSpecification))	 
 }
 

@@ -1,7 +1,13 @@
 package edu.ohiou.mfgresearch.simplanner;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.ontology.Individual;
@@ -35,6 +41,7 @@ public class PartSpecificationGraph {
 		prop = PropertyReader.getProperty();
 	}
 	
+	List<String[]> fpn = new LinkedList<String[]>();
 	PartFeatureLoader loader;	
 	Func<String, String> newIndiForType =c->IMPM.design_ins+c.toLowerCase()+IMPM.newHash(6);	
 	public OntModel m;
@@ -59,6 +66,13 @@ public class PartSpecificationGraph {
 	
 	public String[] getNextFeatures(String featureName){
 		log.info("reading next feature of " + featureName);
+		if(fpn.size()>0){
+			List<String> nf = new LinkedList<String>();	
+			fpn.forEach(p->{
+				if(p[0].equals(featureName)) nf.add(p[1]);
+			});
+			return nf.toArray(new String[0]);
+		}
 		return loader.readNextFeature(featureName).toArray(new String[0]);
 	}
 	
@@ -175,6 +189,10 @@ public class PartSpecificationGraph {
 	
 	private String partLabel = "";
 	private String unit = "";
+	
+	public PartSpecificationGraph(){
+		
+	}
 	
 	public PartSpecificationGraph(String partName, String path, String unit) {
 
@@ -422,6 +440,28 @@ public class PartSpecificationGraph {
 		   })
 		   ;		
 	}
+
+	public void addPrecedence(File precFile) {
+		try (Stream<String> stream = Files.lines(precFile.toPath())) {
+			stream.forEach(l->{
+				fpn.add(l.split(","));
+			});
+		} catch (IOException e) {
+			log.error(e.getMessage());
+		}
+		log.info("Feature precedence read as...");
+		fpn.forEach(p->System.out.println(p[0] + " -> " + p[1]));
+	}	
+	
+	public void loadPrecedence(Model m, File precFile, String path){
+		addPrecedence(precFile);
+		//load feature precedence
+		log.info("loading feature precedences...");
+		Model m1 = runRule_FeaturePrecedence(m);
+		log.info("Writing the part graph at " +path);
+		writePartGraph(m1, path, "");
+		log.info("Part rdf is saved successfully");
+	}
 	
 	public String loadPart(String path){
 		//load all features for the part
@@ -457,6 +497,7 @@ public class PartSpecificationGraph {
 		
 		log.info("Writing the part graph at " +path);
 		writePartGraph(m12, path, "");
+		log.info("Part rdf is saved successfully");
 		return partLabel;
 	}
 
@@ -505,7 +546,7 @@ public class PartSpecificationGraph {
 		Model m12 = partGraph.runRule_FeaturePrecedence(m11);
 		
 		writePartGraph(m12, designKBPath, "TURTLE");
-	}	
+	}
 }
 
 

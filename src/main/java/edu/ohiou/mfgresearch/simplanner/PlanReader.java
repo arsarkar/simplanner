@@ -155,8 +155,11 @@ public class PlanReader {
 //		String planPath = "C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/PartProcess_iter_7_plan.rdf";
 //		String partPath = "C:/Users/sarkara1/git/SIMPOM/impm-ind/plan/PartProcess_iter_7_part.rdf";
 		
-		String planPath = "C:/Users/sarkara1/Ohio University/Sormaz, Dusan - sarkar-shared/dissertation/experiment/slider/trial1/PartProcess_iter_5_plan.rdf";
-		String partPath = "C:/Users/sarkara1/Ohio University/Sormaz, Dusan - sarkar-shared/dissertation/experiment/slider/trial1/PartProcess_iter_5_part.rdf";
+//		String planPath = "C:/Users/sarkara1/Ohio University/Sormaz, Dusan - sarkar-shared/dissertation/experiment/slider/fpn3/slider_with_slabs-single-depth-fpn3-plan.rdf";
+//		String partPath = "";//"C:/Users/sarkara1/Ohio University/Sormaz, Dusan - sarkar-shared/dissertation/experiment/slider/trial1/PartProcess_iter_5_part.rdf";
+		
+		String planPath = "C:/Users/sarkara1/Ohio University/Sormaz, Dusan - sarkar-shared/dissertation/experiment/netexample/NetExample-features-prec-minimal1/NetExample-features-prec-plan.rdf";
+		String partPath = "";//"C:/Users/sarkara1/Ohio University/Sormaz, Dusan - sarkar-shared/dissertation/experiment/slider/trial1/PartProcess_iter_5_part.rdf";
 		
 		PlanReader pr = new PlanReader(planPath, partPath);
 		try {
